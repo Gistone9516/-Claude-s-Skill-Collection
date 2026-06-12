@@ -1,0 +1,21 @@
+# Allowlist: track only sync-worthy config; everything else ignored
+/*
+!/.gitignore
+!/README.md
+!/CLAUDE.md
+!/skills/
+!/scripts/
+!/custom skill docs/
+
+# never sync these even if rules change
+.credentials.json
+settings.local.json
+sessions/
+session-env/
+cache/
+paste-cache/
+shell-snapshots/
+telemetry/
+debug/
+file-history/
+history.jsonl
