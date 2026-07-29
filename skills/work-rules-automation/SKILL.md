@@ -5,7 +5,7 @@ description: Robustness rules for automation, background Workflows and long mult
 
 # work-rules-automation — automation and Workflow robustness
 
-Rules: AU-1..AU-23 (23). Ordered by what a violation costs.
+Rules: AU-1..AU-26 (26). Ordered by what a violation costs.
 Delegation policy is in `agent-ops`; why these rules exist is in `ai-characteristics`. The `Workflow` tool description is canonical for script semantics — this file holds only the traps that the description does not warn about, or that were measured here.
 
 **A single format error that halts a run is a critical defect.** One malformed tool call, one unguarded script crash, and the whole automation dies. In long or agent-orchestrated work that is not acceptable.
@@ -95,6 +95,10 @@ Applies whenever a program calls `claude -p` expecting structured output such as
 | An error signature that only exists after failure | `PostToolUseFailure` | Nothing in the input predicts it |
 
 Measured on the first live run of a `PreToolUse` hook enforcing the README rule: the command was `git add -A && git commit`, so at hook time the index had not been updated and README.md read as unstaged. It reported a violation on a commit that did contain README.md. Moving that check to `PostToolUse`, reading the commit that actually landed, made it exact. The cp949 check sits in the third row for the same reason: both measured violations had ASCII command text and non-ASCII *data*, so nothing in the input could predict them.
+
+**AU-25 Escape anything interpolated into a hand-built JSON hook response.** A hook that assembles its output with `printf` is fine while the message is a fixed ASCII string, but the moment a path or a command is interpolated, its backslashes and quotes must be escaped. Measured 2026-07-30: a Windows path emitted raw produced `\U` and `\.`, which are invalid JSON escapes, and an unparseable hook payload is dropped without an error — the reminder would simply never have appeared. Assert JSON validity in the test, not just that the hook fired.
+
+**AU-26 A script hook cannot spawn an agent.** If the goal is for an agent to run automatically, there are only three shapes: a `type: agent` hook, where the harness spawns it but the agent gets no session context; a `command` hook that injects a reminder and lets the model decide; or a `command` hook that denies the tool call until a precondition is met. Invoking `claude -p` from a hook script is a fourth in principle and a minefield in practice — see AU-13 and AU-14.
 
 **AU-24 A hook message is one imperative sentence plus the rule ID, never the rationale.** The skill owns the reasoning and the measured case; the hook owns the interruption. Restating rationale in the hook creates a second copy that goes stale exactly like any other duplicate, and a long injection at every occurrence reproduces the dilution that hooks were introduced to fix. Measured: the first version of `guard.ps1` carried 80-word messages that repeated whole paragraphs of `work-rules-shell`.
 
