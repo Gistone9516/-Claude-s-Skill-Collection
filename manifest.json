@@ -63,7 +63,9 @@
       "lang": "en",
       "tier": 1,
       "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene.",
-      "ruleIds": "SH-1..SH-28"
+      "ruleIds": "SH-1..SH-28",
+      "warnBytes": 23000,
+      "warnBytesReason": "Answered the responsibility question DG-5 asks rather than trimming to fit. This is one responsibility - the trap catalogue for one environment - and it is reached by a single routing trigger covering shell, git and terminal together, so splitting it would mean loading two skills to make one commit. It is also the only skill that grows by design: every entry is an incident that already happened, and deleting one to stay under a number reintroduces the incident. 23000 is the 2026-07-30 size plus headroom; when it is next exceeded, ask the question again rather than raising this."
     },
     {
       "name": "agent-ops",
@@ -182,7 +184,7 @@
     { "path": "README.md", "required": true, "role": "Repo entry point." },
     { "path": "scripts/check-manifest.ps1", "required": true, "role": "The validator this manifest drives. SessionStart hook." },
     { "path": "scripts/guard.ps1", "required": true, "role": "Mechanical enforcement of the four rules with a zero-false-positive signature: work-rules-shell SH-2 NUL bytes, SH-15 .bat with LF, SH-12 UnicodeEncodeError, SH-23 README after a structural commit. Registered on PostToolUse (Write|Edit asyncRewake, Bash filtered to git) and PostToolUseFailure. No PreToolUse: see work-rules-automation AU-21." },
-    { "path": "scripts/pattern-guard.sh", "required": true, "role": "PreToolUse scanner for command text naming a construct known to be wrong: work-rules-shell SH-4, SH-5, SH-8, SH-9, SH-10, SH-1. Bash built-ins only, no forks - measured 190 ms per call against 550 ms with one grep per pattern and 600-700 ms in PowerShell." },
+    { "path": "scripts/pattern-guard.sh", "required": true, "role": "PreToolUse scanner for command text naming a construct known to be wrong: work-rules-shell SH-1, SH-4, SH-5, SH-8, SH-9, SH-11, SH-26, SH-27, SH-28. Bash built-ins only, no forks - measured 190 ms per call against 550 ms with one grep per pattern and 600-700 ms in PowerShell. The SH-11 check cited SH-10 until 2026-07-30, and this line repeated the wrong id, so an unchecked rule read as covered." },
     { "path": "scripts/brief-nudge.sh", "required": true, "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored." },
     { "path": "scripts/validate_doc.py", "required": false, "role": "Korean document length measurement, used by work-rules-writing WR-12." },
     { "path": "projects/C--Users-USER/memory/MEMORY.md", "required": false, "role": "Global memory index for the home directory scope. Machine-specific path key; absent on a fresh machine is normal." }
@@ -221,7 +223,8 @@
     { "key": "hooks.PostToolUseFailure", "expected": "Bash -> guard.ps1", "role": "Catches the cp949 UnicodeEncodeError signature in a failed command." },
     { "key": "hooks.PreToolUse", "expected": "Bash|PowerShell -> pattern-guard.sh", "role": "Command-text patterns. Pre, not post, because command text does not change between hook and execution and these constructs are destructive (work-rules-automation AU-21)." },
     { "key": "hooks.PreToolUse[Write|Edit]", "expected": "brief-nudge.sh check", "role": "Suggests a brief on a file new to this session. Paired with a PostToolUse brief-nudge.sh record that maintains the ledger." },
-    { "key": "hooks.PostToolUse[Bash]", "expected": "guard.ps1 with if Bash(git *)", "role": "README check on the commit that landed. Deliberately post, not pre: a pre hook reads the index before git add runs (work-rules-automation AU-21). The if filter is prefix matching, which is why work-rules-shell SH-26 requires git -C over cd && git." }
+    { "key": "hooks.PostToolUse[Bash]", "expected": "guard.ps1 with if Bash(git *)", "role": "README check on the commit that landed. Deliberately post, not pre: a pre hook reads the index before git add runs (work-rules-automation AU-21). The if filter is prefix matching, which is why work-rules-shell SH-26 requires git -C over cd && git, and why SH-26 now has its own PreToolUse pattern - violating it disables this check." },
+    { "key": "hooks.PostToolUse[PowerShell]", "expected": "guard.ps1 with if PowerShell(git *)", "role": "The same README check for the other first-class shell. Registered 2026-07-30: PostToolUse and PostToolUseFailure were Bash-only, so a commit made through the PowerShell tool skipped the check entirely. A separate entry rather than a widened matcher, because the if filter names its tool." }
   ],
 
   "restore": {

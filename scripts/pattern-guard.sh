@@ -63,17 +63,56 @@ if hasre 'Get-(ChildItem|Item)' && ! has '-Force'; then
   fi
 fi
 
-# SH-10 - measured: reported a 764-line file as 480 lines
+# SH-11 - measured: reported a 764-line file as 480 lines.
+# This cited SH-10 until 2026-07-30. SH-10 is the case-insensitive variable clobber, which is not
+# checked anywhere - and the wrong id was copied into the coverage table and the manifest, so the
+# unchecked rule read as covered. A hook message names a rule to send the reader to it (AU-24).
 if has 'Measure-Object' && has '-Line'; then
-  findings+=("[SH-10] Measure-Object -Line does not count blank lines. Use (Get-Content file).Count.")
+  findings+=("[SH-11] Measure-Object -Line does not count blank lines. Use (Get-Content file).Count.")
+fi
+
+# SH-26 - a command that begins with cd never reaches the README guard, because that hook is
+# filtered with a prefix pattern. The violation disables an existing check rather than merely
+# being wrong, so it is the one pattern here whose cost compounds.
+if has 'git '; then
+  before_git="${raw%%git *}"
+  cd_re='(^|["&;|])[[:space:]]*cd[[:space:]]'
+  if [[ $before_git =~ $cd_re ]]; then
+    findings+=("[SH-26] Write this as git -C <repo> ... - a command beginning with cd never reaches the README guard, so that check silently does not run.")
+  fi
+fi
+
+# SH-27 - measured 2026-07-30: with no config, prettier applied its 80-column default to a file
+# written at about 120 and produced 206 lines of pure re-wrapping around a 15 line change.
+# The rule is "check for a config BEFORE running it", so firing on every run is exactly the rule.
+if has 'prettier' && has '--write'; then
+  findings+=("[SH-27] Check for a prettier config first - with none, prettier --write imposes its own defaults on every line of the file.")
+fi
+
+# SH-28 - measured 2026-07-30: git checkout -- was refused by the permission classifier twice,
+# including after the user approved it in conversation. The classifier does not read the
+# conversation, so the second attempt was wasted. Say the read-only route before the first try.
+if hasre 'git[[:space:]]+(-C[[:space:]]+[^[:space:]]+[[:space:]]+)*(checkout[[:space:]]+--|restore)'; then
+  findings+=("[SH-28] If permission refuses this, do not retry the same verb - dump the original with git show HEAD:<path> into a scratchpad file and copy it over the target.")
 fi
 
 # SH-1 - measured: the repeated cause of stopped runs was Korean text inside python -c.
 # Non-ASCII arrives either as raw UTF-8 or JSON-escaped as \uXXXX; accept both rather than
 # assume which. The escape branch matches any code point at or above U+0080.
+#
+# Scope the search to the -c argument. Until 2026-07-30 it scanned the whole payload, so a
+# compound command whose Korean sat in a neighbouring grep or echo fired anyway - observed live,
+# and a false positive is the one thing that makes a hook stop being read (AU-22).
 if has 'python -c'; then
-  if hasre '[^[:print:][:space:]]' \
-     || hasre '\\u(00[89a-fA-F]|0[1-9a-fA-F][0-9a-fA-F]|[1-9a-fA-F][0-9a-fA-F]{2})[0-9a-fA-F]'; then
+  arg="${raw#*python -c }"
+  case $arg in
+    '\"'*) arg="${arg#'\"'}" ; arg="${arg%%'\"'*}" ;;
+    "'"*)  arg="${arg#\'}"   ; arg="${arg%%\'*}" ;;
+    '"'*)  arg="${arg#\"}"   ; arg="${arg%%\"*}" ;;
+  esac
+  nonascii='[^[:print:][:space:]]'
+  jsonesc='\\u(00[89a-fA-F]|0[1-9a-fA-F][0-9a-fA-F]|[1-9a-fA-F][0-9a-fA-F]{2})[0-9a-fA-F]'
+  if [[ $arg =~ $nonascii ]] || [[ $arg =~ $jsonesc ]]; then
     findings+=("[SH-1] Do not put non-ASCII text inside python -c. Write a .py file and run it.")
   fi
 fi

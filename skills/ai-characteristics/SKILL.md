@@ -25,7 +25,7 @@ Generates: `verify-fanout` VF-4 (build for checkability), VF-19 (read whole unit
 
 An embedding-sourced claim arrives in the same register as a sourced one. Nothing in the output distinguishes them, so the distinction has to be forced by tagging.
 
-Generates: CLAUDE.md G-09, `agent-ops` AO-12 (`[fact-cited]` means a real source; anything else is `[assumption]` with lowered confidence).
+Generates: CLAUDE.md G-09, `agent-ops` AO-16 (`[fact-cited]` means a real source; anything else is `[assumption]` with lowered confidence).
 
 ### AI-3 A session sees a part, never the whole, so its defects are locally reasonable and globally wrong
 
@@ -55,7 +55,7 @@ It does not stop and report the gap. It invents something shaped like the missin
 
 Measured: a consumer agent run co-parallel with its producer manufactured a substitute input, forcing an opus merge.
 
-Generates: `agent-ops` AO-19 (parallel needs true independence; producer to consumer is a pipeline), `buildflow` BF-5.
+Generates: `agent-ops` AO-14 (parallel needs true independence; producer to consumer is a pipeline), `buildflow` BF-5.
 
 ### AI-7 A rule without rationale gets improved away
 
@@ -85,7 +85,7 @@ Generates: `work-rules-automation` AU-7, AU-9 (state the fallback and have the a
 
 Told to report concisely, the model compresses the thing that mattered along with the noise. The operator then acts on a report that no longer contains the reason to act differently.
 
-Generates: `agent-ops` AO-14 (the `signal` channel, which is compression-resistant), AO-15 (the discoverer upgrades richness; judgement and caveats are never compressed, only enumeration and data).
+Generates: `agent-ops` AO-18 (the `signal` channel, which is compression-resistant), AO-19 (the discoverer upgrades richness; judgement and caveats are never compressed, only enumeration and data).
 
 ### AI-11 Instruction adherence degrades as one response grows
 
@@ -99,7 +99,7 @@ An agent that exceeds its response cap fails and returns nothing, after doing al
 
 Measured: an agent told to rewrite a 65k-character report died at the cap. The observed number was 32,000 output tokens; it is not restated in the current tool contract, so treat it as a floor and re-check before relying on the exact figure.
 
-Generates: `agent-ops` AO-13 (split by natural unit, write to file, return path and stats only).
+Generates: `agent-ops` AO-17 (split by natural unit, write to file, return path and stats only).
 
 ## 4. What the model does when searching and checking
 

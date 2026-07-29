@@ -90,11 +90,15 @@ try {
       }
     }
 
-    # size advisory
+    # size advisory. A skill may declare its own warnBytes when the responsibility question has
+    # been answered and the answer is "yes, still one" - the exception then sits on that skill with
+    # a reason next to it (work-rules-diagnosis DG-5) instead of loosening the limit for every skill.
     if ($manifest.policy.skillWarnBytes) {
+      $limit = $manifest.policy.skillWarnBytes
+      if ($skill.warnBytes) { $limit = $skill.warnBytes }
       $sizeBytes = (Get-Item -LiteralPath $skillMd -Force).Length
-      if ($sizeBytes -gt $manifest.policy.skillWarnBytes) {
-        [void]$budget.Add("skills\" + $skill.name + "\SKILL.md is " + $sizeBytes + " bytes (advisory limit " + $manifest.policy.skillWarnBytes + "); check it is still one responsibility")
+      if ($sizeBytes -gt $limit) {
+        [void]$budget.Add("skills\" + $skill.name + "\SKILL.md is " + $sizeBytes + " bytes (advisory limit " + $limit + "); check it is still one responsibility")
       }
     }
   }

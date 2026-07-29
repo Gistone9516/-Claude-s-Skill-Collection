@@ -8,10 +8,14 @@
 # cannot be detected without guessing is left to its skill.
 #
 # Checks (event chosen per work-rules-automation AU-21 - by what the check reads):
-#   PostToolUse        Write|Edit   raw NUL bytes in the written file        (work-rules-shell SH-2)
-#   PostToolUse        Write|Edit   .bat saved with bare LF line endings     (work-rules-shell SH-15)
-#   PostToolUse        Bash         commit adds/deletes files, no README     (work-rules-shell SH-23)
-#   PostToolUseFailure Bash         UnicodeEncodeError in the failure output (work-rules-shell SH-12)
+#   PostToolUse        Write|Edit        raw NUL bytes in the written file        (work-rules-shell SH-2)
+#   PostToolUse        Write|Edit        .bat saved with bare LF line endings     (work-rules-shell SH-15)
+#   PostToolUse        Bash|PowerShell   commit adds/deletes files, no README     (work-rules-shell SH-23)
+#   PostToolUseFailure Bash|PowerShell   UnicodeEncodeError in the failure output (work-rules-shell SH-12)
+#
+# Both command events cover PowerShell as well as Bash. They were Bash-only until 2026-07-30,
+# which left a hole exactly the size of this environment's other first-class shell: a commit made
+# through the PowerShell tool skipped the README check entirely.
 #
 # Command-text pattern matching lives in the sibling pattern-guard.sh, which runs on PreToolUse
 # because command text does not change between hook and execution.
@@ -24,7 +28,10 @@
 #   * No && / || / ternary - not available in 5.1.
 
 param(
-  [ValidateSet("PostToolUse", "PostToolUseFailure", "PreToolUse")]
+  # No PreToolUse. Command text is handled by pattern-guard.sh, and everything here reads state
+  # the observed command changes (AU-21). Leaving the value in the set invited calling it with an
+  # event this script has no branch for, which silently ran the Write|Edit byte checks instead.
+  [ValidateSet("PostToolUse", "PostToolUseFailure")]
   [string]$Event = "PostToolUse"
 )
 
@@ -46,21 +53,30 @@ try {
   if ([string]::IsNullOrWhiteSpace($raw)) { exit 0 }
   $hookInput = $raw | ConvertFrom-Json
 
-  # ---------------- PostToolUseFailure / Bash : SH-12 ----------------
+  # ---------------- PostToolUseFailure / Bash|PowerShell : SH-12 ----------------
   if ($Event -eq "PostToolUseFailure") {
-    if ($raw -match "UnicodeEncodeError") {
+    # Look for the signature in the failure OUTPUT, not in the whole payload. The command text is
+    # part of $raw, so a command that merely names this error would have fired whenever it failed
+    # for any reason at all. Removing the command first is a strict improvement: when the command
+    # does not contain the string the behaviour is identical, and when the removal cannot match
+    # because of JSON escaping it falls back to the old check rather than going silent.
+    $probe = $raw
+    $cmdText = ""
+    if ($hookInput.tool_input -and $hookInput.tool_input.command) { $cmdText = [string]$hookInput.tool_input.command }
+    if ($cmdText -and $cmdText.Length -gt 0) { $probe = $raw.Replace($cmdText, "") }
+    if ($probe -match "UnicodeEncodeError") {
       Emit-Context ("[SH-12] cp949 console. Do not retry this command - write the output to a UTF-8 file " +
         "and read it with the Read tool, keeping stdout to one ASCII line.")
     }
     exit 0
   }
 
-  # ---------------- PostToolUse / Bash : G-19 ----------------
+  # ---------------- PostToolUse / Bash|PowerShell : SH-23 ----------------
   # Deliberately POST, not PRE. A PreToolUse version shipped on 2026-07-29 and produced a false
   # positive on its first live run: the command was "git add -A && git commit", so at hook time the
   # index had not been updated yet and README.md read as unstaged. A hook that inspects state the
   # command itself is about to change cannot be accurate. Read the commit that actually happened.
-  if ($Event -eq "PostToolUse" -and $hookInput.tool_name -eq "Bash") {
+  if ($Event -eq "PostToolUse" -and ($hookInput.tool_name -eq "Bash" -or $hookInput.tool_name -eq "PowerShell")) {
     $cmd = ""
     if ($hookInput.tool_input -and $hookInput.tool_input.command) { $cmd = [string]$hookInput.tool_input.command }
     if ($cmd -notmatch "git\s+(-C\s+\S+\s+|-c\s+\S+\s+)*commit") { exit 0 }
