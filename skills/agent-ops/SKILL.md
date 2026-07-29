@@ -70,7 +70,7 @@ This is deliberately not the tool's default. The `Workflow` description recommen
 
 **AO-12 Fan-out needs prior approval (user directive 2026-07-20).** Before starting any fan-out, `Workflow` included, report the expected total agent count with a per-stage breakdown and get approval. For a prebuilt workflow, estimate its multiplying stages and present the total first — measured: deep-research expanded to 66 agents through three verification votes per claim, which the user judged excessive.
 
-Exceptions: one or two one-shot lookups, and the `verify-fanout` brief agent, which is a standing exception and is never counted. Resuming inside an approved budget needs no re-approval; expecting to exceed it does.
+Exceptions: one or two one-shot lookups, and the `verify-fanout` brief pair (VF-21 — both agents, not one of them), which is a standing exception and is never counted. Resuming inside an approved budget needs no re-approval; expecting to exceed it does.
 
 **AO-13 Caps are a synthesis limit, not a technical one.** The runtime's own concurrency and total limits are in the tool description and are far above anything used here; the session may also carry a workflow-size guideline. The binding constraint is different: **the most agents whose output opus can still synthesize sharply.** Empirical starting points are about 10 for work (explore, gather) and about 2 for machine verification, with lens as its own tier. Raise them where it demonstrably helps quality.
 

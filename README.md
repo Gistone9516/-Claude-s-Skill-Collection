@@ -5,14 +5,14 @@ Claude Code의 전역 규칙과 스킬을 담아 여러 컴퓨터 사이에서 �
 ## 구조
 
 ```
-CLAUDE.md          전역 규칙 18개. 매 턴 자동 로드. 나머지는 전부 스킬에 있다
+CLAUDE.md          전역 규칙 17개. 매 턴 자동 로드. 나머지는 전부 스킬에 있다
 manifest.json      이 설치본이 갖춰야 할 스킬, 파일, 외부 앱 경로의 단일 출처
 GUIDE.ko.md        사람이 읽는 상세 안내. 스킬 목록과 선택 기준, 이식 절차
 scripts/
   check-manifest.ps1   세션 시작마다 매니페스트와 실제 파일을 대조하고 경고
   guard.ps1            결과를 보는 훅. 쓰여진 파일과 만들어진 커밋을 검사
   pattern-guard.sh     명령문을 보는 훅. 파괴적 구문 6종을 실행 전에 경고
-  brief-nudge.sh       상기시키는 훅. 처음 건드리는 파일에 브리핑을 제안
+  brief-nudge.sh       상기시키는 훅. 처음 건드리는 파일에 브리핑 쌍을 제안
   validate_doc.py      한국어 분량 실측
 skills/            스킬 21개. 직접 만든 14개와 외부 7개
 projects/<경로키>/memory/   폴더 단위 프로젝트 메모리

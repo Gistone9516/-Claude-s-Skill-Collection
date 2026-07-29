@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # brief-nudge.sh
-# Reminds the model to consider a verify-fanout brief before editing a file it did not write
-# in this session (CLAUDE.md G-10, verify-fanout VF-7..VF-10).
+# Reminds the model to run the verify-fanout brief pair before editing a file it did not write
+# in this session (CLAUDE.md G-10, verify-fanout VF-7..VF-10 and VF-21).
+#
+# The message stays one imperative sentence plus the rule ID (work-rules-automation AU-24). It
+# named the shape of a brief until 2026-07-30, and when the rule changed to a pair that copy was
+# left saying "one agent" - a hook that restates a rule is a second copy of it (VF-16).
 #
 # This is a SUGGESTION, not a gate. It does not deny the edit and it does not run an agent -
 # a script cannot spawn one. It puts the reminder in front of the model at the moment of the
@@ -65,7 +69,7 @@ esac
 esc="${path//\\/\\\\}"
 esc="${esc//\"/\\\"}"
 
-msg="[G-10] This session has not written ${esc} yet. Consider a verify-fanout brief before editing it - one agent, 3-5 decision-shaped lines on what already exists, what not to rebuild, and what this must agree with. Skip it if the change is obviously local and you already know the file."
+msg="[G-10] First touch of ${esc} this session - run the verify-fanout brief pair (현장 + 주변, VF-21) before editing it, or say why you are skipping it."
 
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "$msg"
 exit 0

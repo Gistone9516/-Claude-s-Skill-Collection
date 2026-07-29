@@ -44,8 +44,8 @@
       "kind": "local",
       "lang": "en",
       "tier": 1,
-      "role": "Evidence grading, brief mode, indexing protocol, claim verification. CLAUDE.md G-05..G-10 point here.",
-      "ruleIds": "VF-1..VF-20"
+      "role": "Evidence grading, brief mode, indexing protocol, claim verification. CLAUDE.md G-05..G-10 point here. The brief runs as a pair of lenses (VF-21), which is why the fan-out exception is worded in the plural in both CLAUDE.md G-22 and agent-ops AO-12.",
+      "ruleIds": "VF-1..VF-21"
     },
     {
       "name": "work-rules-diagnosis",

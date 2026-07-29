@@ -5,7 +5,7 @@ description: Evidence grading and the indexing protocol for documents and code -
 
 # verify-fanout — grade the evidence, index it, verify cheaply
 
-Rules: VF-1..VF-20 (20). Sections are ordered by how much a violation costs.
+Rules: VF-1..VF-21 (21). Sections are ordered by how much a violation costs.
 CLAUDE.md G-05..G-10 point here.
 
 ## 1. Evidence grades
@@ -42,7 +42,7 @@ State the grade when the answer rests on grade 4 or 5.
 
 | Mode | When | Cost | Owner |
 |---|---|---|---|
-| **brief** | before editing anything not authored this turn | low | agent, reads the index |
+| **brief** | at task start, and at first contact with a new file group (VF-8) | low | a pair, one agent per lens (VF-21), reading the index |
 | **verify** | before asserting provenance; before finalizing a spec | low | script first, agent for leftovers |
 | **sweep** | inherited or ported code; periodically | high | agent, free lens |
 | **ratchet** | after sweep finds a mechanizable shape | one-off | script |
@@ -53,11 +53,33 @@ Running the wrong mode returns nothing and costs the budget anyway.
 
 ## 3. brief mode — runs first, always
 
-**VF-7 Standing exception (user directive 2026-07-29).** The brief agent is exempt from fan-out pre-approval, from any "spawn agents only when asked" restriction, and from ordering behind the rest of the preamble. Do not ask for it; do not count it against an agent budget. Gating it inverts its purpose: it exists to be cheap enough that it always runs, and anything conditional gets skipped exactly when the session is busiest, which is when the locally-reasonable-globally-wrong defect appears.
+**VF-7 Standing exception (user directive 2026-07-29).** The brief pair is exempt from fan-out pre-approval, from any "spawn agents only when asked" restriction, and from ordering behind the rest of the preamble. Do not ask for it; do not count it against an agent budget. Gating it inverts its purpose: it exists to be cheap enough that it always runs, and anything conditional gets skipped exactly when the session is busiest, which is when the locally-reasonable-globally-wrong defect appears. Two agents rather than one does not change that arithmetic — what is being weighed is not the agents but a plan built on a wrong premise and every commit that follows it.
 
-**VF-8 Scope is every task, not only code** (same directive: "어떤 작업에서나 선행하여 정확도를 올릴 것"). Documents, specs, config, prose deliverables — any artifact not authored in this turn.
+**VF-8 The triggers are countable, not a judgement (user directive 2026-07-30).** The former wording — "before editing anything not authored this turn" — required a judgement at every edit, and `work-rules-automation` AU-22 applies to rules as much as to hooks: a threshold that must be judged is what gets skipped exactly when the session is busy. Run the pair at these four moments, and count them.
 
-Spawn one agent with the relation index and the target path. It returns **3-5 decision-shaped lines, not a relationship dump**:
+1. **Task start.** When the user names a new task, before reading the code and *before proposing a plan*. This is the one that pays. Measured 2026-07-30: a brief at this point overturned 4 of 7 assumptions in a plan that had already been written into a commit message the day before. A brief that waits for the first edit arrives after the plan is fixed.
+2. **First contact with a new file group** — a package, directory or document set this task has not touched yet. `scripts/brief-nudge.sh` marks this moment at the edit itself; its per-session ledger makes it fire once per file, not once per edit.
+3. **Resuming after a compaction.** A summary carries conclusions, not the constraints that produced them.
+4. **When the user states a past decision from recall** (CLAUDE.md G-06). Check the documents and the code before agreeing.
+
+Skip it — and say that it was skipped rather than passing over it silently — for a file created this turn, for a change that closes inside one file already read whole, and for a file group already briefed in this task.
+
+**Scope is every task, not only code** (2026-07-29 directive: "어떤 작업에서나 선행하여 정확도를 올릴 것"). Documents, specs, config and prose deliverables all count.
+
+**VF-21 The brief is a pair, one agent per lens (user directive 2026-07-30:** "최소 2대를 운영해야 에이전트를 사용하는 의미가 있다"**).** Two agents given the same prompt are not two judgements — they share priors and return the same answer (AI-4), so the second one only pays when its framing is different. Use the two that map onto the defect signature in VF-5:
+
+| Lens | Its question | What it catches |
+|---|---|---|
+| **현장 the site** | What do the files I am about to touch actually say, and which of my assumptions about them are wrong? | *locally* wrong — a stale premise, a signature that is not what I remember, a table that has one column where I assumed four |
+| **주변 the surroundings** | What outside my target already does this job, must agree with it, or goes stale once I change it? | *globally* wrong — a duplicate implementation, a constant that must match, a document that restates the rule I am editing |
+
+Give each lens the half it owns **and tell it the other half is covered.** An agent that believes it is alone widens its scope to the whole surface, and then both come back with the same survey. Both go in a single message so they run concurrently (`agent-ops` AO-6).
+
+Model tier is not set here — §8 governs, and `agent-ops` AO-4 puts a lens on sonnet. **"Lens" here names the framing only, not AO-18's lens payload** (`stance · reasons · killer_point · risks · flip_condition`): a brief returns imperative decision lines, per VF-10.
+
+Measured 2026-07-30, the pair's first run: the site lens returned the rule numbering and the byte budget the edit had to fit inside; the surroundings lens returned three separate files that restated the rule in the singular — including a hook script written twenty minutes earlier that the operator had just reviewed line by line without noticing. Neither lens would have produced the other's list.
+
+Give the pair the relation index and the target path. Each returns **3-5 decision-shaped lines, not a relationship dump**:
 
 ```
 이 모듈을 고치기 전에
@@ -66,11 +88,11 @@ Spawn one agent with the relation index and the target path. It returns **3-5 de
 3. 이 상수는 providers/deepseek/client.ts와 같아야 한다
 ```
 
-**VF-9 It must be able to answer "주의할 것 없음".** An agent required to find something every time produces noise, noise gets skimmed, and a skimmed brief is an unrun brief.
+**VF-9 Either lens must be able to answer "주의할 것 없음".** An agent required to find something every time produces noise, noise gets skimmed, and a skimmed brief is an unrun brief. This binds harder on a pair than on a single agent: the second lens is the one under pressure to justify its own existence.
 
-**VF-10 Shape is imperative** — do not build this / it already lives here / this must agree with that. Not "here are the relationships". It reads the **index**, not the repository; that is what makes it affordable per edit.
+**VF-10 Shape is imperative** — do not build this / it already lives here / this must agree with that. Not "here are the relationships". Each reads the **index**, not the repository; that is what keeps a pair affordable.
 
-Measured: the `DEV_FORCE_TIER` reimplementation, the duplicated model ids, and the stored `turns_left` would each have been prevented by one brief.
+Measured: the `DEV_FORCE_TIER` reimplementation, the duplicated model ids, and the stored `turns_left` would each have been prevented by one brief pass.
 
 ## 4. Write so it can be searched — documents
 

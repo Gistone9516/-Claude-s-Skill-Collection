@@ -33,7 +33,7 @@ Every edit is correct in the window it was made in. The defect is only visible f
 
 Measured in one project, all AI-authored: two counters for one quantity, a tier override reimplemented while the existing one sat out of view, one model id hardcoded in two packages, a screen replaced but never deleted.
 
-Generates: `verify-fanout` VF-5, VF-7 (brief mode runs first and is a standing exception), CLAUDE.md G-10.
+Generates: `verify-fanout` VF-5, VF-7 (brief mode runs first and is a standing exception), VF-8 (countable triggers, because a judged threshold gets skipped when busy), CLAUDE.md G-10.
 
 ## 2. What the model does with judgement
 
@@ -41,7 +41,7 @@ Generates: `verify-fanout` VF-5, VF-7 (brief mode runs first and is a standing e
 
 N agents on one model are not N independent judgements. Agreement across them measures shared priors, not truth. The value of a panel is forced framing separation, not statistical diversity.
 
-Generates: `deepflow` DF-1, deepflow §5 (cross-check consensus against evidence and base rates before trusting it).
+Generates: `deepflow` DF-1, deepflow §5 (cross-check consensus against evidence and base rates before trusting it), `verify-fanout` VF-21 (the brief pair gets two *different* lenses — 현장 and 주변 — because two agents on one prompt return one answer twice).
 
 ### AI-5 It wants to converge, so it downgrades valid critique
 
