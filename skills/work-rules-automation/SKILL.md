@@ -5,7 +5,8 @@ description: Robustness rules for automation, background Workflows and long mult
 
 # work-rules-automation — automation and Workflow robustness
 
-Rules: AU-1..AU-16 (16). Ordered by what a violation costs.
+Rules: AU-1..AU-20 (20). Ordered by what a violation costs.
+Delegation policy is in `agent-ops`; why these rules exist is in `ai-characteristics`. The `Workflow` tool description is canonical for script semantics — this file holds only the traps that the description does not warn about, or that were measured here.
 
 **A single format error that halts a run is a critical defect.** One malformed tool call, one unguarded script crash, and the whole automation dies. In long or agent-orchestrated work that is not acceptable.
 
@@ -13,7 +14,7 @@ Rules: AU-1..AU-16 (16). Ordered by what a violation costs.
 
 **AU-1 One call at a time, format verified.** Confirm block closure and parameter shape before sending. Tool-call hygiene is load-bearing, because one malformed call stops everything downstream.
 
-**AU-2 Response truncation produces a malformed call — the leading cause of a long session stopping silently.** The real cause is the total output volume of one response, not the Write or Workflow tool itself. Do not avoid the tools; manage the volume. The failure sequence: long prose plus a long tool payload in one response → the output ceiling truncates the tool block mid-way → unclosed block → nothing executes → silent stop, rendered as ordinary text.
+**AU-2 Response truncation produces a malformed call — the leading cause of a long session stopping silently** (AI-11). The real cause is the total output volume of one response, not the Write or Workflow tool itself. Do not avoid the tools; manage the volume. The failure sequence: long prose plus a long tool payload in one response → the output ceiling truncates the tool block mid-way → unclosed block → nothing executes → silent stop, rendered as ordinary text.
 
 - Never put long prose and a long payload in the same response. Send a long payload (a large Write, a Workflow script, a multi-line command) on its own with almost no prose.
 - At most one long payload per response.
@@ -27,15 +28,27 @@ Rules: AU-1..AU-16 (16). Ordered by what a violation costs.
 
 **AU-4 Make it idempotent and resumable.** Re-running must not damage existing output. Workflow runs carry `resumeFromRunId`.
 
+## 2-1. Writing a Workflow script
+
+The script body is plain JavaScript that runs in the orchestrator, not in a model. Two constraints bite immediately and neither produces a helpful error.
+
+**AU-17 It is JavaScript, not TypeScript.** Type annotations, interfaces and generics are parse errors. A script written in the TS style the rest of a repo uses fails before a single agent spawns.
+
+**AU-18 `Date.now()`, `Math.random()` and argless `new Date()` throw.** They are blocked because they would break resume: a resumed run has to reproduce the same call sequence to reuse cached results, and a script that reads the clock cannot. Pass timestamps in through `args`, stamp results after the workflow returns, and get variation from the item index rather than from randomness.
+
+**AU-19 Scale the fan-out from the declared budget, not from a guess.** When a token target is set for the turn, the script can read what remains and size itself — a loop that keeps going while the remaining budget exceeds a per-round estimate, or a fleet count derived from the total. Guard on the target existing; with no target the remaining budget is unbounded and a naive loop runs to the agent cap.
+
+**Barriers cost wall-clock.** Prefer a pipeline, where each item flows through all stages independently, over collecting every item at each stage. A barrier is correct only when a stage genuinely needs cross-item context — deduplicating across the whole result set, an early exit on a zero count, or a prompt that compares findings against each other. Needing to flatten or filter between stages is not a reason; do it inside a stage.
+
 ## 3. Running background Workflows
 
 **AU-5 Health-check every 20 minutes (user directive 2026-06-22).** Do not simply wait for the completion signal — an agent can die quietly so the signal never arrives. Measured: work finished but `journal.jsonl` was never written, and the run sat at N-1 of N. The check: compare started-versus-result counts in that run's `journal.jsonl` against the modification times of the `agent-*.jsonl` files. If it has been stalled past the threshold, recover the completed parts directly from the transcript and resume the rest with `resumeFromRunId`. Implement with `Monitor` (persistent) or `ScheduleWakeup`; a detached bash sleep loop dies silently in this environment — measured. `ScheduleWakeup` once appeared incompatible here, but as of 2026-07-20 delayed firing works; pairing the completion notification with a manual health check is the safe option.
 
 **AU-6 No git stash / checkout / restore while parallel agents run.** Rationale in `work-rules-shell` SH-7. Put "no git commands at all" in every parallel editing agent's prompt.
 
-**AU-7 Subagents write files relative to cwd even when given an absolute path (measured 2026-06-24).** Workflow `agent()` subagents frequently ignore the absolute path, so artifacts scatter and the repo root gets polluted.
+**AU-7 Subagents write files relative to cwd even when given an absolute path (measured 2026-06-24, AI-9).** Workflow `agent()` subagents frequently ignore the absolute path, so artifacts scatter and the repo root gets polluted.
 
-**AU-8 Do not trust a workflow's own success signal.** A final "N/N complete" summary is not verification: files may be missing or in the wrong place, and a verify stage can rubber-stamp. Response:
+**AU-8 Do not trust a workflow's own success signal (AI-8).** A final "N/N complete" summary is not verification: files may be missing or in the wrong place, and a verify stage can rubber-stamp. Response:
 
 1. When the run ends, audit the artifacts on disk directly — count, path, content — and gather up whatever scattered.
 2. Have the verification agent modify existing files in place (absolute-path read → correct → write back), and still do not trust the result.
@@ -74,3 +87,5 @@ Applies whenever a program calls `claude -p` expecting structured output such as
 ## 7. New lessons
 
 **AU-16** Add automation and Workflow lessons here with the measured date, and update the rule count in the header.
+
+**AU-20** Before adding a trap here, check whether the tool description already documents it. A restated tool fact goes stale silently and then contradicts its source — measured 2026-07-29 in `agent-ops`, one day after that file was rewritten. Record only what the description does not say, or what was measured differently here, and point at the description for the rest (`agent-ops` AO-1).

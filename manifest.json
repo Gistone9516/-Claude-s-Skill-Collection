@@ -16,6 +16,15 @@
 
   "skills": [
     {
+      "name": "ai-characteristics",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 1,
+      "role": "Catalogue of measured model behaviours and the rules each one generates. Rationale store cited by verify-fanout, agent-ops, deepflow, work-rules-automation and work-rules-diagnosis, so a reason lives in one place. CLAUDE.md G-04 routes model-behaviour lessons here.",
+      "ruleIds": "AI-1..AI-14"
+    },
+    {
       "name": "verify-fanout",
       "required": true,
       "kind": "local",
@@ -48,8 +57,8 @@
       "kind": "local",
       "lang": "en",
       "tier": 2,
-      "role": "Canonical delegation mechanics: model-per-tier, Workflow offload, Report envelope, fan-out caps. CLAUDE.md G-20..G-24 point here.",
-      "ruleIds": "AO-1..AO-20"
+      "role": "Delegation POLICY: model and effort per stage, Agent vs Workflow, fan-out approval and caps, Report envelope, large and unattended runs. Tool descriptions stay canonical for mechanics (AO-1). CLAUDE.md G-20..G-24 point here.",
+      "ruleIds": "AO-1..AO-23"
     },
     {
       "name": "work-rules-automation",
@@ -58,7 +67,7 @@
       "lang": "en",
       "tier": 2,
       "role": "Long-run robustness: tool-call hygiene, truncation, background Workflow health checks, claude -p lifecycle.",
-      "ruleIds": "AU-1..AU-16"
+      "ruleIds": "AU-1..AU-20"
     },
     {
       "name": "work-rules-writing",

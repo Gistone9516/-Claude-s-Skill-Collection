@@ -1,133 +1,158 @@
 ---
 name: agent-ops
-description: The canonical procedure for delegating to subagents - opus/sonnet division, model per tier, Workflow offload, the Report envelope, fan-out caps, and code-work division. Read right before spawning agents, fanning out, or writing a delegation prompt. Triggers include "delegate", "fan out", "spawn agents", "use subagents", 에이전트 분담, 팬아웃, 위임, and any moment opus is about to hand work to an agent.
+description: Delegation policy - the opus/sonnet division, model and effort per stage, when to use Agent versus Workflow, fan-out approval and caps, the Report envelope, and how large or unattended runs are structured. Holds policy and rationale only; the tool descriptions are canonical for mechanics. Read right before spawning agents, fanning out, or writing a delegation prompt. Triggers include "delegate", "fan out", "spawn agents", "use subagents", 에이전트 분담, 팬아웃, 위임.
 ---
 
-# agent-ops — opus/sonnet delegation procedure
+# agent-ops — delegation policy
 
-Rules: AO-1..AO-20 (20). CLAUDE.md G-20..G-24 are the always-on summary; this file is the procedure.
+Rules: AO-1..AO-23 (23). CLAUDE.md G-20..G-24 is the always-on summary. Rationale for the rules here lives in `ai-characteristics`.
 
-> **Terminology (user directive 2026-06-10).** "opus" throughout is a **role name** meaning the model currently applied to the Claude Code session — the main judge model. It is not the fixed `claude-opus-*`; when the user switches session model, every "opus" reference follows. The worker tier "sonnet" stays literal. Same convention in `buildflow` and `deepflow`.
+> **Terminology (user directive 2026-06-10).** "opus" is a **role name** meaning the model currently applied to this session — the main judge model. It is not the fixed `claude-opus-*`; when the session model changes, every "opus" reference follows. "sonnet" stays literal.
 
-> **Canonical home.** This skill is the single source of truth for delegation and execution mechanics: model-per-tier, Workflow offload and the fire-signal-resume model, the Report envelope, fan-out tiers and caps, code-work division. `buildflow` and `deepflow` reference these rather than restating them, and on any conflict this file wins. The execution substrate is the built-in `Workflow` tool, whose own description is canonical for tool semantics.
+## 1. What is canonical where
 
-## 1. Core strategy
+**AO-1 The tool descriptions are canonical for mechanics; this file is canonical for policy.**
 
-**AO-1 opus is the bottleneck, not the budget.** The goal is time and quality, not cost. sonnet is abundant, so heavy reading, exploration, first passes and surveys go to it and the raw text never enters opus's context. opus is the serial bottleneck and the highest-value judge; keep it for judgment, not fetching. sonnet still bills at sonnet rates, so fan out for coverage, time or quality — not by reflex.
+| Question | Answer lives in |
+|---|---|
+| What does `agent()` accept, what is the concurrency cap, what throws | the `Workflow` tool description |
+| Does the `Agent` tool run in background, what does `isolation` do | the `Agent` tool description |
+| How long may a wakeup delay be, is the context still cached | the `ScheduleWakeup` description |
+| **Which model and effort should this stage get** | here |
+| **Whether to fan out at all, and with whose permission** | here |
+| **What a subagent must return and how opus reads it** | here |
 
-**AO-2 Non-delegable, opus only:** deployment planning, load-bearing synthesis, ask-back and approval, risky-write decisions, prose composition, and any judgment that requires seeing. Everything that is "read and organize" goes to sonnet.
+Do not restate a tool fact in this file. Tool contracts change faster than skills do, and a restated fact silently becomes a lie — measured on 2026-07-29, when this file carried two contradicted claims and five missing capabilities one day after being rewritten. When a rule depends on a tool fact, name the fact and point at its source rather than copying it.
 
-## 2. Reasoning-depth gate — the largest opus cost lever
+`buildflow` and `deepflow` reference this file rather than restating it; on conflict, this file wins.
 
-**AO-3** opus cost is dominated by **output** (thinking plus visible text, roughly 5x input) plus the cached context re-read every turn, and a long opus turn inflates both. **Reasoning and output length, not subagent volume, is the bottleneck.** Scale thinking to stakes.
+## 2. The division
 
-**AO-4** The gate is enforced by the report's **ROUTE token** (see the Report envelope): on a return, obey ROUTE and do not re-deliberate. Deciding "should I read deeper?" by reasoning *is* the cost — the agent pre-encodes that decision in ROUTE and opus follows it by reflex. The session effort setting is the hard ceiling; this gate is the per-turn throttle.
+**AO-2 opus is the bottleneck and the highest-value judge, not the budget constraint.** The goal is time and quality. sonnet is abundant, so heavy reading, exploration, first passes and surveys go to it and the raw text never enters opus's context.
 
-## 3. Workflow offload — the structural cost lever
+**Non-delegable, opus only:** deployment planning, load-bearing synthesis, ask-back and approval, risky-write decisions, prose composition, and any judgement that requires seeing. Everything that is "read and organize" goes to sonnet.
 
-**AO-5 Substantial or multi-agent work runs as a background `Workflow`, and opus stays idle until it completes** (user-mandated default whenever the user has opted into multi-agent work). Do not block opus with a foreground parallel `Agent` fan-out for multi-step, multi-agent or implementation work; that keeps opus active and burning context for the whole run, which the user has explicitly rejected. Foreground `Agent` is reserved for one or two genuinely one-shot lookups. Anything that fans out beyond two agents, loops, pipelines, or implements across folders goes to `Workflow`. This is a hard default, not advice.
+**AO-3 Match reasoning depth to stakes.** opus cost is dominated by output — thinking plus visible text — plus the cached context re-read every turn, so **output length, not agent count, is the bottleneck.** On a return, obey the report's ROUTE token by reflex and do not re-deliberate: deciding "should I read deeper?" by reasoning *is* the cost, and the agent pre-encodes that decision.
 
-**Idle, precisely:** fire → **the opus turn ends** → reactivate only on the completion signal → do the load-bearing part (synthesis, verification, commit) → fire the next → end again. Even a critique or lens panel goes into a background Workflow. deepflow and deepflow-auto are built on this: each round fires a critique Workflow, idles, synthesizes on the signal, fires an improve Workflow, idles, then verifies and commits. opus-in-the-loop and idle coexist because opus is active only at completion signals.
+## 3. Model and effort per stage (user directive 2026-07-29)
 
-The reasoning-depth gate trims one turn; Workflow trims the whole run. Mechanizable work — loop-until-dry, fan-out over a work list, per-item verification, implementer worktrees — becomes ONE `Workflow` script that opus writes once and whose final structured result is all opus reads.
+**AO-4 Split the decision by what the stage does, not by a blanket default.**
 
-**AO-6 Set the model per tier. This is the biggest Workflow footgun.** `Workflow`'s `agent()` **defaults to the session model, which is opus** — unlike the `Agent` tool. Never rely on the default. Set `model` on every `agent()` by tier: **work, verify and lens all take `'sonnet'`** (no haiku). Load-bearing judgment is not an `agent()` at all — opus owns it outside the script; in-script `model:'opus'` only when it genuinely must live inside the loop, and then justify it. Omitting `model` silently runs the entire offload on opus.
+| Stage | model | effort | Why |
+|---|---|---|---|
+| Mechanical and bulk — scout, gather, locate, enumerate, mechanical verification, repetitive edits | `'sonnet'`, explicit | `'low'` | Volume work with a checkable answer. The cheapest tier that can do it is the right tier. |
+| Lens and critique | `'sonnet'`, explicit | session default | Needs reasoning but not the judge model; the panel's value is framing separation, not raw capability (AI-4). |
+| Judgement-adjacent inside a loop — adversarial verify, adopt/reject screening | omit `model` | omit or raise | Inherits the session model. Getting this wrong is more expensive than the model difference. |
+| Load-bearing judgement | **not an `agent()` at all** | — | AO-5. |
 
-- **Pipeline caveat.** `pipeline` stages auto-propagate without review, so a load-bearing middle stage is not sonnet-solo: pull it out to opus, or append a sonnet adversarial-verify stage. The script body is plain JS and is free; only `agent()` bills a model.
+This is deliberately not the tool's default. The `Workflow` description recommends omitting `model` because inheriting the session model is usually correct for quality; that guidance is right for correctness and wrong for a fan-out of twenty scouts. **The rule: name the tier when the stage is mechanical, inherit when the stage judges.** When genuinely unsure which it is, inherit — a wrong cheap answer costs more than the saving.
 
-**AO-7 The tell-tale that Workflow was the right tool:** the same fan-out → judge → fan-out cycle repeated across N manual opus turns (an adversarial convergence loop; "spawn 10, read all, spawn verifiers"). N judge-turns over a growing transcript is the cost the user feels. One `loop-until-dry` or `pipeline` is one opus read.
+**AO-5 Load-bearing judgement is never an `agent()`.** opus owns it outside the script. In-script escalation only when the judgement must live inside the loop, and then say why in a comment. A `pipeline` stage auto-propagates without review, so a judging middle stage is not safe as a cheap tier — pull it out to opus, or follow it with an adversarial verify stage.
 
-**AO-8 Agent versus Workflow.** A couple of one-shot delegations → `Agent`, parallel in one message. Multi-stage, looping, or more than about six agents → `Workflow`. Once it loops or pipelines, default to Workflow.
+## 4. Substrate: Agent or Workflow
 
-**AO-9 Opt-in is mandatory.** `Workflow` runs only on user opt-in ("ultracode", an ultracode-on session, or an explicit "use a workflow / fan out / orchestrate"). Otherwise propose it with a rough cost and do not auto-launch.
+**AO-6 Choose by structure, not by blocking behaviour.** The `Agent` tool now runs in the background by default and notifies on completion, so "Agent blocks opus" is no longer the reason to prefer `Workflow`. The reason that remains, and is stronger:
 
-**AO-10 Cron and ScheduleWakeup are not cost savings.** They re-invoke opus across context resets for *unattended* progress or to survive context limits, and each wake past the cache TTL is cache-cold and therefore pricier. Workflow offloads cost; Cron continues unattended at a knowingly higher per-turn cost.
+- **`Workflow`** when the work has *structure opus should not have to hold*: loops, pipelines, fan-out over a work list, per-item verification, convergence to a condition, more than a few agents. The script encodes the control flow deterministically, opus writes it once and reads one structured result.
+- **`Agent`** when the work is one or two independent lookups with no downstream structure. Multiple independent agents go in a single message so they run concurrently.
 
-## 4. Spawning an agent (the `Agent` tool)
+**AO-7 The idle model.** Fire → **the opus turn ends** → reactivate on the completion signal → do the load-bearing part → fire the next → end again. opus is active only at signals. deepflow and buildflow are built on this, which is why opus-in-the-loop and idle coexist.
 
-**AO-11 Model is sonnet, no haiku.** Set `model:'sonnet'`. Only complex design, subtle judgment or final synthesis stays opus.
+**AO-8 Multi-agent work is opt-in.** Run a `Workflow` only on explicit opt-in. Otherwise propose it with a rough cost and do not launch.
 
-- **Raise reasoning through the prompt** — `think hard`, escalating to `ultrathink` for reasoning-heavy work. There is no effort parameter; the prompt is the lever.
-- **Output style is caveman-ultra**, instructed in the prompt: enumeration and data ultra-compressed, while judgment, caveats and VERBATIM blocks are never compressed (Report envelope rule).
-- **AO-12 Evidence-grounding is mandatory for factual, research and feasibility tasks.** Instruct the agent to web-search for grounds rather than lean on its embeddings. In the Report envelope, `[fact-cited]` means a real source — URL, file, or run output — never recall. Any factual, version, pricing, API or feasibility claim with no source is tagged `[assumption]` with lowered confidence and never dressed as fact. Skip search for pure logic or mechanical tasks. Embedding-only assertions are the primary hallucination vector.
+**AO-9 Unattended continuation is a different tool from cost offload.** `Workflow` offloads work; `ScheduleWakeup` and `CronCreate` re-invoke opus so a run continues while the user is away. Pick the wakeup delay from what is actually being waited on — an external CI run, a deploy, a queue — not from cache behaviour. Never schedule a wakeup to keep a cache warm. When harness-tracked work will notify on completion, a wakeup is only a long fallback in case it never does.
 
-### AO-13 High-output tasks — split, never single-shot (32k output cap)
+**AO-10 Continue an existing agent instead of respawning when its context is the point.** `SendMessage` resumes a previously spawned agent with its context intact; a fresh `Agent` call starts from nothing. Re-sending a large brief to a new agent to ask one follow-up is waste.
 
-A single agent's response is hard-capped at **32,000 output tokens**, and exceeding it makes the agent **fail with "response exceeded the 32000 output token maximum"**. Observed: an agent told to rewrite a whole 65k-character report died there, returning nothing after a full run. So for any task that emits a lot of text — writing, rewriting or translating long files, generating docs, full-content edits, large structured dumps — fan out to the maximum useful number of agents and never hand one agent the whole body.
+**AO-11 A finished Workflow's journal is the ground truth for what it returned.** Before diagnosing an empty or surprising result, read the run's journal rather than assuming a cached result was non-empty. To iterate on a script, edit the persisted script file and re-invoke against it; to continue after an edit, resume from the prior run id so the unchanged prefix is not re-run.
 
-- **Split by natural unit** (section, chapter, file, chunk) so each agent's *output* stays well under the cap — aim for 8-10k each.
-- **Each agent writes its chunk directly to a file** with the Write tool and returns only the path and stats (ROUTE: relay). It must never re-emit the full body into its response, which is what blows the cap. The artifact lives on disk, not in the report.
-- **opus reassembles from files** with a cheap concatenation, not by reading every chunk into context.
-- **Estimate before delegating:** output characters ÷ 3 ≈ tokens. More than ~20k expected output means split. When unsure, over-split; extra agents are cheap and a failed full run wastes everything.
-- Pairs with `Workflow`: a `pipeline` or `parallel` over the chunk list with a per-chunk `schema` returning `{path, stats}` is the clean encoding.
+## 5. Fan-out
 
-## 5. Report envelope — the sonnet-to-opus contract
+**AO-12 Fan-out needs prior approval (user directive 2026-07-20).** Before starting any fan-out, `Workflow` included, report the expected total agent count with a per-stage breakdown and get approval. For a prebuilt workflow, estimate its multiplying stages and present the total first — measured: deep-research expanded to 66 agents through three verification votes per claim, which the user judged excessive.
 
-**AO-14** A two-party contract: sonnet emits a structured report, and **opus obeys the read protocol by reflex and never reads everything.** The goal is maximum decision value and reliability for minimum opus reading.
+Exceptions: one or two one-shot lookups, and the `verify-fanout` brief agent, which is a standing exception and is never counted. Resuming inside an approved budget needs no re-approval; expecting to exceed it does.
 
-**① Spawn contract (opus, at delegation time).** Tag the task once: **`sonnet-solo`** (user-read, reversible, does not auto-propagate without review) or **`load-bearing`**. This fixes the report shape and the default ROUTE, decided once while writing the delegation and never re-deliberated on return.
+**AO-13 Caps are a synthesis limit, not a technical one.** The runtime's own concurrency and total limits are in the tool description and are far above anything used here; the session may also carry a workflow-size guideline. The binding constraint is different: **the most agents whose output opus can still synthesize sharply.** Empirical starting points are about 10 for work (explore, gather) and about 2 for machine verification, with lens as its own tier. Raise them where it demonstrably helps quality.
 
-**② Send side (sonnet)**, layered for progressive disclosure:
+**AO-14 Writes are serial; parallel is for reading.** The parallel-write pattern is one agent per folder in its own worktree, with shared files and the final merge staying with opus.
 
-- **L0 header, always:** `ROUTE: relay|judge|respawn|escalate`, `STATUS: done|partial|failed|refused`, one-line `TLDR`.
-- **L1 reliability, always:** `coverage: census|sample(N/M)`, `confidence: H/M/L + basis` (calibrated, never bare), `not_seen`, `truncated_due_to: none|context|time|cap`, `assumptions`, `self_falsify` (what would flip this, and the weakest point).
-- **L2 payload**, below a `─── opus: stop here if ROUTE=relay ───` delimiter: tier-specific, each claim tagged `[fact-cited|inference|assumption|base-rate]`, and a **VERBATIM block** (strings, numbers, IDs, paths, quotes, causal chains) that is never compressed.
-- **`signal`, always, compression-resistant:** anything important that did not fit the fields, raw; "none" if truly nothing. This is the overflow channel against force-fitting and omission.
-- **L3 for_opus, load-bearing only:** `decide` (what opus must judge), `pointers`, `open_questions`.
+**Parallel needs true independence, even across worktrees.** A producer-to-consumer dependency is not parallel — pipeline the stages or pre-stage the shared input, because a consumer run without its input will invent one (AI-6). Map those dependencies before fanning out.
 
-**③ Receive side (opus).** Read L0's ROUTE and act by reflex without re-reasoning: `relay` → emit "done + location + L1 flags" in one or two lines and stop, without reading L2; `judge` → read the payload and reason; `respawn` → re-spawn (failed or partial); `escalate` → sonnet found something stake-changing, so read it and raise it to the user.
+## 6. What a delegated agent is told
 
-**AO-15 Two symmetric failure modes to guard.**
+**AO-15 Defaults for a spawned agent:** sonnet for mechanical work per AO-4; output style caveman-ultra for enumeration and data, with judgement, caveats and verbatim blocks never compressed; and the Report envelope as the return shape.
 
-- **Over-compression on the send side:** sonnet's real finding never reaches opus. Defenses — the `signal` channel; **the discoverer upgrades richness** (sonnet may set ROUTE=judge or escalate and carry the full finding even when spawned `sonnet-solo`, because what reaches opus is decided by the sonnet that found it); judgment and caveats are never caveman'd, only enumeration and data are; and the self-check "can opus act without re-reading what I read?"
-- **Over-reading on the receive side:** opus reads everything every time and the contract is void. Defenses — ROUTE is a command, not a hint; the delimiter makes the lazy path the correct path; `sonnet-solo` returns a minimal shape so there is no payload to deliberate about.
+Raise reasoning by the means the substrate provides — inside a `Workflow`, the `effort` option on that call; with the `Agent` tool, the prompt (`think hard`, `ultrathink`), which is the only lever there.
 
-**Tier payloads (L2):**
+**AO-16 Evidence-grounding is mandatory for factual, research and feasibility tasks.** Instruct the agent to search for grounds rather than lean on recall. `[fact-cited]` means a real source — URL, file, or run output. Any factual, version, pricing, API or feasibility claim without one is tagged `[assumption]` with lowered confidence and never dressed as fact (AI-2). Skip search for pure logic and mechanical tasks.
 
-- **work** (scout, gather): enumerated `items` with a declared count N, `file:line` pointers, a structure map, and `count_check: N==N`.
-- **verify** (machine check): `pass` as a count only, and `fail` with each item verbatim — source, location, reason.
-- **lens** (opinion or council, e.g. deepflow): fixed order `stance · reasons · killer_point · risks · flip_condition · confidence`, which is what makes stance-versus-stance comparison across the panel possible.
+**AO-17 High-output tasks are split, never single-shot.** An agent that exceeds its response cap fails and returns nothing after doing all the work (AI-12). For anything that emits a lot of text — long rewrites, translations, generated docs, large structured dumps:
 
-Force a `schema` wherever the runtime allows (Workflow `schema`, and equivalents) so missing fields surface.
+- Split by natural unit so each agent's *output* stays well under the cap.
+- **Each agent writes its chunk directly to a file and returns only the path and stats** (ROUTE: relay). It must never re-emit the body into its response.
+- opus reassembles from files with a cheap concatenation, not by reading every chunk.
+- Estimate first: output characters ÷ 3 ≈ tokens. When unsure, over-split — extra agents are cheap, a failed full run is not.
 
-## 6. Fan-out
+## 7. Report envelope — the subagent-to-opus contract
 
-**AO-16 Fan-out needs prior approval (user directive 2026-07-20).** Before starting any fan-out, `Workflow` included, report the expected total agent count with a per-stage breakdown and get the user's approval. For prebuilt workflows such as deep-research, estimate the multiplying stages (per-claim verification votes and the like) and present the total first — measured: deep-research expanded to 66 agents through three votes per claim, and the user judged it excessive. Exceptions: one or two one-shot lookups (report only), and the `verify-fanout` brief agent, which is a standing exception and is not counted. Resuming an approved plan needs no re-approval; expecting to exceed the approved count does.
+**AO-18** sonnet emits a structured report; **opus obeys the read protocol by reflex and never reads everything.**
 
-**AO-17 The sequence** is ① deployment plan (how many, each one's scope) → ② parallel activation → ③ opus synthesis, only when load-bearing. Otherwise ROUTE handles it and review-optional results go straight to the user.
+**① At delegation time** tag the task once: **`sonnet-solo`** (user-read, reversible, does not auto-propagate) or **`load-bearing`**. This fixes the report shape and the default ROUTE, decided once while writing the delegation.
 
-**AO-18 Three tiers and their caps** (empirical starting points, not hard ceilings): work (explore, gather) about 10, verify (machine check) about 2, lens (opinion — deepflow lenses, buildflow adversarial) separate. The cap is the maximum that does not degrade opus's ability to synthesize sharply; sonnet is abundant, so raise it where it helps quality. The verify cap of 2 applies to machine verification only.
+**② Send side**, layered:
 
-**AO-19 Parallel is read and explore only; writes are serial**, because concurrent edits corrupt files. The parallel-write pattern is one agent per folder with `isolation:'worktree'`, while shared files (types, config) and the final merge stay with opus.
+- **L0, always:** `ROUTE: relay|judge|respawn|escalate`, `STATUS: done|partial|failed|refused`, one-line `TLDR`.
+- **L1 reliability, always:** `coverage: census|sample(N/M)`, `confidence: H/M/L + basis`, `not_seen`, `truncated_due_to`, `assumptions`, `self_falsify`.
+- **L2 payload**, below a `─── opus: stop here if ROUTE=relay ───` delimiter: each claim tagged `[fact-cited|inference|assumption|base-rate]`, plus a **VERBATIM block** (strings, numbers, IDs, paths, quotes, causal chains) that is never compressed.
+- **`signal`, always:** anything important that did not fit the fields, raw; "none" if truly nothing. The compression-resistant overflow channel (AI-10).
+- **L3 for_opus, load-bearing only:** `decide`, `pointers`, `open_questions`.
 
-**Parallel needs true independence, even across worktrees.** A producer-to-consumer dependency, where one agent's output is another's input, is not parallel: pipeline the stages or pre-stage the shared input. Run co-parallel, the consumer fabricates a stand-in for the missing input — observed in a buildflow build stage. Map producer-consumer dependencies before fanning out.
+**③ Receive side.** Read ROUTE and act without re-reasoning: `relay` → one or two lines and stop, do not read L2; `judge` → read the payload; `respawn` → re-spawn; `escalate` → read it and raise it to the user.
 
-**Plan and fan out only when parallelism pays.** Single lookups and trivial commands are opus direct.
+**AO-19 Guard both failure directions.**
 
-## 7. Division by task type
+- **Over-compression (send).** Defenses: the `signal` channel; **the discoverer upgrades richness** — a subagent may set ROUTE=judge or escalate and carry the full finding even when spawned `sonnet-solo`, because what reaches opus is decided by whoever found it; and judgement and caveats are never compressed, only enumeration and data.
+- **Over-reading (receive).** Defenses: ROUTE is a command, not a hint; the delimiter makes the lazy path the correct path; `sonnet-solo` returns a minimal shape so there is nothing to deliberate about.
 
-sonnet gathers, locates, executes and mechanically verifies; opus judges, composes, decides and sees. The dividing line: is this verbatim-plus-judgment, or just fetching?
+**Tier payloads:** **work** — enumerated `items` with a declared count, `file:line` pointers, structure map, `count_check`. **verify** — `pass` as a count, `fail` verbatim with source, location and reason. **lens** — fixed order `stance · reasons · killer_point · risks · flip_condition · confidence`, which is what makes stance-versus-stance comparison possible.
 
-| Task | sonnet (delegate) | opus (direct) |
+Force a structured `schema` wherever the runtime allows it, so missing fields surface instead of being narrated around.
+
+## 8. Division by task type
+
+sonnet gathers, locates, executes and mechanically verifies; opus judges, composes, decides and sees. The dividing line: verbatim-plus-judgement, or just fetching?
+
+| Task | sonnet | opus |
 |---|---|---|
 | Human-read writing (자소서, 회의록, papers, reports) | gather, extract source verbatim, lay out | composition (remove AI tells, 음슴체 voice) |
-| Document-file editing (hwpx, pptx, docx) | run scripts, run the Rule 4 validation, report | the final "OK to deliver?" call |
-| Research and information gathering | search, fetch, extract | synthesis and adversarial verification, only if load-bearing |
-| Design (slides, figures, Figma) | scan, export, render | judging the render aesthetically (subtract, stay calm) |
+| Document-file editing (hwpx, pptx, docx) | run scripts, run the validation, report | the final "OK to deliver?" call |
+| Research and information gathering | search, fetch, extract | synthesis and adversarial verification, if load-bearing |
+| Design (slides, figures, Figma) | scan, export, render | judging the render (subtract, stay calm) |
 | Diagnosis and debugging | locate symptoms, collect logs | root cause and the fix decision |
 | File cleanup and survey | exhaustive mapping, content diff | the cleanup plan and the delete decision |
 
-- **Verbatim-body trap:** when user text must not change by one character (자소서, 회의록), opus places the verbatim source itself and sonnet only gathers.
-- **Seeing required:** design aesthetics, render checks and figure integrity need the image in opus's own context. opus looks directly and never trusts a sonnet "looks fine".
+- **Verbatim-body trap:** when user text must not change by one character, opus places the verbatim source itself and sonnet only gathers.
+- **Seeing required:** design aesthetics, render checks and figure integrity need the image in opus's own context. opus looks directly and never trusts a "looks fine".
 
-## 8. Code-work division
+## 9. Code work
 
-**AO-20** Precise edits cannot run off summaries — opus must see the code verbatim. But opus needs the surgical site, not the whole repo.
+**AO-20 Scout, edit, verify.** Precise edits cannot run off summaries — opus must see the code verbatim — but opus needs the surgical site, not the repo.
 
-1. **sonnet scouts** — which file and function, all call sites, dependencies and data flow. Returns `file:line` pointers and a structure map. No summarizing of code: verbatim snippets or pointers, nothing in between.
-2. **opus edits precisely** — Read only the pointed-to files, then design, logic edits and review.
-3. **sonnet verifies** — run tests, lint and build, reporting failures verbatim; also repetitive mechanical edits such as renames and signature propagation.
+1. **sonnet scouts** — which file and function, all call sites, dependencies and data flow. Returns `file:line` pointers and a structure map. No summarizing of code: verbatim snippets or pointers, nothing between.
+2. **opus edits** — Read only the pointed-to files, then design, logic edits and review.
+3. **sonnet verifies** — tests, lint, build, failures reported verbatim; also mechanical repetition such as renames and signature propagation.
 
-- **Implementer completeness.** An agent that *writes* code reads its whole assignment — spec or contract plus the existing files it will touch — with zero omission and reports coverage before editing. Skim-then-write produces drift.
-- **opus owns integration and contracts.** Cross-chunk interfaces, integration and merges are never delegated. **Author the shared-interface SoT first** (shared types, field names, enums, error codes, serialization, wiring) before any parallel per-chunk drafting; independent drafts reconciled afterwards cost N rounds of churn.
-- **Reuse structure maps** by saving them as `.md` for the next session, but per CLAUDE.md G-08, Read the target file again immediately before editing.
+**AO-21 An agent that writes code reads its whole assignment first** — spec or contract plus every existing file it will touch, with zero omission — and reports coverage before editing. Skim-then-write produces drift (AI-3).
+
+**AO-22 opus owns integration and contracts.** Cross-chunk interfaces, integration and merges are never delegated. **Author the shared-interface SoT first** — shared types, field names, enums, error codes, serialization, wiring — before any parallel per-chunk drafting. Independent drafts reconciled afterwards cost N rounds of churn; measured at 7 rounds on a 6-contract spec.
+
+## 10. Large and unattended runs
+
+**AO-23 As scope grows, the partition becomes the deliverable.** At small scale a bad split costs a merge; at large scale it costs the run. Before fanning out over a big surface:
+
+- **Partition so each unit is independently checkable**, and write the check with the partition. A unit whose result cannot be verified without reading the others was not partitioned.
+- **Name the shared surface explicitly** and freeze it first (AO-22). Everything not in it is local to a unit.
+- **Declare coverage as data, not prose** — the work list is enumerable, each item's result is one row, and the count is compared. "All done" is a claim (AI-8); a row count is a fact.
+- **Verify by execution wherever execution is possible.** Agents generate; deterministic runs prove.
+
+For an unattended run, add: a periodic health check rather than waiting only for a completion signal, resumption from the run id rather than restarting, and **park-and-continue** — when a decision genuinely needs the user, append it to a decisions log, skip only that sub-part, continue the rest of the same task, and present every parked decision in one briefing at the end. A hard-floor failure (test or integration failure, corruption) still halts, because parking applies to decisions and not to a broken state. Details in `work-rules-automation` and `buildflow`.

@@ -26,9 +26,9 @@ State the grade when the answer rests on grade 4 or 5.
 
 **VF-3 A label is not a source.** `(사용자 확정)` and equivalents are valid only when they can point at a decision record — a question-table row, a memory entry, a quoted message. Nothing to point at means unverified, and the report says so.
 
-**VF-4 A session asserts false things with full confidence.** Measured: "the contract has no `difficulty` field", stated flatly after reading lines 93-99. It was on line 100. Calibration cannot be trusted, so artifacts must be built to make claims checkable instead.
+**VF-4 A session asserts false things with full confidence** (`ai-characteristics` AI-1). Measured: "the contract has no `difficulty` field", stated flatly after reading lines 93-99. It was on line 100. Calibration cannot be trusted, so artifacts must be built to make claims checkable instead.
 
-**VF-5 The signature of a session's defects is: locally reasonable, globally wrong.** A session holds a part, never the whole. Measured in one project, all AI-authored:
+**VF-5 The signature of a session's defects is: locally reasonable, globally wrong** (AI-3). A session holds a part, never the whole. Measured in one project, all AI-authored:
 
 | Defect | Why it looked fine locally |
 |---|---|
@@ -126,7 +126,7 @@ Free lenses, one agent per lens, read-only. Lenses that paid off: symbol with no
 
 ### 8-1. Partition the search surface (user directive 2026-07-29)
 
-An agent told to "audit this package" gravitates to the files that look important and skims the rest, and the rest is where things hide. The prompt must partition the surface and demand coverage of both halves:
+An agent told to "audit this package" gravitates to the files that look important and skims the rest (`ai-characteristics` AI-13), and the rest is where things hide. The prompt must partition the surface and demand coverage of both halves:
 
 - **주요 파일** — the modules the question is obviously about. Name them by path.
 - **혹시 모르는 파일** — everything else in scope: barrels, fixtures, i18n resources, mocks, generated or copied assets, config, scripts, styles. Name the *directories* and require the agent to enumerate what it actually opened.
@@ -137,7 +137,7 @@ Measured 2026-07-29, defects that lived entirely in the tail: a screen replaced 
 
 ### 8-2. Optimize for recall and citation quality, not precision
 
-A panel that is right 95% of the time makes the operator stop checking, and then the wrong 5% ships carrying the operator's full confidence. Uncertainty is what sends the operator back to the source, which is where the real finding happens.
+A panel that is right 95% of the time makes the operator stop checking, and then the wrong 5% ships carrying the operator's full confidence (`ai-characteristics` AI-14). Uncertainty is what sends the operator back to the source, which is where the real finding happens.
 
 Measured 2026-07-29, both from one audit:
 - A finding was **wrong** (`effectiveEntitlement` "ignores a field"). Checking it made the operator read an SoT clause never read before, which the code in fact satisfied. Cost: one grep. Value: a contract now known.

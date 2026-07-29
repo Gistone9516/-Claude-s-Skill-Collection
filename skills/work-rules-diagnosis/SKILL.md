@@ -27,7 +27,7 @@ Write them as a table in the spec before implementing. All four elements are req
 | Rationale (why) | A future session "improves" it and reintroduces the original problem |
 | Test (case name) | No way to tell whether the rule is still alive |
 
-Rationale is the load-bearing one. "Undo returns to the first question" is meaningless alone; "because stepping back one turn re-calls the API every time and round-trip cost becomes uncontrollable" is what stops someone from changing it.
+Rationale is the load-bearing one (`ai-characteristics` AI-7). "Undo returns to the first question" is meaningless alone; "because stepping back one turn re-calls the API every time and round-trip cost becomes uncontrollable" is what stops someone from changing it.
 
 ### DG-2 Classify before fixing
 

@@ -13,7 +13,7 @@ Execution mechanics are canonical in `agent-ops`; delegation rules in CLAUDE.md 
 ## Purpose
 For reasoning-heavy and judgment-heavy questions, instead of asking the same question N times, attach **different lenses** in parallel, collect independent opinions, and have opus synthesize all the way to a **decision**. Deliberately skewing each agent forces opus to confront framings it would otherwise anchor past. If every lens stays balanced, the N opinions converge on one framing and the panel has bought nothing.
 
-> **DF-1 Lenses are the same model (sonnet) and are therefore not epistemically independent** — they share blind spots. The value is *forced framing separation*, not statistical diversity, so consensus is never read as truth (see §5 cross-check).
+> **DF-1 Lenses are the same model and are therefore not epistemically independent** — they share blind spots (`ai-characteristics` AI-4). The value is *forced framing separation*, not statistical diversity, so consensus is never read as truth (see §5 cross-check).
 
 ## §0 Activation
 Only when **reasoning/judgment matters and multiple angles genuinely change the conclusion.**
@@ -36,7 +36,7 @@ Don't pick from a fixed pool. **opus composes lenses fit to this task's domain**
 - **Orthogonality & coverage check (sonnet, work tier):** hand the draft lens set to one sonnet agent — (㉠) are the lenses actually distinct angles (no dupes / same-axis poles)? (㉡) is a conclusion-changing axis missing? opus folds the feedback and finalizes.
 
 ## §3 Parallel lens agents (sonnet, lens tier)
-One sonnet per lens, all spawned in one message (independent). Put `ultrathink` in every lens prompt (the prompt is the only reasoning lever).
+One sonnet per lens, all independent. Raise reasoning by the means the substrate provides: inside a `Workflow`, the `effort` option on that `agent()` call; with the `Agent` tool, `ultrathink` in the prompt, which is the only lever there (`agent-ops` AO-15).
 - **Output = the agent-ops Report envelope, lens-tier payload** — fixed 6 fields: `stance · reasons · killer_point · risks · flip_condition · confidence`. Each reason tagged `[fact-cited|inference|assumption|base-rate]`; preserve quotes/numbers/causal-chains verbatim (needed to judge flip_condition).
 - Prompt essentials: "evaluate through [lens] only; don't retreat to neutral — your value is being sharp one way, balance is another lens's job; you can't see other panels; tag evidence vs guess." Fixed field order makes the panel comparable (stance-vs-stance, killer-vs-killer).
 
@@ -57,13 +57,14 @@ blind spot: what no one touched (opus meta-check + the §2 orthogonality sonnet 
 
 ## §6 Decision (opus direct — recommendation + minority report)
 Weight by criteria, converge to one recommendation. Format: **decision statement** · **recommendation** + one-line why · per-lens core (1–2 lines) · consensus ↔ conflict (fact vs value) · **minority report** (the dissenting lens's case, kept intact, not shaved) · flip condition + confidence (高/中/低).
-- **DF-3 opus self-grading bias:** when opus judges *its own* proposal through the panel (buildflow B-mode, for instance), it tends to downgrade valid critique to "meaningless" because it wants to converge. Base the proceed-or-stop call on **falsifiable dryness** (two consecutive rounds with zero new critiques), not on feel, and hold adversarial intensity to the end.
+- **DF-3 opus self-grading bias (AI-5):** when opus judges *its own* proposal through the panel (buildflow B-mode, for instance), it tends to downgrade valid critique to "meaningless" because it wants to converge. Base the proceed-or-stop call on **falsifiable dryness** (two consecutive rounds with zero new critiques), not on feel, and hold adversarial intensity to the end.
 - **DF-4 Never flatten the user's explicit design intent (user directive, 2026-06-28).** When a panel optimizes against a constraint (narrow viewport, cost, perf) and its conclusion *replaces* something the user explicitly specified (their UI / flow / structure), do NOT synthesize toward the "optimized" version and argue the user into it. Surface the conflict as a **trade-off the user decides**, with their original intent presented as an **equal (not weaker) option** — the panel hardens the user's vision, it does not override it. Also: **don't invert a constraint the user stated on purpose.** (Observed: a designer panel replaced a user's Claude-style *floating* drawer with a fullscreen layout via "at 320px an overlay covers 80% anyway"; opus persuaded toward it, user approved, then reverted everything and said the panel "flattened" their plan. The user had made the drawer selection-only *because* the panel is narrow — meaning a small floating panel was the intent, not "fullscreen is inevitable.")
 
 ## Model split & execution
-> Execution mechanics (Agent-vs-Workflow, model-per-tier footgun, the fire→signal→resume "idle" model, opt-in) are **canonical in `agent-ops`** — follow it; below is only the deepflow-specific stage mapping.
-- **sonnet** (`ultrathink`): orthogonality check (§2), lens opinions (§3), round 2 (§4). **opus:** activation (§0), twenty-questions (§1), lens compose/finalize (§2), synthesis (§5), decision (§6).
-- **Stage→substrate map:** §0–§1 and §5–§6 (load-bearing) = opus direct. §3–§4 = a **background `Workflow`** (agent-ops idle model; `model:'sonnet'` on every lens/round-2 `agent()`): §3 = `parallel`+`schema`, §4 = `loop-until-dry`; opus reactivates per round on the completion signal. As a buildflow component, this runs inside buildflow's Workflow script (not nested).
+> Execution mechanics (Agent versus Workflow, model and effort per stage, the fire-signal-resume idle model, opt-in) are **canonical in `agent-ops`** — follow it. Below is only the deepflow-specific stage mapping.
+- **sonnet:** orthogonality check (§2), lens opinions (§3), round 2 (§4). **opus:** activation (§0), twenty-questions (§1), lens compose and finalize (§2), synthesis (§5), decision (§6).
+- **Stage to substrate:** §0-§1 and §5-§6 are load-bearing and run as opus direct. §3-§4 run as a **background `Workflow`** on the idle model: §3 is `parallel` with a `schema`, §4 is loop-until-dry, and opus reactivates per round on the completion signal. As a buildflow component this runs inside buildflow's script rather than nested.
+- **Model and effort:** lens tier is explicit sonnet at the session's default effort (`agent-ops` AO-4). Lenses are a reasoning stage, so do not drop them to the cheap tier — the panel's output is the input to opus's decision.
 
 ## Checklist
 | # | check |

@@ -22,8 +22,9 @@ Memory does not guarantee recall; loading a skill is an action, so it does. **Re
 | Korean human-facing deliverable (자소서, report, slides, comments), design | `work-rules-writing` |
 | reusable kit / framework project | `work-rules-kit` |
 | delegating to agents, fan-out | `agent-ops` (+ `deepflow`; code work also `buildflow`) |
+| **writing, relaxing or deleting a rule; deciding how much verification is warranted; a rule that looks like overhead** | `ai-characteristics` |
 
-- **G-04 Self-learning routing.** Record a repeatable mistake immediately with cause and avoidance. Reusable → the matching `work-rules-*` body with the measured date. Project-specific → that project's memory. Never into this file. Say where it went. Applies to delegated agents too. (2026-07-03)
+- **G-04 Self-learning routing.** Record a repeatable mistake immediately with cause and avoidance. Route by what caused it: model behaviour → `ai-characteristics`; this environment's tooling → the matching `work-rules-*` body, with the measured date; one project only → that project's memory. Never into this file. Say where it went. Applies to delegated agents too. (2026-07-03)
 
 ## §2 Evidence — the largest measured failure class
 
