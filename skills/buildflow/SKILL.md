@@ -3,16 +3,19 @@ name: buildflow
 description: Multi-cycle plan→design→build workflow for vibecoding. Operator Opus owns planning, spec (contracts), integration, and gates; work is split by folder and implemented in parallel by sonnet agents; the spec doubles as a debug index across N cycles. Triggers "기능 구현해줘", "바이브코딩", "기획-설계-구현", "spec-driven 병렬 구현", "buildflow". Not for a single-file edit, a one-line bug, or pure exploration (use agent-ops/deepflow directly). Adversarial council = deepflow, delegation/model discipline = agent-ops — both called as components.
 ---
 
-# buildflow — vibecoding plan→design→build workflow
+# buildflow — plan → design → build workflow
 
-> **Terminology (user directive, 2026-06-10):** "opus"/"Operator Opus" in this skill = **the model currently applied to the Claude Code session** (role name, currently Fable 5), not the fixed `claude-opus-*`. "sonnet" stays literal. Canonical definition: `agent-ops`.
+Rules: BF-1..BF-6 (6), tagged on the load-bearing points only; the stage and cycle headings carry the rest of the procedure. Section order is execution order, not importance.
+Execution mechanics are canonical in `agent-ops`; change discipline in `work-rules-diagnosis`; delegation rules in CLAUDE.md G-20..G-24.
+
+> **Terminology (user directive, 2026-06-10):** "opus" / "Operator Opus" in this skill = **the model currently applied to the Claude Code session** (role name), not the fixed `claude-opus-*`. "sonnet" stays literal. Canonical definition: `agent-ops`.
 
 ## Definition & principles
-**Operator Opus** owns planning, design, spec, integration, judgment, gates. **Implementer sonnet** does adversarial lenses, parallel implementation, verification. Four principles:
-1. **Correct > predict** — don't interrogate to perfection; show cheap concretes (spec/slice) fast, correct from reactions.
-2. **Alignment tripod** — user intent (vertical) + adversarial-agent integrity (horizontal) + thin-slice reality check. Only a spec that passes all three goes to parallel build.
-3. **Anti-infinite** — no infinite twenty-questions / review; close with gates and dry-convergence.
-4. **volume ≠ verification** — "N agents looked" isn't robustness; opus gates agent output against the target.
+**Operator Opus** owns planning, design, spec, integration, judgment and gates. **Implementer sonnet** runs adversarial lenses, parallel implementation and verification. Four principles:
+1. **BF-1 Correct beats predict** — do not interrogate to perfection. Show cheap concretes (a spec, a slice) fast and correct from the reaction.
+2. **BF-2 Three alignment checks** — user intent (vertical), adversarial-agent integrity (horizontal), and a thin-slice reality check. Only a spec that passes all three goes to parallel build.
+3. **BF-3 Anti-infinite** — no unbounded twenty-questions or review. Close with gates and dry convergence.
+4. **BF-4 Volume is not verification** — "N agents looked at it" is not robustness. opus gates agent output against the target.
 
 ## Master flow
 ```
@@ -50,7 +53,7 @@ A wrong plan discards spec + build ×N. Highest leverage.
 - **Reconcile gate (anti-infinite):** when integrity-checking multi-contract conformance, the checker classifies each residual **BLOCKING** (a real cross-contract break the SoT doesn't resolve — type/field/signature/missing-function) vs **NON_BLOCKING** (local wording the SoT already overrides). Converge at **BLOCKING=0** — don't chase SoT-overridden cosmetics (that's the anti-infinite principle made checkable).
 
 ### ③ Build (#1 value: time)
-- **opus:** decompose into partitions → **folder = git worktree = sonnet 1** parallel (cap = agent-ops). Each sonnet edits **only its worktree**; **shared files (types/config) + final merge = opus** — the explicit worktree exception to CLAUDE.md "writes serial." Merge conflicts resolved by opus (conflict markers); re-spawn the sonnet if needed.
+- **BF-5 opus:** decompose into partitions, then **one folder = one git worktree = one sonnet** in parallel (cap per `agent-ops` AO-18). Each sonnet edits **only its worktree**; **shared files (types, config) and the final merge stay with opus** — this is the explicit worktree exception to CLAUDE.md G-24 "writes are serial". opus resolves merge conflicts from the conflict markers and re-spawns the sonnet if needed.
 - **Parallel build = truly independent partitions only** (agent-ops independence rule). Producer→consumer never co-parallel — pipeline the stages or pre-stage the shared input (observed: a co-parallel consumer fabricated a stand-in input, forcing an opus merge).
 - **sonnet hard rule:** before starting, read the **whole assignment (own spec + related/existing files in the folder) with zero omission** → coverage self-report.
 - **thin slice first** (reality check): build one partition → user reaction → contract OK → *then* fan out the rest.
@@ -82,8 +85,8 @@ Asymmetric risk: a missed major ≫ an unneeded check → when unsure, lean to t
   - **B = continuous autonomy across the whole cycle**, not just planning: unless a triage-major hits (intent/scope · irreversible/external · non-convergence · hard-floor failure), run ②→③→④→next cycle autonomously. Don't stop at stage gates for routine approval. (May vary by user — check user memory.)
   - **Execution = Workflow offload** (agent-ops, opt-in): run the adversarial convergence loop, ③ worktree fan-out, and ④ verify as `Workflow` scripts → short opus turns. opus keeps ② contract finalization, integration/merge, risky-writes, triage.
   - **Unattended (away):** if the user wants, `CronCreate`/`ScheduleWakeup` to wake → run the next Workflow phase → escalate only major / hard-floor. Not a cost saving (cache-cold); for unattended continuation only.
-  - **Non-blocking autonomy (park-and-continue) — for full-delegation runs.** When the user grants full authority to complete a large scope unattended, do NOT stop-and-wait on each decision:
-    1. **Resolve-by-evidence first.** For any uncertainty, try **multi-agent web-search verification** (parallel sonnet, web-grounded per CLAUDE.md evidence rule — never embedding). Resolvable → resolve + FYI-log.
+  - **BF-6 Non-blocking autonomy (park and continue) — for full-delegation runs.** When the user grants full authority to complete a large scope unattended, do NOT stop and wait on each decision:
+    1. **Resolve by evidence first.** For any uncertainty, try **multi-agent web-search verification** (parallel sonnet, web-grounded per CLAUDE.md G-09 — never from embeddings). Resolvable → resolve and FYI-log.
     2. **Park, don't block.** If it genuinely needs the user (taste · ambiguous intent · irreversible/external), **append it to a running decisions-log file (e.g. `_사용자판단대기.md`) and SKIP only that sub-part — continue the rest of the SAME task** (don't switch task/scope, don't halt the run). Never auto-execute an irreversible/external action — parking = safely not doing it + logging.
     3. **End briefing.** When all scoped work is done, produce **one briefing doc enumerating every parked decision** (context · options · recommendation) for batch review.
     - Hard-floor failures (test/integration fail, corruption) still **halt** — can't build on broken. Park applies to *decisions*, not to *broken state*.

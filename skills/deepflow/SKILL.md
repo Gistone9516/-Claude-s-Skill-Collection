@@ -5,12 +5,15 @@ description: Multi-lens advisory panel for reasoning/idea/decision questions whe
 
 # deepflow — multi-lens advisory panel
 
-> **Terminology (user directive, 2026-06-10):** "opus" in this skill = **the model currently applied to the Claude Code session** (role name, currently Fable 5), not the fixed `claude-opus-*`. "sonnet" stays literal. Canonical definition: `agent-ops`.
+Rules: DF-1..DF-9 (9), tagged on the load-bearing points only; the §0-§7 stage headings carry the rest of the procedure. Section order is execution order, not importance.
+Execution mechanics are canonical in `agent-ops`; delegation rules in CLAUDE.md G-20..G-24.
+
+> **Terminology (user directive, 2026-06-10):** "opus" in this skill = **the model currently applied to the Claude Code session** (role name), not the fixed `claude-opus-*`. "sonnet" stays literal. Canonical definition: `agent-ops`.
 
 ## Purpose
-For reasoning/judgment-heavy questions, instead of asking the same question N times, attach **different lenses (viewpoints)** in parallel, collect independent opinions, and have opus synthesize all the way to a **decision**. Deliberately skewing each agent forces opus to confront framings it would otherwise anchor past (anti-anchoring). If every lens stays balanced, N opinions collapse into the same mush.
+For reasoning-heavy and judgment-heavy questions, instead of asking the same question N times, attach **different lenses** in parallel, collect independent opinions, and have opus synthesize all the way to a **decision**. Deliberately skewing each agent forces opus to confront framings it would otherwise anchor past. If every lens stays balanced, the N opinions converge on one framing and the panel has bought nothing.
 
-> ⚠️ Lenses are the same model (sonnet) → **not epistemically independent** (they share blind spots). The value is *forced framing separation*, not statistical diversity. So never read consensus as truth (→ §5 cross-check).
+> **DF-1 Lenses are the same model (sonnet) and are therefore not epistemically independent** — they share blind spots. The value is *forced framing separation*, not statistical diversity, so consensus is never read as truth (see §5 cross-check).
 
 ## §0 Activation
 Only when **reasoning/judgment matters and multiple angles genuinely change the conclusion.**
@@ -19,7 +22,7 @@ Only when **reasoning/judgment matters and multiple angles genuinely change the 
 - **Component mode (external call):** when a parent (e.g. buildflow) calls it with the **decision statement / criteria / constraints already supplied**, skip §0–§1 and **enter at §2** — the caller's gate (e.g. buildflow G1/G2) replaces them; the 6-field return feeds that gate.
 
 ## §1 Twenty-questions (opus direct)
-Panel quality = quality of the decision statement, criteria, and facts. Thin input → lenses fill with guesses → plausible garbage. So mine the user first.
+**DF-2** Panel quality equals the quality of the decision statement, criteria and facts. Thin input makes the lenses fill the gaps with guesses and return something plausible but unfounded, so mine the user first.
 - **Probe (priority order):** the real decision (behind the surface question) · criteria + weights · constraints · decisive facts · hidden prefs / deal-breakers · stakeholders · success/nightmare scenarios.
 - **How:** AskUserQuestion, **batched** (2–4 at once), **adaptive** (follow up only on the uncertain), max 1–2 rounds. Stop the moment you can write a sharp decision statement + criteria + constraints.
 - **Escape gate:** if the user says "just decide," fill gaps with **stated** assumptions and proceed.
@@ -54,8 +57,8 @@ blind spot: what no one touched (opus meta-check + the §2 orthogonality sonnet 
 
 ## §6 Decision (opus direct — recommendation + minority report)
 Weight by criteria, converge to one recommendation. Format: **decision statement** · **recommendation** + one-line why · per-lens core (1–2 lines) · consensus ↔ conflict (fact vs value) · **minority report** (the dissenting lens's case, kept intact, not shaved) · flip condition + confidence (高/中/低).
-- **opus self-grading bias:** when opus judges *its own* proposal via the panel (e.g. buildflow B-mode), it tends to shave valid critique to "meaningless" out of convergence appetite → base the proceed/stop call on **falsifiable dryness** (2 consecutive 0-new), not feel, and hold adversarial intensity to the end.
-- **★ Never flatten the user's explicit design intent (user directive, 2026-06-28).** When a panel optimizes against a constraint (narrow viewport, cost, perf) and its conclusion *replaces* something the user explicitly specified (their UI / flow / structure), do NOT synthesize toward the "optimized" version and argue the user into it. Surface the conflict as a **trade-off the user decides**, with their original intent presented as an **equal (not weaker) option** — the panel hardens the user's vision, it does not override it. Also: **don't invert a constraint the user stated on purpose.** (Observed: a designer panel replaced a user's Claude-style *floating* drawer with a fullscreen layout via "at 320px an overlay covers 80% anyway"; opus persuaded toward it, user approved, then reverted everything and said the panel "flattened" their plan. The user had made the drawer selection-only *because* the panel is narrow — meaning a small floating panel was the intent, not "fullscreen is inevitable.")
+- **DF-3 opus self-grading bias:** when opus judges *its own* proposal through the panel (buildflow B-mode, for instance), it tends to downgrade valid critique to "meaningless" because it wants to converge. Base the proceed-or-stop call on **falsifiable dryness** (two consecutive rounds with zero new critiques), not on feel, and hold adversarial intensity to the end.
+- **DF-4 Never flatten the user's explicit design intent (user directive, 2026-06-28).** When a panel optimizes against a constraint (narrow viewport, cost, perf) and its conclusion *replaces* something the user explicitly specified (their UI / flow / structure), do NOT synthesize toward the "optimized" version and argue the user into it. Surface the conflict as a **trade-off the user decides**, with their original intent presented as an **equal (not weaker) option** — the panel hardens the user's vision, it does not override it. Also: **don't invert a constraint the user stated on purpose.** (Observed: a designer panel replaced a user's Claude-style *floating* drawer with a fullscreen layout via "at 320px an overlay covers 80% anyway"; opus persuaded toward it, user approved, then reverted everything and said the panel "flattened" their plan. The user had made the drawer selection-only *because* the panel is narrow — meaning a small floating panel was the intent, not "fullscreen is inevitable.")
 
 ## Model split & execution
 > Execution mechanics (Agent-vs-Workflow, model-per-tier footgun, the fire→signal→resume "idle" model, opt-in) are **canonical in `agent-ops`** — follow it; below is only the deepflow-specific stage mapping.
@@ -89,8 +92,8 @@ Base deepflow stops at a **decision**. deepflow-auto keeps going: it loops **cri
 - **5. Report each round** — for user-read artifacts, emit a short per-round change summary (what was adopted/rejected and why).
 
 **Discipline:**
-- **opus** = synthesis · adopt/reject vs source · scope decision · convergence call. **sonnet** = critique lenses + improvement execution. (opus stays the judge; sonnet does volume.)
-- **Improve only the scoped sections.** The #1 failure mode is a well-meant full rewrite that re-introduces fixed problems — scope every round narrowly.
-- **Re-extract the canonical each round.** The user may hand-edit between rounds; silently overwriting their edit voids the whole point.
-- **Material-grounded judgment.** A critique is a *lead*, not a verdict — confirm against the source before adopting (a sharp-sounding lens can be wrong; opus owns the call).
-- Workflow background · opt-in · model per-tier (agent-ops). For docs, pair with `new-hwpx-master` (styleIDRef level styles, no text delimiters).
+- **DF-5** **opus** does synthesis, adopt-or-reject against the source, scope decisions and the convergence call. **sonnet** runs critique lenses and executes improvements. opus stays the judge; sonnet does volume.
+- **DF-6 Improve only the scoped sections.** The leading failure mode is a well-meant full rewrite that reintroduces problems already fixed. Scope every round narrowly.
+- **DF-7 Re-extract the canonical each round.** The user may hand-edit between rounds, and silently overwriting their edit voids the whole point.
+- **DF-8 A critique is a lead, not a verdict.** Confirm it against the source before adopting; a sharp-sounding lens can be wrong, and opus owns the call.
+- **DF-9** Workflow background, opt-in, model per tier — all per `agent-ops`. For documents, pair with `new-hwpx-master` (styleIDRef level styles, no text delimiters).

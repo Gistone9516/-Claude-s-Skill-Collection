@@ -1,12 +1,17 @@
 ---
 name: work-rules-kit
-description: 재사용 킷/프레임워크 프로젝트 수칙 (킷은 제네릭 유지). learning-harness, Discord Agents처럼 하나의 코드를 여러 인스턴스/과목이 공유하는 프로젝트를 건드리기 전에 반드시 전문 정독. Triggers - learning-harness, Discord Agents, 킷 수정, 프레임워크 공용 코드, 인스턴스 추가, 과목 추가.
+description: Rules for reusable kit and framework projects, where one copy of the code serves many instances or subjects - keep the kit generic and push every instance-specific value into config, .env or data. Read in full before touching a project built this way, such as learning-harness or Discord Agents. Triggers - learning-harness, Discord Agents, 킷 수정, 프레임워크 공용 코드, 인스턴스 추가, 과목 추가, kit, framework, shared code.
 ---
 
-# work-rules-kit — 재사용 킷/프레임워크 프로젝트 수칙
+# work-rules-kit — reusable kit and framework projects
 
-여러 인스턴스/과목이 소비하는 재사용 킷·프레임워크로 지어진 프로젝트(예: `learning-harness`, `Discord Agents`)에 적용.
+Rules: KT-1..KT-4 (4).
+Applies to any project built as a reusable kit consumed by several instances or subjects, such as `learning-harness` and `Discord Agents`.
 
-- **킷 코드는 제네릭 유지 — 인스턴스/과목 리터럴 0.** 인스턴스 고유 정보(과목/영역 이름, 페르소나, 과제 문구, 채널, 토큰, 길드, 로스터, 작업폴더)는 전부 config/.env/data로 주입하고, 공유 킷 코드에 하드코딩하지 않는다.
-- **인스턴스별 코드 포크/클론 금지.** 코드 사본 하나가 모든 인스턴스를 서비스한다. 인스턴스 간 차이는 data/config/.env뿐. 인스턴스 실행 = 하나의 킷을 그 인스턴스의 데이터 폴더로 지정(그 폴더의 .env가 채널/토큰 보유).
-- **한 인스턴스 작업 중에 킷에 인스턴스 특이사항을 넣지 말 것** — 다른 인스턴스들이 의존하는 파일이 바뀐다. 킷 편집은 제네릭 기능만, 과목 특이 변경은 그 인스턴스의 config/data로. 가능하면 인스턴스 리터럴이 킷 코드에 새면 실패하는 테스트로 가드(learning-harness에는 `bot/tests/test_subject_agnostic.py`가 있다).
+**KT-1 Kit code stays generic — zero instance literals.** Everything specific to an instance (subject or area names, personas, task wording, channel, token, guild, roster, working folder) is injected through config, `.env` or data. None of it is hardcoded into shared kit code.
+
+**KT-2 Never fork or clone the code per instance.** One copy of the code serves every instance. Instances differ only in data, config and `.env`. Running an instance means pointing the single kit at that instance's data folder, whose `.env` supplies the channel and token.
+
+**KT-3 While working on one instance, do not push that instance's specifics into the kit.** Doing so changes files every other instance depends on. Kit edits are for generic framework features; an instance-specific change belongs in that instance's config or data.
+
+**KT-4 Guard it with a test that fails when an instance literal leaks into kit code.** `learning-harness` has `bot/tests/test_subject_agnostic.py` for exactly this. A rule enforced by a test cannot be forgotten by the next session — the same reasoning as `work-rules-diagnosis` DG-3, preferring impossible over checked.

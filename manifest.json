@@ -1,0 +1,205 @@
+{
+  "manifestVersion": 1,
+  "updated": "2026-07-29",
+  "purpose": "Single source of truth for what this ~/.claude install is supposed to contain. scripts/check-manifest.ps1 validates the live filesystem against this file at SessionStart and reports drift.",
+  "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
+
+  "policy": {
+    "claudeMdMaxBytes": 9000,
+    "claudeMdMaxBytesReason": "CLAUDE.md is loaded into every turn. It reached 17848 bytes by accretion before the 2026-07-29 reorganization, which cut it to 8555 across 27 rules with no rule dropped - the detail moved into skills. 9000 is that measured floor plus a little headroom. It was briefly set to 7000, which could only have been met by deleting rules that must be true before a skill loads, so the number was raised deliberately and recorded here rather than adjusted silently later. The gate exists to catch drift back toward 17848, not to force deletion.",
+    "skillWarnBytes": 20000,
+    "ruleIdPattern": "^[A-Z]{1,3}-[0-9]{1,2}$",
+    "onMissingRequired": "Tell the user, in Korean, which required assets are missing and that they should be restored from the repo. Do not silently continue as if the rule set were complete.",
+    "onOrphan": "A skill on disk but absent from this manifest is unregistered. Either add it here or delete it. Report it; do not ignore it.",
+    "userWarningTemplate": "<이름> 스킬이 없습니다. 확인 바랍니다."
+  },
+
+  "skills": [
+    {
+      "name": "verify-fanout",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 1,
+      "role": "Evidence grading, brief mode, indexing protocol, claim verification. CLAUDE.md G-05..G-10 point here.",
+      "ruleIds": "VF-1..VF-20"
+    },
+    {
+      "name": "work-rules-diagnosis",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 1,
+      "role": "Root-cause discipline, anti-patchwork, spec-before-code, change discipline. CLAUDE.md G-14..G-19 point here.",
+      "ruleIds": "DG-1..DG-18"
+    },
+    {
+      "name": "work-rules-shell",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 1,
+      "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene.",
+      "ruleIds": "SH-1..SH-25"
+    },
+    {
+      "name": "agent-ops",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 2,
+      "role": "Canonical delegation mechanics: model-per-tier, Workflow offload, Report envelope, fan-out caps. CLAUDE.md G-20..G-24 point here.",
+      "ruleIds": "AO-1..AO-20"
+    },
+    {
+      "name": "work-rules-automation",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 2,
+      "role": "Long-run robustness: tool-call hygiene, truncation, background Workflow health checks, claude -p lifecycle.",
+      "ruleIds": "AU-1..AU-16"
+    },
+    {
+      "name": "work-rules-writing",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 2,
+      "role": "Korean human-facing deliverables and design: AI-tell removal, punctuation, verbatim rule, slide minimalism, measured length.",
+      "ruleIds": "WR-1..WR-14"
+    },
+    {
+      "name": "work-rules-docs",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 2,
+      "role": "hwpx / pptx / docx / xlsx editing and extraction; corruption traps.",
+      "ruleIds": "DC-1..DC-14"
+    },
+    {
+      "name": "work-rules-kit",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 3,
+      "role": "Reusable kit / framework projects stay instance-agnostic.",
+      "ruleIds": "KT-1..KT-4"
+    },
+    {
+      "name": "deepflow",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 3,
+      "role": "Multi-lens advisory panel and the critique-improve convergence loop (deepflow-auto).",
+      "ruleIds": "DF-1..DF-9"
+    },
+    {
+      "name": "buildflow",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 3,
+      "role": "Multi-cycle plan-design-build workflow with per-folder contracts and parallel implementers.",
+      "ruleIds": "BF-1..BF-6"
+    },
+    {
+      "name": "new-hwpx-master",
+      "frontmatterName": "new-hwpx-master",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 3,
+      "role": "Fill a Korean hwpx official-document template: level styles via styleIDRef, section body replacement, repackaging.",
+      "ruleIds": "HX-1..HX-12"
+    },
+    {
+      "name": "discord-bridge",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 3,
+      "role": "Mount a working folder onto Discord (light / full mode).",
+      "externalApp": "discordAgents",
+      "note": "Excluded from the 2026-07-29 reorganization by user instruction. Body left as-is."
+    },
+    {
+      "name": "learning-harness",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 3,
+      "role": "Mount a subject data folder onto the generic Discord learning bot.",
+      "externalApp": "learningHarness",
+      "note": "Excluded from the 2026-07-29 reorganization by user instruction. Body left as-is."
+    },
+
+    {
+      "name": "caveman",
+      "required": false,
+      "kind": "external",
+      "source": "~/.agents/skills/caveman",
+      "role": "Compressed communication mode.",
+      "restore": "Third-party skill set. Present in this repo as regular files; on a fresh machine they are restored by the clone. The symlink into ~/.agents is a local convenience, not a requirement."
+    },
+    { "name": "cavecrew", "required": false, "kind": "external", "source": "~/.agents/skills/cavecrew", "role": "Delegation guide for caveman-style subagents." },
+    { "name": "caveman-commit", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-commit", "role": "Compressed commit messages." },
+    { "name": "caveman-compress", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-compress", "role": "Compress memory files." },
+    { "name": "caveman-help", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-help", "role": "Caveman quick reference." },
+    { "name": "caveman-review", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-review", "role": "Compressed review comments." },
+    { "name": "caveman-stats", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-stats", "role": "Session token stats." }
+  ],
+
+  "files": [
+    { "path": "CLAUDE.md", "required": true, "role": "Always-loaded global rules. Budget-checked against policy.claudeMdMaxBytes." },
+    { "path": "manifest.json", "required": true, "role": "This file." },
+    { "path": "GUIDE.ko.md", "required": true, "role": "Human-facing Korean guide to the whole setup. Not loaded by the model." },
+    { "path": "README.md", "required": true, "role": "Repo entry point." },
+    { "path": "scripts/check-manifest.ps1", "required": true, "role": "The validator this manifest drives." },
+    { "path": "scripts/validate_doc.py", "required": false, "role": "Korean document length measurement, used by work-rules-writing WR-12." },
+    { "path": "projects/C--Users-USER/memory/MEMORY.md", "required": false, "role": "Global memory index for the home directory scope. Machine-specific path key; absent on a fresh machine is normal." }
+  ],
+
+  "externalApps": [
+    {
+      "id": "discordAgents",
+      "path": "C:\\Users\\USER\\Desktop\\2026-\ud558\uacc4\\Discord Agents",
+      "envOverride": "CLAUDE_APP_DISCORD_AGENTS",
+      "required": false,
+      "role": "bridge.py, .env (bot token), skills/. Consumed by the discord-bridge skill.",
+      "onMissing": "Machine-specific. The skill cannot run until this path exists or the env override is set. Report, do not block."
+    },
+    {
+      "id": "learningHarness",
+      "path": "C:\\Users\\USER\\Desktop\\2026-\ud558\uacc4\\learning-harness",
+      "envOverride": "CLAUDE_APP_LEARNING_HARNESS",
+      "required": false,
+      "role": "Generic subject-agnostic learning bot code. Consumed by the learning-harness skill.",
+      "onMissing": "Machine-specific. Report, do not block."
+    }
+  ],
+
+  "plugins": [
+    { "name": "frontend-design@claude-plugins-official", "required": false, "role": "Visual design guidance for new UI." },
+    { "name": "playwright@claude-plugins-official", "required": false, "role": "Browser driving. Required by CLAUDE.md G-10 (show visual results as Playwright screenshots)." }
+  ],
+
+  "settingsKeys": [
+    { "key": "model", "expected": "opus[1m]", "role": "Session model." },
+    { "key": "effortLevel", "expected": "xhigh", "role": "Reasoning ceiling." },
+    { "key": "alwaysThinkingEnabled", "expected": true, "role": "Thinking on by default." },
+    { "key": "hooks.SessionStart", "expected": "runs scripts/check-manifest.ps1", "role": "Where this manifest gets enforced." }
+  ],
+
+  "restore": {
+    "newMachine": [
+      "git clone <repo> into ~/.claude (or clone elsewhere and copy CLAUDE.md, manifest.json, GUIDE.ko.md, skills/, scripts/ in).",
+      "Register the SessionStart hook in ~/.claude/settings.json so check-manifest.ps1 runs (see settingsKeys).",
+      "Start a session. The validator reports every missing or unregistered asset.",
+      "Set the externalApps env overrides, or move the apps to the declared paths, if those skills are needed.",
+      "projects/*/memory/ path keys encode the absolute project path; they do not transfer to a machine with different folder layout. That is expected."
+    ]
+  }
+}

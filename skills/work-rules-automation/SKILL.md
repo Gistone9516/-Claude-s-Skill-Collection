@@ -1,54 +1,76 @@
 ---
 name: work-rules-automation
-description: 자동화·Workflow·장시간 멀티스텝 작업 강건성 수칙 (실측 함정 카탈로그). 백그라운드 Workflow 발사, 에이전트 오케스트레이션, 자동화 스크립트 작성, 장기 세션 착수 전에 반드시 전문 정독. Triggers - Workflow 실행, 백그라운드 작업, 자동화 스크립트, 멀티스텝 런, 헬스체크, 팬아웃.
+description: Robustness rules for automation, background Workflows and long multi-step runs - a catalogue of measured traps. One format error stops an entire run, so read this in full before firing a background Workflow, orchestrating agents, writing an automation script, or starting a long session. Triggers - Workflow 실행, 백그라운드 작업, 자동화 스크립트, 멀티스텝 런, 헬스체크, 팬아웃, background run, orchestration.
 ---
 
-# work-rules-automation — 자동화·Workflow 강건성 수칙
+# work-rules-automation — automation and Workflow robustness
 
-★STRONG RULE: 런을 정지시키는 포맷 에러 하나 = 치명 결함. malformed tool-call 하나, 가드 없는 스크립트 크래시 하나가 자동화 전체를 죽인다. 장시간·에이전트 오케스트레이션 작업에서 이는 용납 불가.
+Rules: AU-1..AU-16 (16). Ordered by what a violation costs.
 
-## 1. 도구 호출 위생
-- **한 번에 한 호출, 포맷 검증** — 블록 닫힘과 파라미터 형태를 보내기 전에 확인. malformed 호출 하나가 전체 자동화를 멈춘다. 도구 호출 위생은 load-bearing이다.
-- **★ 응답 절단 → malformed call (장기 세션 무음 정지의 1위 원인).** 진짜 원인은 응답 하나의 총 출력량이다(Write·Workflow 도구 자체가 아님 — 도구를 억제하지 말고 볼륨을 관리). 정지 패턴: 긴 산문 + 긴 도구 페이로드를 한 응답에 담음 → 출력 상한에서 도구 블록이 중간 절단 → 미닫힘 = 아무것도 실행 안 됨 = 무음 정지(일반 텍스트로 렌더링됨).
-  - 긴 산문과 긴 페이로드를 같은 응답에 절대 함께 넣지 않는다. 긴 페이로드(큰 Write, Workflow .js, 여러 줄 명령)는 산문 거의 0으로 단독 전송.
-  - 응답당 긴 페이로드 최대 1개.
-  - 몇 줄 수정은 재-Write보다 표적 Edit(페이로드 작음). 단 긴 새 스크립트는 그 응답의 유일한 내용이면 Write해도 됨.
-  - 정확성 필수 단계(예: canonical 재추출)는 건너뛰지 않는다 — 순수 진단/요약 보조만 생략 가능.
-  - 증상 체크: 도구 호출이 결과 없이 일반 텍스트로 보이면 절단된 것 → 단독으로, 줄여서 재전송.
+**A single format error that halts a run is a critical defect.** One malformed tool call, one unguarded script crash, and the whole automation dies. In long or agent-orchestrated work that is not acceptable.
 
-## 2. 자동화 스크립트 작성
-- **모든 자동화 스크립트는 try/except(또는 동등물)로 감싼다.** 단계별로 잡아 어느 단계가 왜 실패했는지 출력(무음 사망·모호한 정지 금지). 입력 존재를 선두에서 검증, 산출물을 말미에서 검증, 실패 시 부분 파일 삭제(깨진 산출물이 완료처럼 보이면 안 됨). 부분 실패가 파이프라인을 조용히 오염시키지 않게.
-- **멱등·재개 가능하게** — 재실행이 기존 산출물을 손상시키지 않아야 함. Workflow 런은 `resumeFromRunId` 보유.
+## 1. Tool-call hygiene
 
-## 3. 백그라운드 Workflow 운영
-- **★ 20분 헬스체크 의무 (user directive 2026-06-22).** 완료 신호만 기다리지 말 것 — 에이전트가 조용히 죽어 신호가 영영 안 오는 경우 실측됨(작업은 끝났는데 journal.jsonl 미기록으로 N-1/N 정지). 헬스체크: 그 런의 `journal.jsonl`에서 started 대 result 수와 `agent-*.jsonl` 수정시각 비교 → 임계시간 이상 정지·미완이면 완료분을 transcript에서 직접 복구하고 나머지는 `resumeFromRunId`로 재개. 구현은 `Monitor`(persistent) 또는 `ScheduleWakeup` — detached bash sleep 루프는 이 환경에서 조용히 죽는 게 실측됨. (참고: 이 환경에서 ScheduleWakeup이 미호환으로 보였던 사례가 있었으나 2026-07-20 실측으로는 지연 발화 정상 동작 — 완료 알림 + 수동 헬스체크 병행이 안전.)
-- **★ 병렬 에이전트 실행 중 git stash/checkout/restore 금지** (상세 근거는 work-rules-shell §3). 병렬 편집 에이전트 프롬프트에 "git 명령 일체 금지" 명시.
-- **★ 산출물 경로버그 + 성공신호 불신 + 결정적 재검증 (실측 2026-06-24).** Workflow `agent()` 서브에이전트는 절대경로를 줘도 무시하고 cwd 상대로 파일을 쓰는 경우가 많다(산출물이 흩어지고 루트가 오염됨). 워크플로 최종 결과의 "N/N 완료" 같은 성공·요약 신호는 믿으면 안 된다(파일이 엉뚱한 데 있거나 누락, verify 단계가 rubber-stamp). 대응:
-  ① 끝나면 디스크 산출물을 직접 감사(개수·경로·내용·카운트), 흩어진 것 수합.
-  ② 검증 에이전트는 기존 파일 in-place 수정(절대경로 read → correct → write-back), 그래도 신뢰하지 않는다.
-  ③ 정답 정확성은 opus가 결정적으로 재실행 검증 — 코드는 실제 실행(Python/Java 네이티브, C는 `tcc -run`, 다중클래스 Java는 `javac`+`java -cp`), SQL은 python `sqlite3`, 출력 예측은 종료코드 무관 stdout이 정답.
-  ④ 멀티라인 정답은 단일행 입력이 줄바꿈을 못 담으니 공백 구분 한 줄로 정규화.
-  ⑤ 최종 확신은 실제 코드로 end-to-end. 성공신호 != 검증. 분담선: 생성은 에이전트(양·속도), 정답 보증은 결정적 실행 검증(opus).
-- 에이전트에게 절대경로를 줄 때는 "실패 시 저장소 루트 상대경로로 쓰고 실제 경로를 반환하라"는 폴백을 함께 명시하면 수합이 쉬워진다.
+**AU-1 One call at a time, format verified.** Confirm block closure and parameter shape before sending. Tool-call hygiene is load-bearing, because one malformed call stops everything downstream.
 
-## 4. Claude Code CLI "Continue from where you left off" 자동주입 (실측 2026-06-25)
-- 증상: 도구 사용 직후 턴을 끝내면 하네스가 응답 미완으로 판단해 `Continue from where you left off.`를 자동 주입(CLI 버그, anthropics/claude-code #44459). discord-bridge가 자동 재호출하는 것처럼 보이지만 진범은 CLI.
-- 2차 버그: 모델이 그 메시지를 "응답 불필요"로 오해해 `No response requested.`로 끝냄 → 직전 도구 결과가 버려짐.
-- **★ 대응 (user directive): `Continue from where you left off.`를 받으면 절대 빈 종료하지 말 것.** "직전 도구 결과로 하려던 응답을 마저 완성하라"는 신호로 해석. 본답을 못 냈으면 그 결과로 답변 생성, 다 끝났으면 한 줄 결론 재확인. 근본 해결 = 수정 버전 CLI 업데이트(해결되면 이 항목 삭제).
+**AU-2 Response truncation produces a malformed call — the leading cause of a long session stopping silently.** The real cause is the total output volume of one response, not the Write or Workflow tool itself. Do not avoid the tools; manage the volume. The failure sequence: long prose plus a long tool payload in one response → the output ceiling truncates the tool block mid-way → unclosed block → nothing executes → silent stop, rendered as ordinary text.
 
-## 5. claude -p 세션 수명 관리 — 고아 세션 금지 (user directive 2026-07-21)
-`claude -p`(headless) 세션을 스크립트·서버가 다루는 모든 경우(ai_server의 --resume 멀티턴 등)에 적용:
-- **고아 세션이 없도록 철저히 예외처리로 관리한다.** 세션을 여는 코드는 반드시 닫힘/정리 경로를 함께 소유한다(try/finally 또는 동등물).
-- 스폰한 프로세스와 session_id를 추적 가능하게 기록하고, 실패·타임아웃·예외 경로에서 프로세스를 정리한다(좀비/행 프로세스 kill 포함).
-- 서버 종료(Ctrl+C, 크래시)에 진행 중 세션 프로세스가 남지 않도록 종료 훅에서 일괄 정리.
-- 타임아웃 없는 무기한 대기 금지 — 모든 -p 호출에 상한을 두고, 상한 초과 시 kill 후 실패로 보고.
-- 재개 실패(만료·유실 session_id)는 새 세션 폴백 또는 명시적 오류로 처리하고, 유실된 id를 계속 들고 재시도하지 않는다.
+- Never put long prose and a long payload in the same response. Send a long payload (a large Write, a Workflow script, a multi-line command) on its own with almost no prose.
+- At most one long payload per response.
+- For a few lines of change, prefer a targeted Edit over rewriting the file — the payload is smaller. A long new script may still be written whole if it is the only content of that response.
+- Never skip a correctness-critical step (such as re-extracting a canonical) to save volume. Only pure diagnostic or summary extras may be dropped.
+- Symptom check: a tool call that appears as plain text with no result was truncated. Resend it alone and shorter.
 
-## 6. `claude -p`는 완성형 API가 아니라 에이전트다 (실측 2026-07-21)
-`claude -p`를 프로그램에서 호출해 **구조화된 출력(JSON 등)을 받으려는 모든 경우**에 해당:
-- **기본 도구셋이 켜져 있으면 작업을 디스크에 실행해버린다.** "프로젝트를 생성하라"는 프롬프트에 실제로 파일을 만들고 pytest까지 돌린 뒤 산문 보고를 반환했다(호출자의 JSON은 영영 안 옴 + 호출 프로세스 cwd 오염). 회피 = `--tools ""`로 도구 전면 비활성. 도구를 꺼도 모델이 `<invoke name="Bash">`를 텍스트로 흉내낼 수 있으니 프롬프트에도 "파일 생성 금지, 도구 사용 금지, JSON만 반환"을 명시(이중 방어).
-- **stdin JSON payload의 `system` 키는 무시된다.** stream-json 입력에 `{"system": ...}`을 넣어도 모델에 도달하지 않는다(센티넬 지시 무효로 실측). 안전 프리앰블까지 조용히 사라진다. 회피 = 프리앰블을 **user message 본문 앞에 붙여** 보낸다(`<system>\n\n---\n\n<prompt>`). CLI 플래그 `--system-prompt`는 존재하나 파일 변형이 없어 여러 줄·따옴표 프리앰블을 Windows argv로 넘겨야 해 §1의 인용 파손 위험이 크다. stdin은 JSON이라 개행·따옴표·한글이 안전.
-- **점검법:** 센티넬 테스트로 프리앰블 도달 여부를 먼저 확인한다(예: system에 "무조건 BANANA만 답하라" → 실제 답이 다르면 미도달).
+## 2. Writing automation scripts
 
-## 7. 새 함정 발견 시
-자동화·Workflow 관련 신규 교훈은 실측 날짜와 함께 이 파일에 추가한다(실수 자기학습 규칙).
+**AU-3 Wrap every automation script in try/except or the equivalent**, catching per stage so the output says which stage failed and why. No silent death, no ambiguous halt. Validate inputs at the start and outputs at the end, and delete partial files on failure so a broken artifact never looks finished. A partial failure must not quietly contaminate the pipeline.
+
+**AU-4 Make it idempotent and resumable.** Re-running must not damage existing output. Workflow runs carry `resumeFromRunId`.
+
+## 3. Running background Workflows
+
+**AU-5 Health-check every 20 minutes (user directive 2026-06-22).** Do not simply wait for the completion signal — an agent can die quietly so the signal never arrives. Measured: work finished but `journal.jsonl` was never written, and the run sat at N-1 of N. The check: compare started-versus-result counts in that run's `journal.jsonl` against the modification times of the `agent-*.jsonl` files. If it has been stalled past the threshold, recover the completed parts directly from the transcript and resume the rest with `resumeFromRunId`. Implement with `Monitor` (persistent) or `ScheduleWakeup`; a detached bash sleep loop dies silently in this environment — measured. `ScheduleWakeup` once appeared incompatible here, but as of 2026-07-20 delayed firing works; pairing the completion notification with a manual health check is the safe option.
+
+**AU-6 No git stash / checkout / restore while parallel agents run.** Rationale in `work-rules-shell` SH-7. Put "no git commands at all" in every parallel editing agent's prompt.
+
+**AU-7 Subagents write files relative to cwd even when given an absolute path (measured 2026-06-24).** Workflow `agent()` subagents frequently ignore the absolute path, so artifacts scatter and the repo root gets polluted.
+
+**AU-8 Do not trust a workflow's own success signal.** A final "N/N complete" summary is not verification: files may be missing or in the wrong place, and a verify stage can rubber-stamp. Response:
+
+1. When the run ends, audit the artifacts on disk directly — count, path, content — and gather up whatever scattered.
+2. Have the verification agent modify existing files in place (absolute-path read → correct → write back), and still do not trust the result.
+3. **opus re-verifies correctness deterministically by actually executing**: Python and Java natively, C via `tcc -run`, multi-class Java via `javac` + `java -cp`; SQL through Python's `sqlite3`; for output prediction, stdout is the answer regardless of exit code.
+4. Normalize multi-line answers to one space-separated line, since a single-line input field cannot carry newlines.
+5. Final confidence comes from an end-to-end run with real code. A success signal is not verification. The division: agents generate (volume and speed), deterministic execution guarantees correctness (opus).
+
+**AU-9** When handing an agent an absolute path, also state the fallback: "if that fails, write relative to the repo root and return the actual path." Collection afterwards becomes trivial.
+
+## 4. Claude Code CLI "Continue from where you left off" auto-injection (measured 2026-06-25)
+
+**AU-10** Symptom: ending a turn immediately after a tool use makes the harness treat the response as incomplete and auto-inject `Continue from where you left off.` (CLI bug, anthropics/claude-code #44459). It can look as though discord-bridge is re-invoking, but the CLI is the cause.
+
+Secondary bug: the model reads that message as "no response needed" and ends with `No response requested.`, discarding the preceding tool result.
+
+**AU-11 On receiving `Continue from where you left off.`, never end empty (user directive).** Read it as "finish the response you were going to give from that tool result." If the substantive answer was never given, produce it now; if everything was already done, restate the conclusion in one line. The root fix is a CLI update — delete this section once it lands.
+
+## 5. `claude -p` session lifetime — no orphans (user directive 2026-07-21)
+
+Applies wherever a script or server drives headless `claude -p` sessions, including multi-turn `--resume` in ai_server.
+
+- **AU-12 Manage lifetimes with exception handling so no session is orphaned.** The code that opens a session owns its close and cleanup path (try/finally or equivalent).
+- Record spawned processes and session ids so they can be traced, and clean processes up on failure, timeout and exception paths, killing zombies and hung processes.
+- Clean up in a shutdown hook so server termination (Ctrl+C, crash) leaves no in-flight session processes behind.
+- **No unbounded waiting.** Every `-p` call carries a ceiling; on exceeding it, kill and report failure.
+- Handle a failed resume (expired or lost session id) as a new-session fallback or an explicit error. Never keep retrying with a lost id.
+
+## 6. `claude -p` is an agent, not a completion API (measured 2026-07-21)
+
+Applies whenever a program calls `claude -p` expecting structured output such as JSON.
+
+- **AU-13 With the default tool set enabled it performs the work on disk.** Given "create a project", it actually created files, ran pytest, and returned a prose report — the caller's JSON never arrived and the calling process's cwd was polluted. Avoid with `--tools ""` to disable tools entirely. Even with tools off the model can imitate `<invoke name="Bash">` as text, so state in the prompt as well: no file creation, no tool use, return JSON only. Two layers.
+- **AU-14 The `system` key in a stdin JSON payload is ignored.** `{"system": ...}` in stream-json input never reaches the model — measured with a sentinel instruction that had no effect — so a safety preamble disappears silently. Send the preamble prepended to the **user message body** (`<system>\n\n---\n\n<prompt>`). The `--system-prompt` CLI flag exists but has no file variant, so a multi-line quoted preamble would have to cross Windows argv, which risks the quoting damage in `work-rules-shell` SH-13/SH-14. stdin is JSON, so newlines, quotes and Korean are safe there.
+- **AU-15 Check reachability with a sentinel** before relying on a preamble: put "answer only BANANA, whatever is asked" in the system channel; a different answer proves it never arrived.
+
+## 7. New lessons
+
+**AU-16** Add automation and Workflow lessons here with the measured date, and update the rule count in the header.

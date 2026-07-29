@@ -1,43 +1,62 @@
 ---
 name: work-rules-writing
-description: 한국어 산출물 작성·디자인 수칙 (사용자 확정 스타일 규칙). 자소서·회의록·보고서·논문·슬라이드·코드 주석·피규어 등 사람이 읽는 산출물을 쓰거나 디자인하기 전에 반드시 전문 정독. Triggers - 문서 작성, 자소서, 회의록, 보고서, 슬라이드, PPT 문구, 코드 주석 스타일, 디자인, 카피 작성.
+description: Rules for Korean human-facing deliverables and for design - removing AI tells, punctuation restraint, the verbatim rule, slide minimalism, inheriting an existing style, and measuring length with a script. Read in full before writing or designing anything a person reads - 자소서, 회의록, 보고서, 논문, 슬라이드, code comments, figures. Triggers - 문서 작성, 자소서, 회의록, 보고서, 슬라이드, PPT 문구, 코드 주석 스타일, 디자인, 카피 작성.
 ---
 
-# work-rules-writing — 한국어 산출물 작성·디자인 수칙
+# work-rules-writing — Korean deliverables and design
 
-## 1. AI 티 나는 글 금지 (모든 산문)
-사람이 읽는 산출물(자소서, 회의록, 논문, 보고서)은 AI가 쓴 티가 나면 안 된다. 불필요한 전문용어·버즈워드 축적, 한자 병기, 과도한 수식어를 피하고 실제 경험·내용 중심으로 자연스럽게. (산출물별 형식·어미 톤은 그 프로젝트 메모리 참조.)
+Rules: WR-1..WR-14 (14).
+The output of everything here is Korean; this file is instruction, so it is English (CLAUDE.md G-01).
 
-## 2. 문장부호 절제 — em dash(—)와 가운뎃점(·)은 AI 탐지 신호 (user directive 2026-06-12)
-- 허용하되 절제: 가운뎃점은 짧은 동급 명사 나열(공문 표준)만, em dash는 진짜 보충(피규어 캡션 부제 등)에만 드물게.
-- 금지: 기계적 "라벨 — 이름" 반복(괄호나 공백으로), 산문 속 접속 대용 가운뎃점(및/와/과로).
-- 선호 순서: 조사(및/와/과) > 쉼표 > 괄호 > 수준 분해 > dash/가운뎃점. 한 줄에 가운뎃점 나열 1회 최대, 5개 이상 항목은 쉼표나 하위 수준으로.
-- **코드 주석은 동일 + 더 엄격 (user directive 2026-06-13):** 사람 스타일 코드의 주석엔 특수기호(`→` `—` `·` `↔` `※` `★` 등) 전면 금지 — 사람은 귀찮아서 기호를 타이핑하지 않고 문장으로만 쓴다. 화살표는 "다음/순으로/이면", em dash는 쉼표·마침표, 가운뎃점은 쉼표·와/과로 풀어쓴다. 단 UI 렌더링 문자열 속 기호(결측 '—', 구분점 '·')는 제품 문구라 예외.
+## 1. Which language, and where it applies
 
-## 3. 제공 텍스트는 verbatim — 변형·요약·의역 절대 금지
-동료·사용자가 직접 쓴 서사 텍스트는 한 글자도 바꾸지 않고 그대로 쓴다. 요약, 의역, 어미 변경, 단어 교체 금지(합의된 문구를 임의로 바꾸면 훼손이다). 레이아웃 맞춤용 줄바꿈 위치 조정만 허용. 내 초안과 제공 원문을 섞지 말고 내 부분은 "내 초안"으로 표시. 불명확하면 출력 전에 AskUserQuestion으로 확인.
+**WR-1 Language split.** AI-facing text is English: `CLAUDE.md`, memory files, skill bodies, subagent / Workflow / Agent prompts, system prompts and prompt templates in code. Human-facing text is Korean: conversation, reports, docs, SRS / ADR / README, slides, 자소서, UI copy, code comments, commit messages.
 
-## 4. 발표 슬라이드 = 최소주의
-- 완성 문장을 쓰지 않는다 — 핵심 키워드·숫자만(나머지는 발표자가 말한다. 문장 다 쓴 슬라이드는 지루하다).
-- 스타일 = 개조식 음슴체(전보체, 명사형 / ~ㅁ / ~함 어미). "~입니다/~한다" 금지.
-- 카드 패턴 = 소제목(명사구) + 짧은 조각 2~3개. 한자 금지(必 → 필요). 약어·숫자는 OK.
-- 길게 쓰는 것은 "근거·보충용"이 명시 요청된 경우만, 그때도 음슴체.
+- **A prompt being English does not make its output English.** An AI-facing prompt that produces a human deliverable must say so explicitly inside itself. Measured: a v2 operator prompt is English while the report validator enforces Korean section headings (`## 추세`, `## 결론`), so an English report is rejected at save time; the prompt therefore states its output language in its first section.
+- **Text that is both.** Prompt text shown to the user for editing — a slash command that pre-fills the input box — is UI copy, so it stays Korean.
+- Korean style terms (음슴체, 개조식) are never translated. Translating them loses the distinction they name.
 
-## 5. 기존 스타일 분석 후 계승
-어떤 산출물(슬라이드, 문서, 피규어)이든 만들기 전에 기존 산출물의 스타일·톤을 먼저 상세 분석하고 계승한다. 맹목적으로 만들면 과녁을 빗나간다.
+## 2. Prose
 
-## 6. 원본 보존과 데이터 무결성
-새 파일/백업에서 작업하고 원본을 건드리지 않는다. 피규어·표 재디자인은 내용·숫자를 원본 그대로 유지하고 디자인만 바꾼다(원본 이탈은 전부 지적당한다). 결과를 렌더링해 시각 확인 후 다음 단계로, 점진 반복.
+**WR-2 No AI tells.** Anything a person reads (자소서, 회의록, 논문, 보고서) must not read as machine-written. Avoid piled-up jargon and buzzwords, parenthetical hanja, and heavy modifiers. Write naturally, centred on actual experience and content. Per-deliverable format and verb ending live in that project's memory.
 
-## 7. 디자인 감각 — 빼기, 차분하게
-밀도 높고 어수선한 정보를 싫어함. 본질만 남기고 걷어낸다. 색 = 차분한 명도 조정된 유채색(파스텔 아님, 무채색 아님 — 양극단 다 아님). 형태 = 라운드, 부드럽게.
+**WR-3 Punctuation restraint — the em dash and the middle dot are AI detection signals (user directive 2026-06-12).**
 
-## 8. 분량은 눈대중 금지, 스크립트로 실측 (user directive 2026-07-23)
-한국어 산출물의 글자 수를 눈으로 어림하지 않는다. **실측 스크립트를 먼저 만들고 그것으로만 센다.** 실측 사고: 씨앗 스토리 3종의 분량을 어림했다가 각각 -22%, -16%, **-40%** 틀렸고(3,800자로 잡은 것이 실제 2,281자), 그 위에 비용 추산까지 얹어 두었던 터라 추산도 함께 틀렸다. 사용자가 실제 글자 수 392를 직접 세어 지적하고서야 드러났다.
-- **기준 지표 = `전체`(공백과 줄바꿈 포함 문자 수).** 한국어는 문단이 짧고 줄바꿈이 잦아(특히 웹소설) 줄바꿈을 빼면 실제 읽는 부담과 어긋난다. 세는 기준이 여럿이므로 사용자와 어느 기준인지 먼저 맞춘다.
-- 스크립트가 여러 지표(전체, 줄바꿈제외, 공백제외, 한글음절, 어절, 문단)를 한 번에 내게 만들어 두면 기준 합의가 쉽다.
-- **한국어 콘솔은 cp949**라 한글 파일명이나 본문을 stdout으로 찍으면 깨진다. 결과는 UTF-8 JSON으로 쓰고 Read 도구로 읽는다. stdout에는 ASCII 한 줄만.
-- 파이프라인이 분량을 다루는 경우에도 **모델에게 세게 하지 않는다.** 모델은 글자 수를 틀린다. 코드가 세어 넣는다.
+- Allowed but sparing: the middle dot only for short lists of same-rank nouns (the official-document standard); the em dash only for a genuine aside, such as a figure-caption subtitle, and rarely.
+- Forbidden: mechanical "label — name" repetition (use parentheses or a space), and a middle dot standing in for a conjunction inside prose (use 및 / 와 / 과).
+- Preference order: particle (및/와/과) > comma > parentheses > breaking into levels > dash or middle dot. At most one middle-dot list per line; five or more items go to commas or a sub-level.
 
-## 9. 새 규칙 발생 시
-글쓰기·디자인 관련 신규 사용자 지시는 이 파일에 추가한다(실수 자기학습 규칙). 산출물별 세부 형식(어미 톤 등)은 해당 프로젝트 메모리에.
+**WR-4 Code comments follow the same rule, more strictly (user directive 2026-06-13).** In human-style code, symbols are banned outright in comments — `→`, `—`, `·`, `↔`, `※`, `★`. People do not bother typing symbols; they write sentences. An arrow becomes 다음 / 순으로 / 이면, an em dash becomes a comma or a period, a middle dot becomes a comma or 와/과. Symbols inside UI-rendered strings are product copy and are exempt (a missing-value `—`, a separator `·`).
+
+**WR-5 Text supplied by a person is verbatim — never reworded, summarized or paraphrased.** Narrative text written by a colleague or the user is used exactly as given: no summarizing, no paraphrase, no changed verb endings, no word substitution. Changing agreed wording is damage. Only line-break positions may be adjusted for layout. Do not blend my draft into the supplied original — mark my parts as my draft. If it is unclear, confirm with AskUserQuestion before producing output.
+
+## 3. Slides
+
+**WR-6 Presentation slides are minimalist.** Never write complete sentences — key words and numbers only, because the presenter says the rest and a slide of full sentences is dull.
+
+**WR-7 Style is 개조식 음슴체** (telegraphic; noun-form, ~ㅁ, ~함 endings). "~입니다 / ~한다" are forbidden.
+
+**WR-8 The card pattern** is a subheading (noun phrase) plus two or three short fragments. No hanja (必 → 필요). Abbreviations and numbers are fine. Write at length only when supporting evidence is explicitly requested, and even then in 음슴체.
+
+## 4. Method
+
+**WR-9 Analyze the existing style first, then inherit it.** Before making any deliverable — slides, document, figure — study the tone and style of the existing ones in detail and continue them. Making something blind misses the target.
+
+**WR-10 Preserve originals and data integrity.** Work on a new file or a backup and leave the original untouched. When redesigning a figure or table, keep the content and numbers exactly as they are and change only the design; departures from the original all get flagged. Render the result and check it visually before moving on, iterating in small steps.
+
+**WR-11 Show visual results with Playwright screenshots, not file attachments** (CLAUDE.md G-25). `SendUserFile` errors on the user's remote setup and they see nothing, while screenshot tool results render. Reading the screenshot back myself is still required for a seeing-judgment; the user seeing it is a separate, additional purpose.
+
+**WR-12 Never estimate length by eye — measure it with a script first (user directive 2026-07-23).** Measured failure: three seed stories were estimated by eye and were off by -22%, -16% and **-40%** (an estimate of 3,800 characters against an actual 2,281), and a cost estimate had been layered on top of the wrong numbers. It surfaced only when the user counted 392 characters themselves.
+
+- **The reference metric is 전체 — every character including spaces and newlines.** Korean paragraphs are short and newlines frequent, especially in web fiction, so excluding newlines diverges from the actual reading burden. Several counting conventions exist, so agree with the user on which one first.
+- Have the script emit several metrics at once (전체, 줄바꿈제외, 공백제외, 한글음절, 어절, 문단) to make that agreement easy.
+- **The Korean console is cp949**, so printing a Korean filename or body to stdout corrupts it. Write results as UTF-8 JSON and read them with the Read tool; keep stdout to one ASCII line.
+- **When a pipeline handles length, do not have the model count.** Models get character counts wrong. Code counts and inserts the number.
+
+## 5. Design
+
+**WR-13 Subtract, and stay calm.** The user dislikes dense, cluttered information: strip to essentials. Colour is a muted, brightness-adjusted chromatic — neither pastel nor achromatic, and not either extreme. Form is rounded and soft.
+
+## 6. New rules
+
+**WR-14** Add new writing and design directives here, and update the rule count in the header. Per-deliverable detail (verb-ending conventions and the like) goes in that project's memory.

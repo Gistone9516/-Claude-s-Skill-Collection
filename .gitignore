@@ -1,11 +1,22 @@
-# Allowlist: track only sync-worthy config; everything else ignored
+# Allowlist: track only sync-worthy config; everything else ignored.
+# What is tracked here is exactly what manifest.json declares, so a clone
+# plus the SessionStart hook reproduces a working install.
 /*
 !/.gitignore
 !/README.md
 !/CLAUDE.md
+!/GUIDE.ko.md
+!/manifest.json
 !/skills/
 !/scripts/
-!/custom skill docs/
+
+# Global memory for the home-directory scope. Re-included level by level,
+# because git cannot re-include a file whose parent directory is excluded.
+!/projects/
+/projects/*
+!/projects/C--Users-USER/
+/projects/C--Users-USER/*
+!/projects/C--Users-USER/memory/
 
 # never sync these even if rules change
 .credentials.json
