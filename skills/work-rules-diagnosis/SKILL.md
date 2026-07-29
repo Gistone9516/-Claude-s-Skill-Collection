@@ -6,7 +6,7 @@ description: Diagnosis and code-change discipline - anti-patchwork rules, root-c
 # work-rules-diagnosis — diagnosis and change discipline
 
 Rules: DG-1..DG-18 (18). Ordered by what a violation costs.
-CLAUDE.md G-14..G-19 point here.
+CLAUDE.md §4 routes here; the rules themselves live only in this file.
 
 ## 1. Anti-patchwork — spec before code (user directive 2026-07-28, global)
 

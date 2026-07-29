@@ -14,6 +14,20 @@
     "userWarningTemplate": "<이름> 스킬이 없습니다. 확인 바랍니다."
   },
 
+  "retiredGlobalRules": {
+    "note": "Retired on 2026-07-29 when CLAUDE.md dropped its summaries of skill content. The rules were not deleted; they live in the named skill and are reached through the CLAUDE.md section 1 routing table. Retired numbers are never reused.",
+    "G-14": "work-rules-diagnosis DG-4 (spec precedes substantial change)",
+    "G-15": "work-rules-diagnosis DG-2 (classify before fixing)",
+    "G-16": "work-rules-diagnosis DG-3 (prefer impossible over checked)",
+    "G-17": "work-rules-diagnosis DG-6 (no stacked patchwork)",
+    "G-18": "work-rules-diagnosis DG-5 (one responsibility, size is a signal)",
+    "G-19": "work-rules-shell SH-23 (README before commit)",
+    "G-20": "agent-ops AO-2 (opus is the bottleneck and judge)",
+    "G-21": "agent-ops AO-6, AO-7 (Workflow substrate, idle model)",
+    "G-23": "agent-ops AO-3 (reasoning depth, ROUTE)",
+    "G-24": "agent-ops AO-14 (writes serial, true independence)"
+  },
+
   "skills": [
     {
       "name": "ai-characteristics",
@@ -39,7 +53,7 @@
       "kind": "local",
       "lang": "en",
       "tier": 1,
-      "role": "Root-cause discipline, anti-patchwork, spec-before-code, change discipline. CLAUDE.md G-14..G-19 point here.",
+      "role": "Root-cause discipline, anti-patchwork, spec-before-code, change discipline. CLAUDE.md §4 routes here.",
       "ruleIds": "DG-1..DG-18"
     },
     {
@@ -49,7 +63,7 @@
       "lang": "en",
       "tier": 1,
       "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene.",
-      "ruleIds": "SH-1..SH-25"
+      "ruleIds": "SH-1..SH-26"
     },
     {
       "name": "agent-ops",
@@ -57,7 +71,7 @@
       "kind": "local",
       "lang": "en",
       "tier": 2,
-      "role": "Delegation POLICY: model and effort per stage, Agent vs Workflow, fan-out approval and caps, Report envelope, large and unattended runs. Tool descriptions stay canonical for mechanics (AO-1). CLAUDE.md G-20..G-24 point here.",
+      "role": "Delegation POLICY: model and effort per stage, Agent vs Workflow, fan-out approval and caps, Report envelope, large and unattended runs. Tool descriptions stay canonical for mechanics (AO-1). CLAUDE.md §4 routes here; approval gate G-22 stays in CLAUDE.md.",
       "ruleIds": "AO-1..AO-23"
     },
     {
@@ -166,7 +180,8 @@
     { "path": "manifest.json", "required": true, "role": "This file." },
     { "path": "GUIDE.ko.md", "required": true, "role": "Human-facing Korean guide to the whole setup. Not loaded by the model." },
     { "path": "README.md", "required": true, "role": "Repo entry point." },
-    { "path": "scripts/check-manifest.ps1", "required": true, "role": "The validator this manifest drives." },
+    { "path": "scripts/check-manifest.ps1", "required": true, "role": "The validator this manifest drives. SessionStart hook." },
+    { "path": "scripts/guard.ps1", "required": true, "role": "Mechanical enforcement of the four rules with a zero-false-positive signature: work-rules-shell SH-2 NUL bytes, SH-15 .bat with LF, SH-12 UnicodeEncodeError, SH-23 README before a structural commit. PostToolUse asyncRewake, PostToolUseFailure, PreToolUse." },
     { "path": "scripts/validate_doc.py", "required": false, "role": "Korean document length measurement, used by work-rules-writing WR-12." },
     { "path": "projects/C--Users-USER/memory/MEMORY.md", "required": false, "role": "Global memory index for the home directory scope. Machine-specific path key; absent on a fresh machine is normal." }
   ],
@@ -199,7 +214,10 @@
     { "key": "model", "expected": "opus[1m]", "role": "Session model." },
     { "key": "effortLevel", "expected": "xhigh", "role": "Reasoning ceiling." },
     { "key": "alwaysThinkingEnabled", "expected": true, "role": "Thinking on by default." },
-    { "key": "hooks.SessionStart", "expected": "runs scripts/check-manifest.ps1", "role": "Where this manifest gets enforced." }
+    { "key": "hooks.SessionStart", "expected": "runs scripts/check-manifest.ps1", "role": "Where this manifest gets enforced." },
+    { "key": "hooks.PostToolUse", "expected": "Write|Edit -> guard.ps1 with asyncRewake true", "role": "Background file checks; wakes the model only on a finding, so a clean write costs nothing." },
+    { "key": "hooks.PostToolUseFailure", "expected": "Bash -> guard.ps1", "role": "Catches the cp949 UnicodeEncodeError signature in a failed command." },
+    { "key": "hooks.PreToolUse", "expected": "Bash -> guard.ps1 with if Bash(git *)", "role": "README check before a structural commit. The if filter is prefix matching, which is why work-rules-shell SH-26 requires git -C over cd && git." }
   ],
 
   "restore": {

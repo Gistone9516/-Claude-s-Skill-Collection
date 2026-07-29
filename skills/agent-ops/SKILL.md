@@ -5,7 +5,7 @@ description: Delegation policy - the opus/sonnet division, model and effort per 
 
 # agent-ops — delegation policy
 
-Rules: AO-1..AO-23 (23). CLAUDE.md G-20..G-24 is the always-on summary. Rationale for the rules here lives in `ai-characteristics`.
+Rules: AO-1..AO-23 (23). CLAUDE.md §1 routes here and §4 points here; only the fan-out approval gate stays in CLAUDE.md, as G-22. Rationale for the rules here lives in `ai-characteristics`.
 
 > **Terminology (user directive 2026-06-10).** "opus" is a **role name** meaning the model currently applied to this session — the main judge model. It is not the fixed `claude-opus-*`; when the session model changes, every "opus" reference follows. "sonnet" stays literal.
 

@@ -6,7 +6,7 @@ description: Multi-lens advisory panel for reasoning/idea/decision questions whe
 # deepflow — multi-lens advisory panel
 
 Rules: DF-1..DF-9 (9), tagged on the load-bearing points only; the §0-§7 stage headings carry the rest of the procedure. Section order is execution order, not importance.
-Execution mechanics are canonical in `agent-ops`; delegation rules in CLAUDE.md G-20..G-24.
+Execution mechanics are canonical in `agent-ops`; delegation policy in `agent-ops`.
 
 > **Terminology (user directive, 2026-06-10):** "opus" in this skill = **the model currently applied to the Claude Code session** (role name), not the fixed `claude-opus-*`. "sonnet" stays literal. Canonical definition: `agent-ops`.
 

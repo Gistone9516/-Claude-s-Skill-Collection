@@ -5,8 +5,10 @@ description: Shell, git and terminal discipline for this environment (Windows 11
 
 # work-rules-shell — shell, git and terminal discipline
 
-Rules: SH-1..SH-25 (25). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
+Rules: SH-1..SH-26 (26). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
 Every rule came from an actual incident. None is safe to skip on the assumption that this time is different.
+
+Four of these are also enforced mechanically by `~/.claude/scripts/guard.ps1`, which runs as a hook: SH-2 (NUL bytes), SH-15 (`.bat` with LF), SH-12 (`UnicodeEncodeError`) and SH-23 (README before a structural commit). The hooks exist because reading this file has repeatedly failed to prevent those four — a rule is followed best when it is closest to the action, and a hook is closer than any document. Everything else here has no reliable mechanical signature and is left to the text.
 
 ## 0. Writing and running scripts
 
@@ -97,7 +99,9 @@ Always return and report a `denied` count: a subtree measured with denied>0 is a
 
 **SH-22 `git add -- <paths>` refuses the whole set if one path is ignored (measured 2026-07-21).** It fails with `The following paths are ignored by one of your .gitignore files`, and **tracked files in the same list therefore fail to commit** — a collector wrote cache files alongside a catalogue, and the catalogue never got committed. Filter first with `git check-ignore -- <paths>` and add the remainder. check-ignore does **not** report already-tracked files as ignored (do not pass `--no-index`), so a tracked file cannot be wrongly filtered out. Its exit code is 0 when something is ignored and 1 when nothing is, so do not treat 1 as failure.
 
-**SH-23 Update the root README.md before committing.** One file must explain the project: identity, structure map, design core, how to run, current state. Hard floor when structure, features or run instructions changed. Report to the user whether it was updated. (CLAUDE.md G-19)
+**SH-23 Update the root README.md before committing.** One file must explain the project: identity, structure map, design core, how to run, current state. Hard floor when structure, features or run instructions changed. Report to the user whether it was updated. (CLAUDE.md §4)
+
+**SH-26 Write git commands as `git -C <repo> ...`, never `cd <repo> && git ...`.** Two reasons, and the first is not obvious. A `PreToolUse` guard hook enforces SH-23 by inspecting the staged change set, and it is filtered with `if: "Bash(git *)"`, which is **prefix** matching — a command beginning with `cd` never reaches the guard, so the check silently does not run. The filter exists because an unfiltered hook spawns a process on every Bash call, measured at 600-700 ms each. Second, `cd` inside a compound command can trigger a permission prompt. The guard does recover the path from a leading `cd "..."` when it runs, but that only helps if it ran at all.
 
 ## 5. Moving a project folder to a different path
 

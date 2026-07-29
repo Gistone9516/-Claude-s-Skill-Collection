@@ -6,7 +6,7 @@ description: Multi-cycle plan→design→build workflow for vibecoding. Operator
 # buildflow — plan → design → build workflow
 
 Rules: BF-1..BF-6 (6), tagged on the load-bearing points only; the stage and cycle headings carry the rest of the procedure. Section order is execution order, not importance.
-Execution mechanics are canonical in `agent-ops`; change discipline in `work-rules-diagnosis`; delegation rules in CLAUDE.md G-20..G-24.
+Execution mechanics are canonical in `agent-ops`; change discipline in `work-rules-diagnosis`; delegation policy in `agent-ops`.
 
 > **Terminology (user directive, 2026-06-10):** "opus" / "Operator Opus" in this skill = **the model currently applied to the Claude Code session** (role name), not the fixed `claude-opus-*`. "sonnet" stays literal. Canonical definition: `agent-ops`.
 
@@ -53,7 +53,7 @@ A wrong plan discards spec + build ×N. Highest leverage.
 - **Reconcile gate (anti-infinite):** when integrity-checking multi-contract conformance, the checker classifies each residual **BLOCKING** (a real cross-contract break the SoT doesn't resolve — type/field/signature/missing-function) vs **NON_BLOCKING** (local wording the SoT already overrides). Converge at **BLOCKING=0** — don't chase SoT-overridden cosmetics (that's the anti-infinite principle made checkable).
 
 ### ③ Build (#1 value: time)
-- **BF-5 opus:** decompose into partitions, then **one folder = one git worktree = one sonnet** in parallel (cap per `agent-ops` AO-13). Each sonnet edits **only its worktree**; **shared files (types, config) and the final merge stay with opus** — this is the explicit worktree exception to CLAUDE.md G-24 "writes are serial". opus resolves merge conflicts from the conflict markers and re-spawns the sonnet if needed. At larger scope the partition itself becomes the deliverable: each unit must be independently checkable and its check written with it (`agent-ops` AO-23).
+- **BF-5 opus:** decompose into partitions, then **one folder = one git worktree = one sonnet** in parallel (cap per `agent-ops` AO-13). Each sonnet edits **only its worktree**; **shared files (types, config) and the final merge stay with opus** — this is the explicit worktree exception to `agent-ops` AO-14 "writes are serial". opus resolves merge conflicts from the conflict markers and re-spawns the sonnet if needed. At larger scope the partition itself becomes the deliverable: each unit must be independently checkable and its check written with it (`agent-ops` AO-23).
 - **Parallel build = truly independent partitions only** (`agent-ops` AO-14). Producer to consumer is never co-parallel — pipeline the stages or pre-stage the shared input, because a consumer without its input invents one (`ai-characteristics` AI-6).
 - **sonnet hard rule:** before starting, read the **whole assignment (own spec + related/existing files in the folder) with zero omission** → coverage self-report.
 - **thin slice first** (reality check): build one partition → user reaction → contract OK → *then* fan out the rest.

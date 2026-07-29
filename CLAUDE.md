@@ -41,31 +41,19 @@ Procedure: `verify-fanout`.
 - **G-10 Self-brief first.** Run `verify-fanout` brief mode against any artifact not authored in this turn — code, documents, specs, config, prose ("어떤 작업에서나 선행하여 정확도를 올릴 것", 2026-07-29). A session sees a part and edits it, so its defects are locally reasonable and globally wrong.
   - **The brief agent is a standing exception** ("브리핑 에이전트는 예외로 취급함을 명시", 2026-07-29): exempt from fan-out pre-approval and from any "agents only when asked" restriction, uncounted against any budget, run before the rest of the preamble. A brief that needs permission is a brief that does not happen.
 - **G-11 Then brief the user and get an OK** — what will be done and why, what stays, what changes, the steps. Exception: an obvious one-off command. (2026-07-20)
+- **G-22 Fan-out needs prior approval.** Report the expected agent count with a per-stage breakdown and get an OK before starting, including for prebuilt workflows where internal verification rounds multiply the total (measured: deep-research reached 66). Exceptions: one or two one-shot lookups, and the G-10 brief agent. Resuming inside an approved budget is fine; exceeding it needs re-approval. (2026-07-20). This is a permission gate, not craft — the rest of delegation is in `agent-ops`.
 - **G-12 Analysis requests produce analysis only.** "investigate", "review", "why", "plan" → deliver the report and stop. Change code only on "fix", "implement", "proceed", "apply". A console.log is a code change. Ambiguous → ask.
 - **G-13 Keep simple commands simple.** A bare command gets the minimal action. Settle reasonable defaults yourself rather than multiplying questions, and report what was decided.
 
-## §4 Changing things
+## §4 Changing things, and delegating
 
-A patch does not know what it broke: a decision living only inside code is silently reversed by a later patch that still passes every test. Hence:
+Both live entirely in skills. Nothing is summarized here: a summary in this file competed with the skill and lost, being the same rule in fewer words, further from the moment of use, and diluted by everything else always in context. §1 routes to them.
 
-- **G-14 Spec precedes any substantial change** — behavior-rule table, contracts, verification table, reviewed before implementing.
-- **G-15 Classify before fixing.** Implementation violated a rule → fix code. Rule was wrong → amend the spec first. Rule was missing → add the rule first. "Just fix it" is not an option.
-- **G-16 Prefer impossible over checked.** Two counters that must agree become one counter plus a derivation.
-- **G-17 No stacked patchwork.** Layer separation and explicit contracts. If the structure does not accept the change naturally, restructure first. Same standard to delegated agents.
-- **G-18 One file, one responsibility; index the pieces.** Never grow a file by appending. Size is a signal, not a rule — at ~300 lines ask whether it is still one responsibility, and register a justified exception in the size-gate allowlist so it stays visible.
-- **G-19 Update the root README.md before `git commit`** — identity, structure map, design core, how to run, current state. Hard floor when structure, features, or run instructions changed. Report whether it was updated.
+- **Any code change, refactor, removal or bug fix** → `work-rules-diagnosis`. The reason to load it: a patch does not know what it broke, because a decision living only inside code is silently reversed by a later patch that still passes every test.
+- **Shell, git, commit** → `work-rules-shell`, which also holds the README-before-commit floor.
+- **Any delegation or fan-out** → `agent-ops`, for model and effort per stage, the Report envelope, and caps. The approval gate itself is G-22 above, because it needs the user rather than craft.
 
-Full text and measured cases: `work-rules-diagnosis`.
-
-## §5 Delegation
-
-- **G-20 opus is the bottleneck and the highest-value judge.** sonnet gathers, locates, executes, mechanically verifies. opus judges, composes, decides, and looks. Verbatim placement, prose, visual judgment and risky-write decisions stay opus.
-- **G-21 Workflow is the substrate.** Fire a background Workflow, end the turn, resume on the completion signal. Never a foreground parallel Agent fan-out for multi-agent work; using the bare Agent tool after opting into orchestration requires a stated reason.
-- **G-22 Fan-out needs prior approval.** Report the expected agent count with a per-stage breakdown and get an OK first, including for prebuilt workflows where internal verification rounds multiply the total (measured: deep-research reached 66). Exceptions: one or two one-shot lookups, and the G-10 brief agent. Resuming inside an approved budget is fine; exceeding it needs re-approval. (2026-07-20)
-- **G-23 Match reasoning depth to stakes.** Output length, not agent count, is the cost. On an agent return obey its ROUTE token by reflex — relay means one or two lines. Reason at full depth for: irreversible / external / security, verbatim placement, cross-folder contract or merge, risky write, a judgment that needs seeing, an auto-propagating result, a failed or partial flag, genuine ambiguity.
-- **G-24 Writes are serial; parallel is for reading.** Parallel needs true independence — producer→consumer is a pipeline, never side by side.
-
-Full procedure: `agent-ops`.
+Retired IDs (G-14..G-21, G-23, G-24) moved into those skills rather than being deleted; the mapping is in `manifest.json`. Retired numbers are never reused.
 
 ## §6 Results, memory, install
 
