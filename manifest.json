@@ -63,7 +63,7 @@
       "lang": "en",
       "tier": 1,
       "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene.",
-      "ruleIds": "SH-1..SH-26"
+      "ruleIds": "SH-1..SH-28"
     },
     {
       "name": "agent-ops",

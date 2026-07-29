@@ -84,7 +84,7 @@
 
 | 스킬 | 언제 | 규칙 수 |
 |---|---|---|
-| `work-rules-shell` | 셸, git, 터미널, WSL 명령, 커밋, 폴더 이동 | 26 |
+| `work-rules-shell` | 셸, git, 터미널, WSL 명령, 커밋, 폴더 이동 | 28 |
 | `work-rules-diagnosis` | 원인 진단, 디버깅, 기능 제거, 코드 구현 및 리팩토링 착수 | 18 |
 | `verify-fanout` | 남이 쓴 모듈 수정, 있다 없다 단정, 스펙 확정, 이식 코드 감사 | 21 |
 | `work-rules-automation` | Workflow, 백그라운드 자동화, 장시간 멀티스텝 | 26 |
