@@ -39,12 +39,27 @@
 
 ### 훅이 강제하는 것
 
+**결과를 보는 것** (`scripts/guard.ps1`)
+
 | 검사 | 시점 | 규칙 |
 |---|---|---|
 | Write한 파일에 날 NUL 바이트 | PostToolUse (백그라운드) | SH-2 |
 | `.bat`인데 LF 줄바꿈 | PostToolUse (백그라운드) | SH-15 |
 | Bash 실패 출력에 `UnicodeEncodeError` | PostToolUseFailure | SH-12 |
-| 파일 추가·삭제가 있는 커밋인데 README 미포함 | PostToolUse (git 명령만) | SH-23, G-19 |
+| 파일 추가·삭제가 있는 커밋인데 README 미포함 | PostToolUse (git 명령만) | SH-23 |
+
+**명령문을 보는 것** (`scripts/pattern-guard.sh`, 실행 **전**)
+
+| 검사 | 규칙 | 실측 피해 |
+|---|---|---|
+| `Get-Content` → `Set-Content` 왕복 | SH-4 | README 전체 파괴 |
+| `Remove-Item -Recurse` + SilentlyContinue 또는 node_modules | SH-5 | 731MB 잔존 |
+| `EnumerateFiles` + `AllDirectories` | SH-8 | 드라이브 스캔 오보고 |
+| 드라이브 루트나 시스템 위치를 `-Force` 없이 열거 | SH-9 | 16.4GB 페이지파일을 없다고 보고 |
+| `Measure-Object -Line` | SH-10 | 764행을 480행으로 |
+| `python -c`에 비ASCII | SH-1 | 런 정지 반복 |
+
+명령문을 보는 쪽은 실행 **전**에 뜹니다. 명령문은 훅과 실행 사이에 바뀌지 않으므로 사전 판정이 정확하고, 저 여섯 개는 전부 파괴적이라 돌기 전에 멈추는 게 맞기 때문입니다.
 
 **선별 기준은 오탐 0이다.** 시끄러운 훅은 무시당하고, 무시당한 훅은 희석된 전역 규칙과 똑같은 실패다. 그래서 "복잡한 인라인 셸 금지"처럼 기준이 주관적인 것은 훅으로 만들지 않았다.
 

@@ -86,7 +86,17 @@ Applies whenever a program calls `claude -p` expecting structured output such as
 
 ## 6-1. Writing a guard hook (measured 2026-07-29)
 
-**AU-21 A hook that inspects state the observed command is about to change cannot be accurate. Observe the result, not the input.** Measured on the first live run of a `PreToolUse` hook enforcing the README rule: the command was `git add -A && git commit`, so at hook time the index had not been updated and README.md read as unstaged. It reported a violation on a commit that did contain README.md. Moving the same check to `PostToolUse`, reading the commit that actually landed, made it exact. This is the same rule as the cp949 check, which gave up predicting a `UnicodeEncodeError` from the command and instead recognizes the error signature in the failure output.
+**AU-21 A hook must not inspect state that the observed command is about to change. Pick the event by what the check reads, not by when the warning would be nicest.**
+
+| What the check reads | Correct event | Why |
+|---|---|---|
+| The command text itself | `PreToolUse` | Text does not change between hook and execution, so matching is exact — and a destructive command is worth stopping before it runs |
+| Mutable state the command will modify (the index, the working tree, a file) | `PostToolUse` | Reading it early gives a stale answer |
+| An error signature that only exists after failure | `PostToolUseFailure` | Nothing in the input predicts it |
+
+Measured on the first live run of a `PreToolUse` hook enforcing the README rule: the command was `git add -A && git commit`, so at hook time the index had not been updated and README.md read as unstaged. It reported a violation on a commit that did contain README.md. Moving that check to `PostToolUse`, reading the commit that actually landed, made it exact. The cp949 check sits in the third row for the same reason: both measured violations had ASCII command text and non-ASCII *data*, so nothing in the input could predict them.
+
+**AU-24 A hook message is one imperative sentence plus the rule ID, never the rationale.** The skill owns the reasoning and the measured case; the hook owns the interruption. Restating rationale in the hook creates a second copy that goes stale exactly like any other duplicate, and a long injection at every occurrence reproduces the dilution that hooks were introduced to fix. Measured: the first version of `guard.ps1` carried 80-word messages that repeated whole paragraphs of `work-rules-shell`.
 
 **AU-22 Selection criterion for a guard hook is zero false positives.** A hook that cries wolf gets ignored, and an ignored hook is exactly the diluted-rule failure hooks were introduced to fix. A rule whose violation has no reliable mechanical signature stays in its skill. Rejected on this basis: "no complex inline shell" (the threshold is a judgement), and predicting the cp949 trap from the command text (both measured violations had ASCII commands and non-ASCII *data*).
 

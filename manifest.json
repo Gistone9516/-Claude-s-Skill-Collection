@@ -81,7 +81,7 @@
       "lang": "en",
       "tier": 2,
       "role": "Long-run robustness: tool-call hygiene, truncation, background Workflow health checks, claude -p lifecycle.",
-      "ruleIds": "AU-1..AU-23"
+      "ruleIds": "AU-1..AU-24"
     },
     {
       "name": "work-rules-writing",
@@ -182,6 +182,7 @@
     { "path": "README.md", "required": true, "role": "Repo entry point." },
     { "path": "scripts/check-manifest.ps1", "required": true, "role": "The validator this manifest drives. SessionStart hook." },
     { "path": "scripts/guard.ps1", "required": true, "role": "Mechanical enforcement of the four rules with a zero-false-positive signature: work-rules-shell SH-2 NUL bytes, SH-15 .bat with LF, SH-12 UnicodeEncodeError, SH-23 README after a structural commit. Registered on PostToolUse (Write|Edit asyncRewake, Bash filtered to git) and PostToolUseFailure. No PreToolUse: see work-rules-automation AU-21." },
+    { "path": "scripts/pattern-guard.sh", "required": true, "role": "PreToolUse scanner for command text naming a construct known to be wrong: work-rules-shell SH-4, SH-5, SH-8, SH-9, SH-10, SH-1. Bash built-ins only, no forks - measured 190 ms per call against 550 ms with one grep per pattern and 600-700 ms in PowerShell." },
     { "path": "scripts/validate_doc.py", "required": false, "role": "Korean document length measurement, used by work-rules-writing WR-12." },
     { "path": "projects/C--Users-USER/memory/MEMORY.md", "required": false, "role": "Global memory index for the home directory scope. Machine-specific path key; absent on a fresh machine is normal." }
   ],
@@ -217,6 +218,7 @@
     { "key": "hooks.SessionStart", "expected": "runs scripts/check-manifest.ps1", "role": "Where this manifest gets enforced." },
     { "key": "hooks.PostToolUse", "expected": "Write|Edit -> guard.ps1 with asyncRewake true", "role": "Background file checks; wakes the model only on a finding, so a clean write costs nothing." },
     { "key": "hooks.PostToolUseFailure", "expected": "Bash -> guard.ps1", "role": "Catches the cp949 UnicodeEncodeError signature in a failed command." },
+    { "key": "hooks.PreToolUse", "expected": "Bash|PowerShell -> pattern-guard.sh", "role": "Command-text patterns. Pre, not post, because command text does not change between hook and execution and these constructs are destructive (work-rules-automation AU-21)." },
     { "key": "hooks.PostToolUse[Bash]", "expected": "guard.ps1 with if Bash(git *)", "role": "README check on the commit that landed. Deliberately post, not pre: a pre hook reads the index before git add runs (work-rules-automation AU-21). The if filter is prefix matching, which is why work-rules-shell SH-26 requires git -C over cd && git." }
   ],
 

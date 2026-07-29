@@ -8,7 +8,14 @@ description: Shell, git and terminal discipline for this environment (Windows 11
 Rules: SH-1..SH-26 (26). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
 Every rule came from an actual incident. None is safe to skip on the assumption that this time is different.
 
-Four of these are also enforced mechanically by `~/.claude/scripts/guard.ps1`, which runs as a hook: SH-2 (NUL bytes), SH-15 (`.bat` with LF), SH-12 (`UnicodeEncodeError`) and SH-23 (README before a structural commit). The hooks exist because reading this file has repeatedly failed to prevent those four — a rule is followed best when it is closest to the action, and a hook is closer than any document. Everything else here has no reliable mechanical signature and is left to the text.
+Ten of these are also enforced mechanically by hooks, because reading this file has repeatedly failed to prevent them — a rule is followed best when it is closest to the action, and a hook is closer than any document.
+
+| Script | Event | Rules |
+|---|---|---|
+| `scripts/guard.ps1` | after a Write, Edit, Bash failure, or commit | SH-2, SH-15, SH-12, SH-23 |
+| `scripts/pattern-guard.sh` | before a Bash or PowerShell call, on the command text | SH-4, SH-5, SH-8, SH-9, SH-10, SH-1 |
+
+The remaining sixteen have no reliable mechanical signature and stay in the text. SH-7 is the instructive exclusion: a hook cannot know whether parallel agents are running, so firing on every `git stash` would be a false positive, and a hook that cries wolf is worth less than no hook (`work-rules-automation` AU-22).
 
 ## 0. Writing and running scripts
 

@@ -7,11 +7,16 @@
 # ignored hook is exactly the diluted-rule failure this was built to replace. A rule that
 # cannot be detected without guessing is left to its skill.
 #
-# Checks:
+# Checks (event chosen per work-rules-automation AU-21 - by what the check reads):
 #   PostToolUse        Write|Edit   raw NUL bytes in the written file        (work-rules-shell SH-2)
 #   PostToolUse        Write|Edit   .bat saved with bare LF line endings     (work-rules-shell SH-15)
+#   PostToolUse        Bash         commit adds/deletes files, no README     (work-rules-shell SH-23)
 #   PostToolUseFailure Bash         UnicodeEncodeError in the failure output (work-rules-shell SH-12)
-#   PreToolUse         Bash         git commit adds/deletes files, no README (CLAUDE.md G-19, SH-23)
+#
+# Command-text pattern matching lives in the sibling pattern-guard.sh, which runs on PreToolUse
+# because command text does not change between hook and execution.
+#
+# Messages are one imperative sentence plus the rule ID (AU-24). The skill owns the rationale.
 #
 # Constraints, all learned the hard way:
 #   * ASCII only. PowerShell 5.1 reads a BOM-less .ps1 as cp949 and corrupts non-ASCII source.
@@ -44,12 +49,8 @@ try {
   # ---------------- PostToolUseFailure / Bash : SH-12 ----------------
   if ($Event -eq "PostToolUseFailure") {
     if ($raw -match "UnicodeEncodeError") {
-      Emit-Context ("[guard SH-12] That Bash call died with UnicodeEncodeError. This is the measured " +
-        "cp949 console trap, not a bug in the data: the Windows console here is cp949, so printing Korean " +
-        "or any non-ASCII character (an em dash, a copyright sign) to stdout kills the whole run. " +
-        "Do not retry the same command. Write the result to a UTF-8 file " +
-        "(io.open(path, 'w', encoding='utf-8')) and read it back with the Read tool, keeping stdout to one " +
-        "ASCII line. Full rule: work-rules-shell SH-12.")
+      Emit-Context ("[SH-12] cp949 console. Do not retry this command - write the output to a UTF-8 file " +
+        "and read it with the Read tool, keeping stdout to one ASCII line.")
     }
     exit 0
   }
@@ -92,11 +93,8 @@ try {
     if ($hasReadme) { exit 0 }
 
     $sample = ($structural | Select-Object -First 6) -join ", "
-    Emit-Context ("[guard G-19] The commit just made adds, deletes or renames " + $structural.Count +
-      " file(s) and does not touch README.md: " + $sample + ". Adding or removing files changes the " +
-      "structure map, which is the hard floor for updating the root README (CLAUDE.md G-19, " +
-      "work-rules-shell SH-23). Update README.md and amend, or state to the user why this commit does " +
-      "not need it. Do not silently skip it.")
+    Emit-Context ("[SH-23] The commit just made adds or removes " + $structural.Count + " file(s) without " +
+      "touching README.md (" + $sample + "). Update the structure map and amend, or tell the user why not.")
     exit 0
   }
 
@@ -116,11 +114,8 @@ try {
   $nulCount = 0
   foreach ($b in $bytes) { if ($b -eq 0) { $nulCount++ } }
   if ($nulCount -gt 0) {
-    [void]$findings.Add("[guard SH-2] " + $path + " now contains " + $nulCount + " raw NUL byte(s). An escape " +
-      "such as \0 in the Write payload became a real control character. ripgrep will treat this file as " +
-      "binary so the Grep tool cannot search it, the Read tool renders NUL as whitespace so the file looks " +
-      "fine, and Edit will fail with 'String to replace not found' because the visible text does not match " +
-      "the actual bytes. Rewrite the file from a Python script instead of the Write tool.")
+    [void]$findings.Add("[SH-2] " + $path + " contains " + $nulCount + " raw NUL byte(s). Rewrite it from a Python " +
+      "script instead of the Write tool.")
   }
 
   # SH-15 .bat with bare LF line endings
@@ -133,10 +128,8 @@ try {
       }
     }
     if ($lf -ne $crlf) {
-      [void]$findings.Add("[guard SH-15] " + $path + " has " + ($lf - $crlf) + " bare LF line ending(s). cmd " +
-        "does not parse a .bat saved with LF: chcp is silently skipped, the console stays on code page 949, " +
-        "and the symptom looks like a text encoding problem while the cause is line endings. The Write tool " +
-        "always emits LF, so rewrite this file with CRLF, UTF-8 and no BOM, from a Python script.")
+      [void]$findings.Add("[SH-15] " + $path + " has " + ($lf - $crlf) + " bare LF line ending(s). Rewrite it as " +
+        "CRLF + UTF-8 without BOM, from a Python script.")
     }
   }
 
