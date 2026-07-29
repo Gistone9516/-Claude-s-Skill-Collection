@@ -74,6 +74,7 @@ A two-party contract: sonnet emits a structured report; **opus obeys the read-pr
 Force a `schema` (structured output) wherever the runtime allows (Workflow `schema`, etc.) so missing fields surface.
 
 ## Fan-out
+- **★ 팬아웃 사전 허락 의무 (user directive 2026-07-20).** 팬아웃(Workflow 포함) 기동 전 **예상 에이전트 총수와 단계별 내역을 사용자에게 보고하고 허락을 받는다.** 기성 워크플로(deep-research 등)는 내부 검증 투표 같은 배수 단계까지 추산해 총수를 제시(실측: deep-research가 claim별 3표 검증으로 66 에이전트까지 팽창 — 사용자가 과하다고 판정). 예외 = 1~2개 단발 조회(보고만). 승인 범위 내 resume는 재허락 불요, 승인 수 초과 예상 시 재허락.
 - **① deployment plan** (how many, each scope) → **② parallel activation** → **③ opus synthesizes — only if load-bearing** (else ROUTE handles it; review-optional results go straight to the user).
 - **3 tiers + caps (empirical start, max within reliability):** work (explore/gather) ~10 / verify (machine-check) ~2 / lens (opinion — deepflow lenses, buildflow adversarial). Not hard ceilings — the max that doesn't hurt opus's ability to synthesize sharply; sonnet is abundant, raise where it helps quality. **verify-2 caps machine-verification only; lens is a separate tier.**
 - **Parallel = read/explore only; writes serial** (concurrent edits corrupt). **Parallel-write pattern:** each agent owns one folder = one `isolation:'worktree'`; shared files (types/config) + final merge stay opus.
