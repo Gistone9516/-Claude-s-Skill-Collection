@@ -155,6 +155,7 @@ When sweep finds a countable shape, encode it in the project's index script so i
 - **`readers=0` must not hard-fail.** A legitimately unconsumed export exists when its consumer arrives next slice. It belongs in the committed index, whose **diff** is the signal.
 - Exceptions go in an allowlist **with a stated reason** — visible, not hidden.
 - **Validate a new check against known answers before trusting it.** Measured: an indexer shipped with 5 defects (missing `export *`, missing `type_identifier`, missing namespace imports, single-pass comment collection, pseudo-classes counted as classes). Four silently produced false positives at scale; one silently produced a false negative on the exact field it was written to catch.
+- **Exercise both branches, not only the firing one.** A check that fires correctly on the case you built it for can still be wrong about when to stay silent, and that half is invisible until it cries wolf in front of the user. Measured 2026-07-29: a README guard was tested only on a commit that genuinely lacked a README, so its "README is present, stay quiet" path was never run — and it was broken, matching the path pattern against the whole `M<tab>README.md` line instead of the extracted path. It shipped and produced a false positive on its first live run. Construct the negative case deliberately, in a throwaway fixture if necessary.
 
 ## 10. What no mode covers
 

@@ -54,39 +54,49 @@ try {
     exit 0
   }
 
-  # ---------------- PreToolUse / Bash : G-19 ----------------
-  if ($Event -eq "PreToolUse") {
+  # ---------------- PostToolUse / Bash : G-19 ----------------
+  # Deliberately POST, not PRE. A PreToolUse version shipped on 2026-07-29 and produced a false
+  # positive on its first live run: the command was "git add -A && git commit", so at hook time the
+  # index had not been updated yet and README.md read as unstaged. A hook that inspects state the
+  # command itself is about to change cannot be accurate. Read the commit that actually happened.
+  if ($Event -eq "PostToolUse" -and $hookInput.tool_name -eq "Bash") {
     $cmd = ""
     if ($hookInput.tool_input -and $hookInput.tool_input.command) { $cmd = [string]$hookInput.tool_input.command }
-    if ($cmd -notmatch "git\s+(-c\s+\S+\s+)*commit") { exit 0 }
+    if ($cmd -notmatch "git\s+(-C\s+\S+\s+|-c\s+\S+\s+)*commit") { exit 0 }
 
-    # The hook's own cwd is the session directory, which is often not the repo being committed to.
-    # Recover the target from a leading cd in the command, which is how these calls are usually written.
+    # Recover the repo from -C or from a leading cd, in that order.
     $repo = "."
-    if ($cmd -match '^\s*cd\s+"([^"]+)"') { $repo = $Matches[1] }
+    if ($cmd -match 'git\s+-C\s+"([^"]+)"') { $repo = $Matches[1] }
+    elseif ($cmd -match "git\s+-C\s+'([^']+)'") { $repo = $Matches[1] }
+    elseif ($cmd -match 'git\s+-C\s+(\S+)') { $repo = $Matches[1] }
+    elseif ($cmd -match '^\s*cd\s+"([^"]+)"') { $repo = $Matches[1] }
     elseif ($cmd -match "^\s*cd\s+'([^']+)'") { $repo = $Matches[1] }
     elseif ($cmd -match '^\s*cd\s+(\S+)\s*(&&|;)') { $repo = $Matches[1] }
 
-    # structure change = a file added, deleted or renamed in this commit
-    $staged = & git -C $repo diff --cached --name-status 2>$null
+    $landed = & git -C $repo show --name-status --format= HEAD 2>$null
     if ($LASTEXITCODE -ne 0) { exit 0 }
-    if (-not $staged) { exit 0 }
+    if (-not $landed) { exit 0 }
 
+    # Split status from path first. Matching README against the whole line fails, because the line
+    # is "M<tab>README.md" and an anchored (^|/) never sees past the tab - shipped and caught 2026-07-29.
     $structural = @()
     $hasReadme = $false
-    foreach ($line in $staged) {
-      if ($line -match '^(A|D|R\d*)\s+(.+)$') { $structural += $Matches[2] }
-      if ($line -match '(^|/)README\.md\s*$') { $hasReadme = $true }
+    foreach ($line in $landed) {
+      if ($line -notmatch '^(\S+)\s+(.+)$') { continue }
+      $status = $Matches[1]
+      $file = $Matches[2].Trim()
+      if ($status -match '^(A|D|R\d*)$') { $structural += $file }
+      if ($file -match '(^|/)README\.md$') { $hasReadme = $true }
     }
     if ($structural.Count -eq 0) { exit 0 }
     if ($hasReadme) { exit 0 }
 
     $sample = ($structural | Select-Object -First 6) -join ", "
-    Emit-Context ("[guard G-19] This commit adds, deletes or renames " + $structural.Count +
-      " file(s) but does not touch README.md: " + $sample + ". Adding or removing files changes the " +
+    Emit-Context ("[guard G-19] The commit just made adds, deletes or renames " + $structural.Count +
+      " file(s) and does not touch README.md: " + $sample + ". Adding or removing files changes the " +
       "structure map, which is the hard floor for updating the root README (CLAUDE.md G-19, " +
-      "work-rules-shell SH-23). Either update README.md and stage it, or state to the user why this " +
-      "commit does not need it. Do not silently skip it.")
+      "work-rules-shell SH-23). Update README.md and amend, or state to the user why this commit does " +
+      "not need it. Do not silently skip it.")
     exit 0
   }
 

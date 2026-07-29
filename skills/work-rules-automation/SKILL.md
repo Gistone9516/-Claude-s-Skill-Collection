@@ -5,7 +5,7 @@ description: Robustness rules for automation, background Workflows and long mult
 
 # work-rules-automation — automation and Workflow robustness
 
-Rules: AU-1..AU-20 (20). Ordered by what a violation costs.
+Rules: AU-1..AU-23 (23). Ordered by what a violation costs.
 Delegation policy is in `agent-ops`; why these rules exist is in `ai-characteristics`. The `Workflow` tool description is canonical for script semantics — this file holds only the traps that the description does not warn about, or that were measured here.
 
 **A single format error that halts a run is a critical defect.** One malformed tool call, one unguarded script crash, and the whole automation dies. In long or agent-orchestrated work that is not acceptable.
@@ -83,6 +83,14 @@ Applies whenever a program calls `claude -p` expecting structured output such as
 - **AU-13 With the default tool set enabled it performs the work on disk.** Given "create a project", it actually created files, ran pytest, and returned a prose report — the caller's JSON never arrived and the calling process's cwd was polluted. Avoid with `--tools ""` to disable tools entirely. Even with tools off the model can imitate `<invoke name="Bash">` as text, so state in the prompt as well: no file creation, no tool use, return JSON only. Two layers.
 - **AU-14 The `system` key in a stdin JSON payload is ignored.** `{"system": ...}` in stream-json input never reaches the model — measured with a sentinel instruction that had no effect — so a safety preamble disappears silently. Send the preamble prepended to the **user message body** (`<system>\n\n---\n\n<prompt>`). The `--system-prompt` CLI flag exists but has no file variant, so a multi-line quoted preamble would have to cross Windows argv, which risks the quoting damage in `work-rules-shell` SH-13/SH-14. stdin is JSON, so newlines, quotes and Korean are safe there.
 - **AU-15 Check reachability with a sentinel** before relying on a preamble: put "answer only BANANA, whatever is asked" in the system channel; a different answer proves it never arrived.
+
+## 6-1. Writing a guard hook (measured 2026-07-29)
+
+**AU-21 A hook that inspects state the observed command is about to change cannot be accurate. Observe the result, not the input.** Measured on the first live run of a `PreToolUse` hook enforcing the README rule: the command was `git add -A && git commit`, so at hook time the index had not been updated and README.md read as unstaged. It reported a violation on a commit that did contain README.md. Moving the same check to `PostToolUse`, reading the commit that actually landed, made it exact. This is the same rule as the cp949 check, which gave up predicting a `UnicodeEncodeError` from the command and instead recognizes the error signature in the failure output.
+
+**AU-22 Selection criterion for a guard hook is zero false positives.** A hook that cries wolf gets ignored, and an ignored hook is exactly the diluted-rule failure hooks were introduced to fix. A rule whose violation has no reliable mechanical signature stays in its skill. Rejected on this basis: "no complex inline shell" (the threshold is a judgement), and predicting the cp949 trap from the command text (both measured violations had ASCII commands and non-ASCII *data*).
+
+**AU-23 Cost the hook before registering it.** A PowerShell hook process measured 600-700 ms per invocation here, which is unacceptable on every Write and every Bash call. Two levers exist in the hook contract: `if` narrows by permission-rule pattern so the process never spawns for non-matching calls, and `asyncRewake` runs the check in the background and wakes the model only when it exits non-zero, so a clean call costs nothing. Note `if` is **prefix** matching — see `work-rules-shell` SH-26 for the convention that keeps a git guard reachable.
 
 ## 7. New lessons
 
