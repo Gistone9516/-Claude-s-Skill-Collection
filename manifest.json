@@ -45,7 +45,9 @@
       "lang": "en",
       "tier": 1,
       "role": "Evidence grading, brief mode, indexing protocol, claim verification. CLAUDE.md G-05..G-10 point here. The brief runs as a pair of lenses (VF-21), which is why the fan-out exception is worded in the plural in both CLAUDE.md G-22 and agent-ops AO-12.",
-      "ruleIds": "VF-1..VF-21"
+      "ruleIds": "VF-1..VF-22",
+      "warnBytes": 22000,
+      "warnBytesReason": "Second use of this exception on 2026-07-30, and deliberately not a reflex: about 640 bytes of my own prose were cut across three passes first, and what remained was rules rather than padding. The responsibility question DG-5 asks has one answer here - this is how a later session checks what an earlier one did, and how to write so it can be checked, reached by the single routing trigger 'editing a module written by someone else'. Splitting it would mean loading two skills at that one moment. When 22000 is next exceeded, ask the question again rather than raising this."
     },
     {
       "name": "work-rules-diagnosis",

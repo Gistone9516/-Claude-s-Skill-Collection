@@ -86,7 +86,7 @@
 |---|---|---|
 | `work-rules-shell` | 셸, git, 터미널, WSL 명령, 커밋, 폴더 이동 | 28 |
 | `work-rules-diagnosis` | 원인 진단, 디버깅, 기능 제거, 코드 구현 및 리팩토링 착수 | 18 |
-| `verify-fanout` | 남이 쓴 모듈 수정, 있다 없다 단정, 스펙 확정, 이식 코드 감사 | 21 |
+| `verify-fanout` | 남이 쓴 모듈 수정, 있다 없다 단정, 스펙 확정, 이식 코드 감사 | 22 |
 | `work-rules-automation` | Workflow, 백그라운드 자동화, 장시간 멀티스텝 | 26 |
 | `work-rules-writing` | 자소서, 보고서, 슬라이드, 주석 등 사람이 읽는 산출물과 디자인 | 14 |
 | `work-rules-docs` | hwpx, pptx, docx, xlsx 편집과 텍스트 추출 | 14 |

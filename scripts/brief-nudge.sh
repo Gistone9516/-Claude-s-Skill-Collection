@@ -71,5 +71,26 @@ esc="${esc//\"/\\\"}"
 
 msg="[G-10] First touch of ${esc} this session - run the verify-fanout brief pair (현장 + 주변, VF-21) before editing it, or say why you are skipping it."
 
+# If this file has a decision note, name it. The note answers what the brief cannot: what earlier
+# decisions cost, and what breaks if this edit reverses one (VF-22). Repo root is inferred by
+# walking up to the directory holding _shadow, so this works from any depth.
+dir="${path%[/\\]*}"
+while [ -n "$dir" ]; do
+  if [ -d "$dir/_shadow" ]; then
+    rel="${path#"$dir"}"
+    rel="${rel#[/\\]}"
+    note="$dir/_shadow/$rel.md"
+    if [ -f "$note" ]; then
+      nesc="${note//\\/\\\\}"
+      nesc="${nesc//\"/\\\"}"
+      msg="$msg  ///  [VF-22] It has a decision note - read ${nesc} before editing."
+    fi
+    break
+  fi
+  next="${dir%[/\\]*}"
+  [ "$next" = "$dir" ] && break
+  dir="$next"
+done
+
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "$msg"
 exit 0

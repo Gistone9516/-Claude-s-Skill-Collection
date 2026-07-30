@@ -5,7 +5,7 @@ description: Evidence grading and the indexing protocol for documents and code -
 
 # verify-fanout — grade the evidence, index it, verify cheaply
 
-Rules: VF-1..VF-21 (21). Sections are ordered by how much a violation costs.
+Rules: VF-1..VF-22 (22). Sections are ordered by how much a violation costs.
 CLAUDE.md G-05..G-10 point here.
 
 ## 1. Evidence grades
@@ -77,7 +77,7 @@ Give each lens the half it owns **and tell it the other half is covered.** An ag
 
 Model tier is not set here — §8 governs, and `agent-ops` AO-4 puts a lens on sonnet. **"Lens" here names the framing only, not AO-18's lens payload** (`stance · reasons · killer_point · risks · flip_condition`): a brief returns imperative decision lines, per VF-10.
 
-Measured 2026-07-30, the pair's first run: the site lens returned the rule numbering and the byte budget the edit had to fit inside; the surroundings lens returned three separate files that restated the rule in the singular — including a hook script written twenty minutes earlier that the operator had just reviewed line by line without noticing. Neither lens would have produced the other's list.
+Measured 2026-07-30, the pair's first run: the site lens returned the rule numbering and byte budget the edit had to fit; the surroundings lens returned three files that restated the rule in the singular, one of them a hook script the operator had just reviewed line by line without noticing. Neither lens would have produced the other's list.
 
 Give the pair the relation index and the target path. Each returns **3-5 decision-shaped lines, not a relationship dump**:
 
@@ -88,7 +88,7 @@ Give the pair the relation index and the target path. Each returns **3-5 decisio
 3. 이 상수는 providers/deepseek/client.ts와 같아야 한다
 ```
 
-**VF-9 Either lens must be able to answer "주의할 것 없음".** An agent required to find something every time produces noise, noise gets skimmed, and a skimmed brief is an unrun brief. This binds harder on a pair than on a single agent: the second lens is the one under pressure to justify its own existence.
+**VF-9 Either lens must be able to answer "주의할 것 없음".** An agent required to find something every time produces noise, noise gets skimmed, and a skimmed brief is an unrun brief. This binds harder on a pair — the second lens is the one under pressure to justify itself.
 
 **VF-10 Shape is imperative** — do not build this / it already lives here / this must agree with that. Not "here are the relationships". Each reads the **index**, not the repository; that is what keeps a pair affordable.
 
@@ -102,6 +102,14 @@ Measured: the `DEV_FORCE_TIER` reimplementation, the duplicated model ids, and t
 - **VF-14 Normative and narrative sections are separated**, so a reader can skip narrative without losing a rule.
 - **VF-15 Correct a wrong document; do not annotate it (user directive 2026-07-29).** Write what is true now. No "개정 사유", no "원래는 X였으나", no dated correction notes. Git holds history; the document holds state. Distinguish the two kinds of why: a *rule's* rationale stays because it stops a future session from reverting the rule; a *document's* change history goes.
 - **VF-16 Do not create a new document for repeated work — revise in place.** Two documents stating the same rule is the document-layer form of two counters. A protocol lives in exactly one file; project docs reference it and never restate it.
+
+- **VF-22 A decision gets a note at `_shadow/<same relative path>.md` (user directive 2026-07-30).** Specs and commits are addressed *by slice*; nothing tells a session which decisions govern **the file it is about to edit**. Mirror the repo tree under `_shadow/`, written as part of the work — **the main model writes it, not an agent** — holding only what the source cannot.
+
+  Per decision: **what breaks if a later session does the obvious thing instead** — the load-bearing field, because "why we did it" does not survive a competent future session (AI-7) · a grade on every claim (VF-1 tags; ungraded claims get laundered into fact, VF-2) · a number only beside **a repo-committed command** that reproduces it · lists **pointed at, never copied** · when the note goes stale, including states the plan itself produces.
+
+  And what no commit, spec or comment holds — **what that session knew**: read whole / not read / **did a brief run, and did it change the plan** / knowingly deferred / where in the session. If a past session's state cannot be recovered, say so; inventing it is AI-6.
+
+  Measured 2026-07-30, three cold-read rounds with a fresh agent given only the note: the **brief sub-field is what discriminated.** Notes saying "a brief ran and moved the plan from 4 keys to 11" were reconstructible; the decisions with no brief were the ones the agent independently rated thin, and were where the defects were. A "what pressure forced this" field was tried and dropped as uninformative. Those rounds also killed a claim of mine — a partition summing to its own total is an **identity, not an oracle**, and it had been written as the sole evidence a script was correct.
 
 ## 5. Write so it can be searched — code
 
@@ -123,6 +131,7 @@ Measured: the `DEV_FORCE_TIER` reimplementation, the duplicated model ids, and t
 | What does this package expose? | barrel `index.ts` |
 | Where does responsibility X live? | package README structure map |
 | What rules govern this area? | spec's ID table (the header count says whether it is current) |
+| **What decisions govern this exact file, and what did they cost?** | its `_shadow/` note (VF-22) |
 | Was this promised somewhere? | doc markers (`[개정]`, `[신규]`, `[v1 원문]`) |
 | Does this exist at all? | not answerable by search — see VF-19, VF-20 |
 
