@@ -13,6 +13,7 @@ scripts/
   guard.ps1            결과를 보는 훅. 쓰여진 파일과 만들어진 커밋을 검사
   pattern-guard.sh     명령문을 보는 훅. 파괴적 구문 6종을 실행 전에 경고
   brief-nudge.sh       상기시키는 훅. 처음 건드리는 파일에 브리핑 쌍을 제안
+  manifest-nudge.sh    상기시키는 훅. SKILL.md를 고치면 매니페스트도 함께 고치라고 알림
   validate_doc.py      한국어 분량 실측
 skills/            스킬 21개. 직접 만든 14개와 외부 7개
 projects/<경로키>/memory/   폴더 단위 프로젝트 메모리

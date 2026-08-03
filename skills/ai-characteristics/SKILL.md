@@ -5,7 +5,7 @@ description: The catalogue of model behaviours that the working rules were desig
 
 # ai-characteristics — why the rules exist
 
-Rules: AI-1..AI-14 (14).
+Rules: AI-1..AI-15 (15).
 
 This file holds **rationale, not procedure.** Every entry is a measured behaviour of the model itself, followed by the rules that exist because of it. Other skills cite `AI-n` instead of re-explaining the reason, so a reason lives in exactly one place.
 
@@ -118,6 +118,14 @@ Optimizing findings for precision makes the operator trust them, and then the wr
 Measured 2026-07-29, from one audit: a **wrong** finding made the operator read an SoT clause never read before, at a cost of one grep; a **right but understated** finding, when checked, exposed a silent-downgrade fallback far worse than what was reported. A perfect finding would have produced a smaller fix.
 
 Generates: `verify-fanout` §8-2 (optimize for recall and citation quality, not precision; require `file:line`, a verbatim quote and a confidence field so refutation stays cheap), and the operator's matching duty never to adopt or dismiss on an agent's say-so.
+
+### AI-15 It fills every section to a similar length and pads with 사족 to reach it
+
+The model emits **roughly uniform output length per section** regardless of how much substance each one holds, and pads a thin section up to that implicit target with 사족 — restatements, UI-consistency notes, generic "일관되게 적용/구성" filler — instead of stopping short. The target is the model's own habit, not a real requirement; correct length tracks substance, so a lean section is genuinely short and a rich one genuinely long.
+
+Measured 2026-08-02: a 결과보고서 written solo came out at one density across every section and was rejected — "섹션 별 출력 토큰이 일정하다 … 목표 토큰을 채우려고 사족을 붙이지 마 — 이건 전역 규칙이야". Per-section agents then produced natural variation (II.2 74 nodes vs I.2 12), and a dedicated 사족 pass cut fact-free lines such as "동일한 3등급 색상체계를 모든 차트와 패널에 일관되게 적용함".
+
+Generates: a standing user directive — **never pad output to hit a length; length follows substance, and a section with less to say is shorter.** Reinforces `feedback-per-section-agents` (delegate per section so each section's depth is calibrated independently, not against a shared target) and the 사족-cut discipline; when writing solo, self-check each sentence for a distinct fact and delete any that only restates a sibling or the label.
 
 ## 5. Adding an entry
 

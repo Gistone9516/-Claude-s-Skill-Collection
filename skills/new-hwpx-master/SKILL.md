@@ -5,7 +5,7 @@ description: Fill a Korean hwpx official-document or draft template with content
 
 # new-hwpx-master — filling an hwpx official-document template
 
-Rules: HX-1..HX-12 (12).
+Rules: HX-1..HX-16 (16).
 The general corruption rules for hwpx live in `work-rules-docs` DC-2..DC-6 and also apply here. This file is the end-to-end procedure.
 Body text produced by this skill is Korean (CLAUDE.md G-01); this procedure is instruction, so it is English.
 
@@ -341,6 +341,44 @@ Punctuation and AI-tell rules from `work-rules-writing` WR-2..WR-4 apply to this
 | 5 | `styleIDRef` actually set to the template's level style, not only `paraPrIDRef` |
 | 6 | `mimetype` inserted first and uncompressed |
 | 7 | Final ZIP verification passed |
+
+## Filling a form rather than a body — tables, pictures, page fit
+
+Official *forms* (지출 결과서, 검수확인서) are tables end to end, so HX-2..HX-6 do not apply — a table cell is an explicit exception in HX-4. Measured procedure for that shape, 2026-08-01.
+
+**HX-13 Address cells by `cellAddr`, and replace the template's grey example styles.** Build `(rowAddr, colAddr) -> tc` from each `hp:tbl` and edit through that map, never by text search (HX-8). Korean forms ship pre-filled examples in a light italic charPr (`textColor` `#BFBFBF` / `#D9D9D9`, `italic`, `bold`); reuse those cells verbatim and real data prints as a watermark. Map each example charPr to the **black charPr of the same `height`** already in `header.xml` — never invent one. The empty cells name the intended normal style, as empty slots do for level styles in HX-3.
+
+- A stray Hangul memo hides in the run as `<hp:ctrl><hp:fieldBegin type="MEMO">` around the cell text and never shows in `PrvText`. Strip `fieldBegin` / `fieldEnd` ctrls, assert `"MEMO" not in body`.
+
+**HX-14 Embedding a picture takes three coordinated changes, and the units are not obvious.** Add the bytes as `BinData/imageN.png`, add `<opf:item id="imageN" href="BinData/imageN.png" media-type="image/png" isEmbeded="1"/>` to `Contents/content.hpf`, and place an `<hp:pic>` in a run. Clone an existing `hp:pic` rather than authoring one (HX-8), then patch it:
+
+| Element | Value |
+|---|---|
+| `hp:imgDim`, `hp:imgClip` | pixels × **75** (HWPUNIT at 96 dpi), clip from 0 |
+| `hp:orgSz`, `hp:imgRect` pt0-pt3 | the *source* image's pixels × 75 |
+| `hp:curSz`, `hp:sz` | displayed size |
+| `hc:scaMatrix` e1 / e5 | `curSz / orgSz` |
+| `hp:rotationInfo` centerX / centerY | `curSz / 2` |
+| `hc:img` | **reset `bright="0" contrast="0" effect="REAL_PIC"`** |
+
+Sample pictures carry `bright="50" contrast="-50" effect="GRAY_SCALE"` — the washed-out placeholder look; copy it onto real evidence and it prints as a grey ghost. Give every new pic a unique `id` and `instid`, and drop the inherited `hp:shapeComment` (it still describes the sample). Verify by set inclusion: every `binaryItemIDRef` must appear in both the hpf manifest and the zip. `hashkey` (DC-3) is absent on many templates — check before assuming it needs deleting.
+
+- An inline picture is capped by its **cell width**, not by the height you ask for. A stamp in a 3685-HWPUNIT `(인)` cell scaled to 9 mm and read as a smudge; the same image in the 10477-wide name cell beside it was legible. Measure `cellSz` before choosing the fit box.
+- Phone photos carry a real EXIF `Orientation` (6 / 8). `ImageOps.exif_transpose` alone is correct — a following "force landscape" pass undoes it and lays every portrait photo back on its side. Verify on a contact sheet, not by reasoning about the tag.
+
+**HX-15 Page fit is arithmetic; shrinking a font inside a narrow column does not help.** In a fixed-width column the block's height is roughly conserved — a smaller font just wraps to more lines. Measured: a 26-character note at 10 pt in a 16.2 mm column was five lines, and 8 pt was no shorter. What works, in order:
+
+1. **Delete unused table rows.** Renumber every later `cellAddr`, drop `rowCnt`, reduce the table's `hp:sz` height. Assert first that no dropped row is spanned (`rowSpan != 1`) and all its cells are empty, then read back known labels at their new addresses to prove the renumbering held.
+2. **Trim decorative row heights** (`cellSz height`) in signature blocks, leaving rows that receive a stamp alone.
+3. **Remove empty spacer paragraphs** between a heading and its table — usually the last few millimetres.
+
+Diagnose before prescribing: export to PDF (`work-rules-docs` DC-15) and measure the block against the usable text area. A table pushed to its own page is almost never a stray `pageBreak` — check `breakSetting/@pageBreakBefore` once to rule it out, then do the subtraction.
+
+**HX-16 A new outline level needs its own named style, never a paraPr override on a shared one (measured 2026-08-02).** This is HX-3 taken to its end: HX-3 says set a real `styleIDRef`, not just `paraPrIDRef`; HX-16 says that "real style" must be **distinct per level**. When the template ships fewer level styles than your outline needs — e.g. a 4-level 개조식 on a form that defines only `라벨` and `소본문` — **create one `<hh:style>` per new level**, do not reuse one existing style for several visually-different levels.
+
+- Per level: clone an existing `<hh:style>`, give it a distinct `id` / `name` / `engName`, point `paraPrIDRef` at a per-level paraPr (its own bullet `idRef` + graded `margin/left`, cloned per HX-8) and `charPrIDRef` at the intended char; append to the `styles` container and bump its `itemCnt`. Add any new bullet to the `bullets` container the same way (clone, change `id` and `char`, bump `itemCnt`). Indent ladder that worked: `margin/left` 3700 / 4400 / 5100 HWPUNIT for levels 2-4 with the `case` value at half.
+- Then set each paragraph's `styleIDRef` to its level's new style, with `paraPrIDRef` and `charPrIDRef` matching that style (HX-3). Identify the paragraphs to remap by their per-level `paraPrIDRef`, which is unique to the level.
+- Failure mode this fixes: three distinct levels all on `styleIDRef="4"` (소본문) with only `paraPrIDRef` differing. Every level then reports as **소본문** in F6 — the user cannot select or restyle a level, and the editor's style system is bypassed. Rejected with "편집기 스타일 시스템을 사용하지 않았다 … 각 레벨 스타일을 생성해서 재적용하라". The fix was header-only (add styles 중점/소점/세부 to the `styles` container + remap 426 paragraphs' `styleIDRef`), no content regeneration — so getting this wrong is cheap to correct **if** the level→paraPr mapping was clean, which is a further reason to give each level its own paraPr from the start.
 
 ## HX-12 New lessons
 

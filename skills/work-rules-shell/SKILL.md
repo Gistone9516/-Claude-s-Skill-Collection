@@ -5,7 +5,7 @@ description: Shell, git and terminal discipline for this environment (Windows 11
 
 # work-rules-shell — shell, git and terminal discipline
 
-Rules: SH-1..SH-28 (28). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
+Rules: SH-1..SH-30 (30). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
 Every rule came from an actual incident. None is safe to skip on the assumption that this time is different.
 
 Thirteen of these are also enforced mechanically by hooks, because reading this file has repeatedly failed to prevent them — a rule is followed best when it is closest to the action, and a hook is closer than any document.
@@ -88,6 +88,12 @@ Always return and report a `denied` count: a subtree measured with denied>0 is a
 - **SH-16 This incident does not show up in `git diff`.** Even with `*.bat text eol=crlf` in `.gitattributes`, git normalizes to LF on commit, so a working-tree-only LF file sits there with a clean `git status`, and a fresh checkout does not reproduce it. Check the working-tree **bytes**: `raw.count(b"\n") == raw.count(b"\r\n")`. Pinning it with a test is the only real defense.
 - **Keep a batch launcher pure ASCII.** A Korean path in the batch body breaks at the code-page switch. Copy the target into an ASCII scratchpad and run it there, or pass the path as cwd. `call <relative path>` inside a batch file is not resolved against the calling process's cwd and failed repeatedly in practice — **call with an absolute path**.
 
+**SH-29 A `.ps1` written without a BOM is read by PowerShell 5.1 as the ANSI code page, so Korean inside the script arrives mojibaked (measured 2026-08-01).** The Write tool emits BOM-less UTF-8, so this is the default outcome for any script file holding Korean. Measured: a converter script with seven hardcoded Korean document paths reported all seven as `MISSING`, printing `?섍퀎\?쇨꼍???쒕룞` — the files existed and the paths were correct. **The failure mode is the dangerous one**: every path simply "does not exist", which reads as a data problem rather than an encoding one, and a loop with a `Test-Path` guard skips silently and exits 0.
+
+- Same root cause as SH-4, one layer up: there it was `Get-Content` reading a file as ANSI, here it is PowerShell reading its own *script* as ANSI. Unlike `.bat` (SH-15), a `.ps1` **requires** the BOM — PowerShell 5.1 has no other signal. PowerShell 7 defaults to UTF-8 and does not show this.
+- Fix: after writing any `.ps1` containing non-ASCII, prepend `b"\xef\xbb\xbf"` from Python. Cheaper alternative: **keep the script pure ASCII and pass Korean paths in as `-Param` arguments** — parameters come from the tool call, not the file, so they are never re-decoded. The PowerShell tool's own inline commands are unaffected; this is a *file*-only trap.
+- Detect: any script that reports a path as missing while `Test-Path -LiteralPath` on the same path from an inline command returns True. Do not start hunting for the file.
+
 **SH-17 It is the `/mnt/c/...` WSL form that breaks on non-ASCII, not the Bash tool (measured 2026-07-03, re-measured 2026-07-30).** The Bash tool is Git Bash — `$OSTYPE` reports `msys` — and `cd "c:/Users/USER/Desktop/2026-하계/배경지식 사이드탭"` from it succeeds, returning `/c/Users/.../배경지식 사이드탭`. The same directory addressed as `/mnt/c/...` fails in the same call with `cd: $'/mnt/c/Users/USER/Desktop/2026-\225\230...': No such file or directory`, which is the encoding corruption the original measurement caught. So: address it as `c:/...` or `/c/...` from the Bash tool, and reach WSL only through PowerShell `wsl bash -c "cd '<path>'; ..."`, where the path survives.
 
 > The general form ("the Bash tool fails on non-ASCII paths") stood until a hook was proposed for it on 2026-07-30. Deciding what to match forced a re-measurement, which showed the rule false — a whole session had been `cd`-ing into that path while the rule said it could not. **Writing a check is a cheap way to learn whether a rule is still true**, and here it stopped a hook that would have fired on correct commands all day.
@@ -126,5 +132,19 @@ The repo folder itself is safe to move whole, `.git` included — internal paths
 - **Safe procedure.** Before moving, check for holding processes (node, python) and for collisions at the destination and the new key. A rename is instantly reversible, so a miscalculated key costs nothing to fix. Rename the exact key only; do not touch parent or sibling keys with a prefix glob.
 
 ## 6. New lessons
+
+**SH-30 Calling `npm` with the call operator from PowerShell silently mangles its arguments (measured 2026-08-02, npm 10.9.3 / node v22.20.0).** `& npm run build` fails with **`Unknown command: "pm"`**. PATHEXT makes PowerShell resolve `npm` to `npm.ps1` before `npm.cmd`, and that shim reconstructs the command line as a string and then strips the front of it:
+
+```powershell
+# C:\Program Files\nodejs\npm.ps1:43
+$NPM_ARGS = $NPM_NO_REDIRECTS_COMMAND.Substring($MyInvocation.InvocationName.Length).Trim()
+```
+
+Invoked as `npm run build`, `InvocationName` is `npm` (3) and the strip is correct. Invoked as `& npm run build`, **`InvocationName` is `&` (1)**, so `npm run build` becomes `pm run build` and npm takes `pm` as the command. `npx.ps1:43` carries the identical line, so the same trap applies to `& npx`.
+
+- **The symptom misdirects.** `Unknown command: "pm"` reads as a typo in your own script, and the natural next move is to re-check the script text, which is correct. Nothing in the message points at a shim.
+- **`& npm -v` is a false-negative probe.** It prints the version even as `npm pm -v`, because `-v` short-circuits before command dispatch. Confirming with it "proves" npm works and sends the diagnosis somewhere else — measured, cost one wrong hypothesis (`chcp`/`.bat` encoding) before the real cause.
+- **Fix: resolve `npm.cmd` and call that.** `$Npm = (Get-Command npm.cmd).Source`, then `& $Npm run build`. Bare `npm run build` (no `&`) also works, but breaks the moment the command name comes from a variable, which is the usual reason for reaching for `&`.
+- **Generalization.** Any Node-shipped `*.ps1` shim built from this template is affected. When a CLI installed by Node behaves as if its first argument lost a character, check for a `.ps1` sibling next to the `.cmd` before suspecting your own quoting.
 
 Add shell, git and terminal lessons here with the measured date, and update the rule count in the header.

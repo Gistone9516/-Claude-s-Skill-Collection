@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "updated": "2026-07-29",
+  "updated": "2026-08-03",
   "purpose": "Single source of truth for what this ~/.claude install is supposed to contain. scripts/check-manifest.ps1 validates the live filesystem against this file at SessionStart and reports drift.",
   "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
 
@@ -36,7 +36,7 @@
       "lang": "en",
       "tier": 1,
       "role": "Catalogue of measured model behaviours and the rules each one generates. Rationale store cited by verify-fanout, agent-ops, deepflow, work-rules-automation and work-rules-diagnosis, so a reason lives in one place. CLAUDE.md G-04 routes model-behaviour lessons here.",
-      "ruleIds": "AI-1..AI-14"
+      "ruleIds": "AI-1..AI-15"
     },
     {
       "name": "verify-fanout",
@@ -65,9 +65,9 @@
       "lang": "en",
       "tier": 1,
       "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene.",
-      "ruleIds": "SH-1..SH-28",
-      "warnBytes": 23000,
-      "warnBytesReason": "Answered the responsibility question DG-5 asks rather than trimming to fit. This is one responsibility - the trap catalogue for one environment - and it is reached by a single routing trigger covering shell, git and terminal together, so splitting it would mean loading two skills to make one commit. It is also the only skill that grows by design: every entry is an incident that already happened, and deleting one to stay under a number reintroduces the incident. 23000 is the 2026-07-30 size plus headroom; when it is next exceeded, ask the question again rather than raising this."
+      "ruleIds": "SH-1..SH-30",
+      "warnBytes": 26000,
+      "warnBytesReason": "Asked again on 2026-08-03 as the previous note required, rather than raising on reflex. The answer did not change: this is one responsibility - the trap catalogue for one environment - reached by a single routing trigger covering shell, git and terminal together, so splitting it would mean loading two skills to make one commit. It is also the only skill that grows by design, every entry being an incident that already happened, so deleting one to stay under a number reintroduces the incident. What crossed 23000 was SH-30, one more measured trap. 26000 is the 2026-08-03 size (24658) plus headroom; when it is next exceeded, ask the question again rather than raising this."
     },
     {
       "name": "agent-ops",
@@ -103,7 +103,7 @@
       "lang": "en",
       "tier": 2,
       "role": "hwpx / pptx / docx / xlsx editing and extraction; corruption traps.",
-      "ruleIds": "DC-1..DC-14"
+      "ruleIds": "DC-1..DC-15"
     },
     {
       "name": "work-rules-kit",
@@ -140,7 +140,9 @@
       "lang": "en",
       "tier": 3,
       "role": "Fill a Korean hwpx official-document template: level styles via styleIDRef, section body replacement, repackaging.",
-      "ruleIds": "HX-1..HX-12"
+      "ruleIds": "HX-1..HX-16",
+      "warnBytes": 23000,
+      "warnBytesReason": "First time this skill crossed the 20000 default, 2026-08-03 (21985). Answered DG-5's responsibility question rather than raising silently: the body is a linear nine-step procedure for one task - unpack, map, style, modify, replace, repackage, verify - and the steps are ordered because each depends on the previous one. Splitting it means opening two files to fill one document, and the split point would fall inside a procedure whose failure mode is doing the steps out of order. 23000 is the current size plus headroom; when it is next exceeded, ask the question again rather than raising this."
     },
     {
       "name": "discord-bridge",
@@ -187,6 +189,7 @@
     { "path": "scripts/check-manifest.ps1", "required": true, "role": "The validator this manifest drives. SessionStart hook." },
     { "path": "scripts/guard.ps1", "required": true, "role": "Mechanical enforcement of the four rules with a zero-false-positive signature: work-rules-shell SH-2 NUL bytes, SH-15 .bat with LF, SH-12 UnicodeEncodeError, SH-23 README after a structural commit. Registered on PostToolUse (Write|Edit asyncRewake, Bash filtered to git) and PostToolUseFailure. No PreToolUse: see work-rules-automation AU-21." },
     { "path": "scripts/pattern-guard.sh", "required": true, "role": "PreToolUse scanner for command text naming a construct known to be wrong: work-rules-shell SH-1, SH-4, SH-5, SH-8, SH-9, SH-11, SH-26, SH-27, SH-28. Bash built-ins only, no forks - measured 190 ms per call against 550 ms with one grep per pattern and 600-700 ms in PowerShell. The SH-11 check cited SH-10 until 2026-07-30, and this line repeated the wrong id, so an unchecked rule read as covered." },
+    { "path": "scripts/manifest-nudge.sh", "required": true, "role": "Fires after a SKILL.md write to say that this manifest declares that skill's ruleIds, byte budget and role and does not update itself. Registered on PostToolUse (Write|Edit), synchronous so its additionalContext reaches the model. A reminder, not a gate - it never denies (work-rules-automation AU-22). Written 2026-08-03 after ai-characteristics, work-rules-shell and new-hwpx-master each gained a rule and corrected their own header while this file still declared the previous range; the drift is one-directional and silent because the body header looks authoritative, and only the SessionStart validator caught it a session later." },
     { "path": "scripts/brief-nudge.sh", "required": true, "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored." },
     { "path": "scripts/validate_doc.py", "required": false, "role": "Korean document length measurement, used by work-rules-writing WR-12." },
     { "path": "projects/C--Users-USER/memory/MEMORY.md", "required": false, "role": "Global memory index for the home directory scope. Machine-specific path key; absent on a fresh machine is normal." }
@@ -224,6 +227,7 @@
     { "key": "hooks.PostToolUse", "expected": "Write|Edit -> guard.ps1 with asyncRewake true", "role": "Background file checks; wakes the model only on a finding, so a clean write costs nothing." },
     { "key": "hooks.PostToolUseFailure", "expected": "Bash -> guard.ps1", "role": "Catches the cp949 UnicodeEncodeError signature in a failed command." },
     { "key": "hooks.PreToolUse", "expected": "Bash|PowerShell -> pattern-guard.sh", "role": "Command-text patterns. Pre, not post, because command text does not change between hook and execution and these constructs are destructive (work-rules-automation AU-21)." },
+    { "key": "hooks.PostToolUse[Write|Edit] third entry", "expected": "manifest-nudge.sh, synchronous", "role": "Names this manifest at the moment a SKILL.md is edited. Deliberately NOT async: brief-nudge's record pass is fire-and-forget, but this one must return additionalContext, and an async hook's stdout does not reach the model. Post rather than pre, because the reminder is 'now also update the manifest' - there is nothing to say before the edit." },
     { "key": "hooks.PreToolUse[Write|Edit]", "expected": "brief-nudge.sh check", "role": "Suggests a brief on a file new to this session. Paired with a PostToolUse brief-nudge.sh record that maintains the ledger." },
     { "key": "hooks.PostToolUse[Bash]", "expected": "guard.ps1 with if Bash(git *)", "role": "README check on the commit that landed. Deliberately post, not pre: a pre hook reads the index before git add runs (work-rules-automation AU-21). The if filter is prefix matching, which is why work-rules-shell SH-26 requires git -C over cd && git, and why SH-26 now has its own PreToolUse pattern - violating it disables this check." },
     { "key": "hooks.PostToolUse[PowerShell]", "expected": "guard.ps1 with if PowerShell(git *)", "role": "The same README check for the other first-class shell. Registered 2026-07-30: PostToolUse and PostToolUseFailure were Bash-only, so a commit made through the PowerShell tool skipped the check entirely. A separate entry rather than a widened matcher, because the if filter names its tool." }

@@ -5,7 +5,7 @@ description: Editing and extracting document files (hwpx, pptx, docx, xlsx) - a 
 
 # work-rules-docs — document file editing and extraction
 
-Rules: DC-1..DC-14 (14).
+Rules: DC-1..DC-15 (15).
 For filling an hwpx official-document template end to end, use `new-hwpx-master`; this file holds the corruption rules that apply to any document work.
 
 ## 1. Extracting text (docx, xlsx, hwpx, pptx)
@@ -41,6 +41,27 @@ For filling an hwpx official-document template end to end, use `new-hwpx-master`
 **DC-11 When removing a slide, remove both the `sldIdLst` entry in `presentation.xml` and the rId in `presentation.xml.rels`.** Missing either leaves a dangling reference. Overwriting existing slides and appending only the shortfall is lower risk than removal.
 
 **DC-12 Change one variable at a time when diagnosing.** Changing several at once makes it impossible to narrow the cause.
+
+## 3.5 Verifying an hwpx or hwp — the render oracle
+
+**DC-15 Hangul COM works in this environment and is the only oracle that proves a document opens (measured 2026-08-01).** DC-6's checklist proves the package is well formed; it cannot prove Hangul accepts it. `HWPFrame.HwpObject` is registered (Office 2024, `HKLM:\SOFTWARE\WOW6432Node\HNC`), opens both `HWP` and `HWPX`, and exports PDF headlessly. **A successful export is proof the file opens** — the exact thing the linesegarray corruption verdict denies — and the PDF then makes layout inspectable, which XML never is.
+
+```powershell
+$hwp = New-Object -ComObject HWPFrame.HwpObject
+try { $hwp.RegisterModule("FilePathCheckDLL", "FilePathCheckerModule") } catch { }
+$hwp.XHwpWindows.Item(0).Visible = $false
+$null = $hwp.Open($Src, "HWPX", "forceopen:true")
+$act = $hwp.CreateAction("FileSaveAsPdf"); $set = $act.CreateSet(); $act.GetDefault($set)
+$set.SetItem("FileName", $Pdf); $set.SetItem("Format", "PDF"); $null = $act.Execute($set)
+$hwp.Clear(1); $hwp.Quit()
+```
+
+- **This is the opposite of DC-9's finding for PowerPoint**, where COM is blocked unconditionally. Do not generalize "Office COM is blocked in this environment" from that rule — it holds for PowerPoint, not for Hangul.
+- Run it as a `Start-Job` with `Wait-Job -Timeout` and kill `Hwp*` on timeout: a modal dialog would otherwise block the tool call to its limit. The `RegisterModule` line is wrapped in try/catch because the security module is often absent and `forceopen:true` covers it.
+- Pass paths as `-Param` arguments, never inside the script body — see `work-rules-shell` SH-29.
+- Measure the result rather than eyeballing it. PyMuPDF over the exported PDF gives page count, per-page text blocks and content bounding boxes, which turns "why is there a blank page" into arithmetic. Measured use: a block was 239.6 mm against ~245 mm of usable text area, so its 4.6 mm heading no longer fit and Hangul pushed the table to its own page.
+- The stale-preview corollary: `Preview/PrvImage.png` inside an hwpx is whatever the last editor saved, not the current content. One 회의록 preview showed an empty 회의 내용 cell that was actually filled. **Never use PrvImage as a rendering of the document** — render through COM.
+- **A `PDF_FAIL` from the oracle is not proof of corruption — it can be the environment (measured 2026-08-01).** Twice the export hit its `Wait-Job` timeout and returned `PDF_FAIL` on a freshly built file; a control run of the **previous session's known-good file** returned `PDF_FAIL` **too**, both hanging the full 120 s. So the failure was environmental — Hangul wedged, or, most likely, the target file already open in the Hangul GUI so COM's `Open` blocks — not the new file. **Before concluding a build is corrupt, re-run the same export on a file you know opens (last delivered version, or the untouched original).** Original fails too → environment, and the new file's `PDF_FAIL` is uninformative; fall back to DC-6 plus a byte-identical-construction argument and let the user do the definitive open. Original succeeds, new one fails → the build really is corrupt. This is the DC-12 one-variable rule applied to the oracle itself.
 
 ## 4. New lessons
 
