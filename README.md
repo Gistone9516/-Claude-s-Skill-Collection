@@ -63,7 +63,7 @@ git clone https://github.com/Gistone9516/-Claude-s-Skill-Collection.git ~/.claud
 | PostToolUse | guard.ps1(파일 편집), brief-nudge.sh record, manifest-nudge.sh, guard.ps1(git 명령, Bash와 PowerShell 각각) |
 | PostToolUseFailure | guard.ps1(셸 실패) |
 
-세션을 띄우면 검사기가 빠진 스킬, 미등록 스킬, 이름 불일치, 예산 초과를 전부 알려 준다. 수동 확인은 아래와 같다.
+세션을 띄우면 검사기가 빠진 스킬, 미등록 스킬, 이름 불일치, 규칙 ID 범위 어긋남, 예산 초과, 그리고 이 예제 파일과 실제 `settings.json`이 갈라진 것까지 알려 준다. 아홉 가지 항목 전부는 [GUIDE.ko.md](GUIDE.ko.md)에 있다. 수동 확인은 아래와 같다.
 
 ```
 powershell -NoProfile -File "~/.claude/scripts/check-manifest.ps1" -Mode report

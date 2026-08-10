@@ -21,6 +21,43 @@ param(
 
 $ErrorActionPreference = "Continue"
 
+# Flatten a hooks object into a sorted list of one-line signatures, so the published example and
+# the live settings can be compared without firing on cosmetics. The two files legitimately differ
+# in event order, in key order, and in how the install path is written, and a raw JSON comparison
+# would report all three as drift. What matters is which command runs on which matcher behind
+# which filter, so that is what a signature carries. Timeouts and async flags are deliberately
+# excluded: a wrong timeout is a nuisance, a missing hook is a rule that silently stopped existing.
+function Get-HookSignature {
+  param($hooks, [string]$homePath)
+
+  $signatures = New-Object System.Collections.ArrayList
+  if ($null -eq $hooks) { return $signatures }
+
+  $homeSlash = $homePath.Replace("\", "/")
+  $homePattern = [regex]::Escape($homeSlash)
+  $ignoreCase = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+
+  foreach ($eventName in $hooks.PSObject.Properties.Name) {
+    foreach ($group in $hooks.$eventName) {
+      $matcher = "*"
+      if ($group.matcher) { $matcher = $group.matcher }
+      if (-not $group.hooks) { continue }
+      foreach ($entry in $group.hooks) {
+        $command = ""
+        if ($entry.command) { $command = $entry.command }
+        # Canonical form is forward slashes plus the placeholder, so a real install and the
+        # template collapse onto the same string and the finding text stays short and ASCII.
+        $command = $command.Replace("\", "/")
+        $command = [regex]::Replace($command, $homePattern, "<CLAUDE_HOME>", $ignoreCase)
+        $filter = ""
+        if ($entry.'if') { $filter = $entry.'if' }
+        [void]$signatures.Add($eventName + " [" + $matcher + "] " + $command + " {" + $filter + "}")
+      }
+    }
+  }
+  return ($signatures | Sort-Object)
+}
+
 # The findings text is ASCII, but manifest.json supplies a Korean phrasing template that has to
 # survive to stdout. Pin the encoding so the result does not depend on the console code page,
 # which is cp949 on this machine.
@@ -144,10 +181,55 @@ try {
     }
   }
 
+  # ---------- hook wiring: published example vs live settings ----------
+  # settings.hooks.example.json is the only copy of the wiring that travels with a clone, and
+  # settings.json is deliberately untracked, so nothing else can notice the two parting company.
+  # This is not hypothetical: until 2026-08-10 the README documented one hook group out of seven,
+  # so following it on a new machine reproduced the validator and none of the guards. The docs
+  # were wrong for eleven days and no check existed that could have said so.
+  #
+  # In hook mode this can only run when settings.json already registered it, so an empty live
+  # side means hooks were installed partially, which is exactly the failure worth naming.
+  $hookDrift = New-Object System.Collections.ArrayList
+  $examplePath = Join-Path $base "settings.hooks.example.json"
+  $settingsPath = Join-Path $base "settings.json"
+  if ((Test-Path -LiteralPath $examplePath) -and (Test-Path -LiteralPath $settingsPath)) {
+    try {
+      $exampleDoc = Get-Content -LiteralPath $examplePath -Raw -Encoding UTF8 | ConvertFrom-Json
+      $settingsDoc = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+      $exampleSig = Get-HookSignature $exampleDoc.hooks $base
+      $liveSig = Get-HookSignature $settingsDoc.hooks $base
+
+      foreach ($item in $liveSig) {
+        if ($exampleSig -notcontains $item) {
+          [void]$hookDrift.Add("live only: " + $item)
+        }
+      }
+      foreach ($item in $exampleSig) {
+        if ($liveSig -notcontains $item) {
+          [void]$hookDrift.Add("example only: " + $item)
+        }
+      }
+    }
+    catch {
+      # A malformed settings file must not take the session down with it.
+      [void]$hookDrift.Add("could not compare the hook wiring: " + $_.Exception.Message)
+    }
+  }
+
   # ---------- emit ----------
   $findings = New-Object System.Collections.ArrayList
   if ($missingRequired.Count -gt 0) { [void]$findings.Add("MISSING REQUIRED (" + $missingRequired.Count + "): " + ($missingRequired -join " | ")) }
   if ($nameMismatch.Count    -gt 0) { [void]$findings.Add("DECLARATION MISMATCH (" + $nameMismatch.Count + "): " + ($nameMismatch -join " | ")) }
+  if ($hookDrift.Count -gt 0) {
+    $shownDrift = $hookDrift
+    $driftSuffix = ""
+    if ($hookDrift.Count -gt 4) {
+      $shownDrift = $hookDrift[0..3]
+      $driftSuffix = " | (" + $hookDrift.Count + " differences, 4 shown)"
+    }
+    [void]$findings.Add("HOOK WIRING DRIFT (" + $hookDrift.Count + "): settings.hooks.example.json and the live settings.json no longer describe the same hooks: " + ($shownDrift -join " | ") + $driftSuffix + " - reconcile them; the example is the only copy a clone gets")
+  }
   if ($orphans.Count         -gt 0) { [void]$findings.Add("UNREGISTERED (" + $orphans.Count + "): " + ($orphans -join ", ") + " - present on disk but absent from manifest.json; register or delete") }
   if ($budget.Count          -gt 0) { [void]$findings.Add("OVER BUDGET (" + $budget.Count + "): " + ($budget -join " | ")) }
   if ($missingOptional.Count -gt 0) { [void]$findings.Add("MISSING OPTIONAL (" + $missingOptional.Count + "): " + ($missingOptional -join " | ")) }
