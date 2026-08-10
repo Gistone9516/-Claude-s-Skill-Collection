@@ -167,10 +167,12 @@ powershell -NoProfile -File "C:\Users\USER\.claude\scripts\check-manifest.ps1" -
 
 ### 새 컴퓨터에 옮길 때
 
-1. 저장소를 `~/.claude`로 clone 한다. 안 되면 CLAUDE.md, manifest.json, GUIDE.ko.md, skills/, scripts/ 만 복사해도 된다.
-2. `settings.json`에 SessionStart 훅을 등록한다. 명령은 위 수동 실행과 같고 `-Event SessionStart`를 붙인다.
+1. 저장소를 `~/.claude`로 clone 한다. 안 되면 CLAUDE.md, manifest.json, GUIDE.ko.md, settings.hooks.example.json, skills/, scripts/ 만 복사해도 된다.
+2. `settings.hooks.example.json`의 `hooks` 블록을 `settings.json`에 옮기고, `<CLAUDE_HOME>` 아홉 군데를 `C:/Users/<계정>/.claude` 형태로 바꾼다. 네 이벤트에 걸쳐 일곱 묶음이고 SessionStart는 그중 하나다. 하나만 등록하면 나머지 검사가 조용히 빠진다.
 3. 세션을 하나 띄운다. 빠진 것이 있으면 검사기가 전부 알려 준다.
 4. discord-bridge나 learning-harness를 쓸 거면 매니페스트의 `externalApps` 경로를 맞추거나 환경변수로 덮는다.
+
+`settings.json`을 저장소에 넣지 않는 것은 의도된 선택이다. 훅 명령에 절대경로가 박혀 있어 계정 이름이 다르면 그대로는 안 돌고, 모델과 권한처럼 컴퓨터마다 다른 값이 같은 파일에 들어 있으며, 이 저장소는 공개다. 옮겨야 하는 것은 훅 배선뿐이라 그것만 예제 파일로 떼어 뒀다. 나중에 무심코 다시 넣지 않도록 `.gitignore`의 영구 제외 목록에 이름과 이유를 적어 두었다.
 
 프로젝트 메모리 폴더 이름은 절대경로를 인코딩한 키라서 폴더 구조가 다른 컴퓨터로는 그대로 넘어가지 않는다. 정상이다.
 

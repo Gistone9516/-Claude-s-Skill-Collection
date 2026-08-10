@@ -1,12 +1,14 @@
 # Allowlist: track only sync-worthy config; everything else ignored.
 # What is tracked here is exactly what manifest.json declares, so a clone
-# plus the SessionStart hook reproduces a working install.
+# plus the hook wiring copied out of settings.hooks.example.json reproduces
+# a working install.
 /*
 !/.gitignore
 !/README.md
 !/CLAUDE.md
 !/GUIDE.ko.md
 !/manifest.json
+!/settings.hooks.example.json
 !/skills/
 !/scripts/
 
@@ -20,6 +22,11 @@
 
 # never sync these even if rules change
 .credentials.json
+# settings.json is deliberately excluded, not merely un-allowlisted: it carries
+# machine-absolute hook paths and this install's permission posture, and the repo
+# is public. The portable part is the hooks block, published as
+# settings.hooks.example.json. Decided 2026-08-10.
+settings.json
 settings.local.json
 sessions/
 session-env/

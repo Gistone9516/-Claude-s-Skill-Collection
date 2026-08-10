@@ -1,0 +1,102 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_HOME>/scripts/check-manifest.ps1\" -Event SessionStart",
+            "timeout": 20,
+            "statusMessage": "Checking global config manifest"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"<CLAUDE_HOME>/scripts/pattern-guard.sh\"",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"<CLAUDE_HOME>/scripts/brief-nudge.sh\" check",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_HOME>/scripts/guard.ps1\" -Event PostToolUse",
+            "timeout": 15,
+            "asyncRewake": true,
+            "rewakeSummary": "guard: file written with a known-bad byte pattern",
+            "rewakeMessage": "A guard hook found a defect in a file just written. Fix it before continuing: "
+          },
+          {
+            "type": "command",
+            "command": "bash \"<CLAUDE_HOME>/scripts/brief-nudge.sh\" record",
+            "shell": "bash",
+            "timeout": 10,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "bash \"<CLAUDE_HOME>/scripts/manifest-nudge.sh\"",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_HOME>/scripts/guard.ps1\" -Event PostToolUse",
+            "if": "Bash(git *)",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_HOME>/scripts/guard.ps1\" -Event PostToolUse",
+            "if": "PowerShell(git *)",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_HOME>/scripts/guard.ps1\" -Event PostToolUseFailure",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

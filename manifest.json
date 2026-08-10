@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "updated": "2026-08-03",
+  "updated": "2026-08-10",
   "purpose": "Single source of truth for what this ~/.claude install is supposed to contain. scripts/check-manifest.ps1 validates the live filesystem against this file at SessionStart and reports drift.",
   "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
 
@@ -186,6 +186,7 @@
     { "path": "manifest.json", "required": true, "role": "This file." },
     { "path": "GUIDE.ko.md", "required": true, "role": "Human-facing Korean guide to the whole setup. Not loaded by the model." },
     { "path": "README.md", "required": true, "role": "Repo entry point." },
+    { "path": "settings.hooks.example.json", "required": true, "role": "The portable half of settings.json: the hooks block only, with the install path written as <CLAUDE_HOME> and forward slashes throughout (measured 2026-08-10: powershell -File accepts a forward-slash path, so one placeholder form serves both the PowerShell and the bash entries). settings.json itself is NOT tracked and is named in .gitignore's permanent-exclusion block - it carries machine-absolute paths and this install's permission posture, and the repo is public. This file must agree with settingsKeys below and with the live settings.json; nothing validates that, so change all three together. Added 2026-08-10 after finding that README documented only the SessionStart hook, so a fresh clone reproduced 1 of 7 hook groups." },
     { "path": "scripts/check-manifest.ps1", "required": true, "role": "The validator this manifest drives. SessionStart hook." },
     { "path": "scripts/guard.ps1", "required": true, "role": "Mechanical enforcement of the four rules with a zero-false-positive signature: work-rules-shell SH-2 NUL bytes, SH-15 .bat with LF, SH-12 UnicodeEncodeError, SH-23 README after a structural commit. Registered on PostToolUse (Write|Edit asyncRewake, Bash filtered to git) and PostToolUseFailure. No PreToolUse: see work-rules-automation AU-21." },
     { "path": "scripts/pattern-guard.sh", "required": true, "role": "PreToolUse scanner for command text naming a construct known to be wrong: work-rules-shell SH-1, SH-4, SH-5, SH-8, SH-9, SH-11, SH-26, SH-27, SH-28. Bash built-ins only, no forks - measured 190 ms per call against 550 ms with one grep per pattern and 600-700 ms in PowerShell. The SH-11 check cited SH-10 until 2026-07-30, and this line repeated the wrong id, so an unchecked rule read as covered." },
@@ -235,8 +236,8 @@
 
   "restore": {
     "newMachine": [
-      "git clone <repo> into ~/.claude (or clone elsewhere and copy CLAUDE.md, manifest.json, GUIDE.ko.md, skills/, scripts/ in).",
-      "Register the SessionStart hook in ~/.claude/settings.json so check-manifest.ps1 runs (see settingsKeys).",
+      "git clone <repo> into ~/.claude (or clone elsewhere and copy CLAUDE.md, manifest.json, GUIDE.ko.md, settings.hooks.example.json, skills/, scripts/ in).",
+      "Copy the hooks block of settings.hooks.example.json into ~/.claude/settings.json and replace the nine <CLAUDE_HOME> placeholders with C:/Users/<account>/.claude. All seven hook groups, not just SessionStart - registering only the validator leaves the other six checks silently absent.",
       "Start a session. The validator reports every missing or unregistered asset.",
       "Set the externalApps env overrides, or move the apps to the declared paths, if those skills are needed.",
       "projects/*/memory/ path keys encode the absolute project path; they do not transfer to a machine with different folder layout. That is expected."
