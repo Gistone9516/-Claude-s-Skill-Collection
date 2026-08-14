@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "updated": "2026-08-10",
+  "updated": "2026-08-14",
   "purpose": "Single source of truth for what this ~/.claude install is supposed to contain. scripts/check-manifest.ps1 validates the live filesystem against this file at SessionStart and reports drift.",
   "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
 
@@ -11,7 +11,8 @@
     "ruleIdPattern": "^[A-Z]{1,3}-[0-9]{1,2}$",
     "onMissingRequired": "Tell the user, in Korean, which required assets are missing and that they should be restored from the repo. Do not silently continue as if the rule set were complete.",
     "onOrphan": "A skill on disk but absent from this manifest is unregistered. Either add it here or delete it. Report it; do not ignore it.",
-    "userWarningTemplate": "<이름> 스킬이 없습니다. 확인 바랍니다."
+    "userWarningTemplate": "<이름> 스킬이 없습니다. 확인 바랍니다.",
+    "exemptSemantics": "Any entry may carry an \"exempt\" object: { platforms: [...], since, reason }. The validator skips that entry's missing-asset finding when the running platform is listed - omit platforms to exempt it everywhere - and lists it under EXEMPT in -Mode report instead. Suppression is never silent: an exception that cannot be seen by an audit becomes drift, which is the failure this manifest exists to catch. Use it only where the asset is genuinely inapplicable to this install, never to quiet a real gap; the fix for a real gap is restoring the asset. Platform is resolved from PowerShell's $IsLinux / $IsMacOS, which are absent on Windows PowerShell 5.1 and therefore resolve to \"windows\" there."
   },
 
   "retiredGlobalRules": {
@@ -203,7 +204,12 @@
       "envOverride": "CLAUDE_APP_DISCORD_AGENTS",
       "required": false,
       "role": "bridge.py, .env (bot token), skills/. Consumed by the discord-bridge skill.",
-      "onMissing": "Machine-specific. The skill cannot run until this path exists or the env override is set. Report, do not block."
+      "onMissing": "Machine-specific. The skill cannot run until this path exists or the env override is set. Report, do not block.",
+      "exempt": {
+        "platforms": ["linux"],
+        "since": "2026-08-14",
+        "reason": "User instruction, 2026-08-14: treat this as an exception rather than a finding. The declared path is a Windows Desktop folder and the app was never copied to this Linux install, so the check reported a fact that will not change and cannot be acted on. It was also mis-severed: policy.onMissing already says report-do-not-block and required is false, yet check-manifest.ps1 put the note in the same findings array as MISSING REQUIRED, so the hook message told the model the rule set was incomplete every session over two optional items. Windows is unaffected. Set CLAUDE_APP_DISCORD_AGENTS if the skill is ever needed here; the override is read before the exemption is consulted, so a real path still gets checked."
+      }
     },
     {
       "id": "learningHarness",
@@ -211,7 +217,12 @@
       "envOverride": "CLAUDE_APP_LEARNING_HARNESS",
       "required": false,
       "role": "Generic subject-agnostic learning bot code. Consumed by the learning-harness skill.",
-      "onMissing": "Machine-specific. Report, do not block."
+      "onMissing": "Machine-specific. Report, do not block.",
+      "exempt": {
+        "platforms": ["linux"],
+        "since": "2026-08-14",
+        "reason": "Same instruction and same cause as discordAgents above. Windows Desktop path, app not present on this Linux install, nothing actionable. Set CLAUDE_APP_LEARNING_HARNESS to bring it back under the check."
+      }
     }
   ],
 
