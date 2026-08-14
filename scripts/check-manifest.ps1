@@ -64,7 +64,13 @@ function Get-HookSignature {
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
 
 try {
-  $base = Join-Path $env:USERPROFILE ".claude"
+  # USERPROFILE is Windows-only and is null under pwsh on Linux, where Join-Path then throws
+  # "Cannot bind argument to parameter 'Path'" and the whole validator dies before its first
+  # check. HOME is the POSIX equivalent. On Windows the first branch still wins, so behaviour
+  # there is unchanged. (Measured on Ubuntu + pwsh 7.6.4, 2026-08-14.)
+  $userHome = $env:USERPROFILE
+  if (-not $userHome) { $userHome = $env:HOME }
+  $base = Join-Path $userHome ".claude"
   $manifestPath = Join-Path $base "manifest.json"
 
   if (-not (Test-Path -LiteralPath $manifestPath)) {
@@ -85,7 +91,11 @@ try {
   $declared = @{}
   foreach ($skill in $manifest.skills) {
     $declared[$skill.name] = $true
-    $skillDir = Join-Path $base ("skills\" + $skill.name)
+    # Built with Join-Path rather than a literal "skills\" because a backslash is an ordinary
+    # filename character on Linux, so the concatenated form looked for a single file named
+    # "skills\agent-ops" and reported every declared skill as missing. Join-Path emits the
+    # platform separator on both. (Measured on Ubuntu + pwsh 7.6.4, 2026-08-14.)
+    $skillDir = Join-Path (Join-Path $base "skills") $skill.name
     $skillMd  = Join-Path $skillDir "SKILL.md"
 
     if (-not (Test-Path -LiteralPath $skillMd)) {
