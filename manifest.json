@@ -37,7 +37,7 @@
       "lang": "en",
       "tier": 1,
       "role": "Catalogue of measured model behaviours and the rules each one generates. Rationale store cited by verify-fanout, agent-ops, deepflow, work-rules-automation and work-rules-diagnosis, so a reason lives in one place. CLAUDE.md G-04 routes model-behaviour lessons here.",
-      "ruleIds": "AI-1..AI-15"
+      "ruleIds": "AI-1..AI-16"
     },
     {
       "name": "verify-fanout",

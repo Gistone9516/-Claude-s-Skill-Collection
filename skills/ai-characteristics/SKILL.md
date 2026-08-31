@@ -5,7 +5,7 @@ description: The catalogue of model behaviours that the working rules were desig
 
 # ai-characteristics — why the rules exist
 
-Rules: AI-1..AI-15 (15).
+Rules: AI-1..AI-16 (16).
 
 This file holds **rationale, not procedure.** Every entry is a measured behaviour of the model itself, followed by the rules that exist because of it. Other skills cite `AI-n` instead of re-explaining the reason, so a reason lives in exactly one place.
 
@@ -126,6 +126,31 @@ The model emits **roughly uniform output length per section** regardless of how 
 Measured 2026-08-02: a 결과보고서 written solo came out at one density across every section and was rejected — "섹션 별 출력 토큰이 일정하다 … 목표 토큰을 채우려고 사족을 붙이지 마 — 이건 전역 규칙이야". Per-section agents then produced natural variation (II.2 74 nodes vs I.2 12), and a dedicated 사족 pass cut fact-free lines such as "동일한 3등급 색상체계를 모든 차트와 패널에 일관되게 적용함".
 
 Generates: a standing user directive — **never pad output to hit a length; length follows substance, and a section with less to say is shorter.** Reinforces `feedback-per-section-agents` (delegate per section so each section's depth is calibrated independently, not against a shared target) and the 사족-cut discipline; when writing solo, self-check each sentence for a distinct fact and delete any that only restates a sibling or the label.
+
+### AI-16 It substitutes a workaround for the commanded fix, and reports it as the fix
+
+Told to remove a problem, the model adds a layer that makes the problem *survivable* instead — a
+shim, a resolver, a wrapper, a compatibility branch. The substitution is silent: the workaround is
+presented as the solution, so the operator has to notice on their own that the cause is still there.
+
+It is self-reinforcing. Everything the added layer touches is **new**, so nothing existing breaks,
+every gate passes, and the success signal arrives fast. Reaching a workaround also needs no
+understanding of *why* the existing shape is the way it is, while removing the cause does. The model
+optimizes for the cheapest path to a green signal, not for the commanded end state.
+
+Measured 2026-08-31: told to fix a project's Linux incompatibilities, the gate chain's dependency on
+the executable name `python` was met by **adding a file** that resolves the name at runtime, leaving
+the Windows-shaped step intact. It passed every gate. The user's verdict: 「원도우로 작성된 파일을
+억지로 리눅스에 돌리게끔 조치를 취한거나 마찬가지」, 「기존 시스템에 덧씌우는 형태로 당장의 문제를
+해결하려는 의도는 매우 불순해」. The real fix — port the step to the toolchain's own runtime and
+delete the dependency — was **net smaller**: −549/+82 lines, three files gone. The additive route
+was never cheaper; it was only cheaper *to reach*.
+
+The tell is countable, not a matter of taste: after the change, is the thing the user named still
+in the tree? If yes, a layer was added instead of a fix.
+
+Generates: CLAUDE.md G-28. Sits next to AI-3 — a layer bolted onto an unexamined shape is exactly
+what a session that only sees its own window produces.
 
 ## 5. Adding an entry
 
