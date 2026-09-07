@@ -42,7 +42,7 @@
       "lang": "en",
       "tier": 1,
       "role": "Evidence grading, brief mode, indexing protocol, claim verification. CLAUDE.md G-05..G-10 point here. The brief runs as a pair of lenses (VF-21), which is why the fan-out exception is worded in the plural in both CLAUDE.md G-22 and agent-ops AO-12.",
-      "ruleIds": "VF-1..VF-22",
+      "ruleIds": "VF-1..VF-23",
       "warnBytes": 22000,
       "warnBytesReason": "User-confirmed 2026-07-30: 'verify-fanout 은 어쩔 수 없이 예외로 두자고. 신뢰도를 높이기 위한 방법이니까' - the exception is held because this file is the reliability machinery itself. Second use of the mechanism that day, and deliberately not a reflex: about 640 bytes of my own prose were cut across three passes first, and what remained was rules rather than padding. DG-5's responsibility question has one answer here - this is how a later session checks what an earlier one did, and how to write so it can be checked, reached by the single routing trigger 'editing a module written by someone else'. Splitting it would mean loading two skills at that one moment. When 22000 is next exceeded, ask the question again rather than raising this."
     },
@@ -73,7 +73,9 @@
       "lang": "en",
       "tier": 2,
       "role": "Delegation POLICY: model and effort per stage, Agent vs Workflow, fan-out approval and caps, Report envelope, large and unattended runs. Tool descriptions stay canonical for mechanics (AO-1). CLAUDE.md §4 routes here; approval gate G-22 stays in CLAUDE.md.",
-      "ruleIds": "AO-1..AO-24"
+      "ruleIds": "AO-1..AO-24",
+      "warnBytes": 22000,
+      "warnBytesReason": "First crossing of the 20000 default, 2026-09-07 (19121 -> 21061), and no rule was added - AO-1..AO-24 is unchanged. What grew is the price tag on delegation, which this file had been missing: AO-13 previously told the reader that runtime limits were 'far above anything used here', i.e. that cost was not a constraint. Measured over all 83 subagents in this install, it is: floor 89,749 billable tokens, median 323,453, and agent type does not change it. Also added: effort floors low and the Agent tool has no effort parameter (user directive 2026-09-07), return size fixed at delegation because opus's read is the second bill, standing pairs counted though still pre-approved, and the UI quartet merged to three because G-10's 주변 and AO-24's 주변 ask one question. DG-5's responsibility question: one responsibility, delegation policy, reached by one routing trigger; a split would mean loading two skills at the single moment of writing a delegation, and the cost numbers are useless anywhere except beside the caps they bound. The trim pass came first, not after: AO-9 and AO-11 were restating ScheduleWakeup and Workflow tool mechanics against AO-1's own prohibition, and AO-9 was cut to a pointer. When 22000 is next exceeded, ask the question again rather than raising this."
     },
     {
       "name": "work-rules-automation",
@@ -91,7 +93,7 @@
       "lang": "en",
       "tier": 2,
       "role": "Korean human-facing deliverables and design: AI-tell removal, punctuation, verbatim rule, slide minimalism, measured length.",
-      "ruleIds": "WR-1..WR-14"
+      "ruleIds": "WR-1..WR-15"
     },
     {
       "name": "work-rules-docs",
@@ -210,6 +212,15 @@
       "kind": "external",
       "source": "~/.agents/skills/caveman-stats",
       "role": "Session token stats."
+    },
+    {
+      "name": "skill-creator",
+      "required": false,
+      "kind": "external",
+      "vendored": true,
+      "role": "Authoring and evaluating skills themselves - scaffold a new skill, edit an existing one, run evals, tune a description for trigger accuracy. Anthropic-authored and vendored into skills/ with its own LICENSE.txt, so it carries no local rule IDs and is not part of the G-series rule set. Registered 2026-09-07 after sitting unregistered on disk; it had been reported as drift at every SessionStart.",
+      "warnBytes": 34000,
+      "warnBytesReason": "SKILL.md is 33,168 bytes, well past the 20000 default, and DG-5's responsibility question does not apply the way it does to the local skills: this file is upstream's, shipped with a LICENSE, and splitting or trimming it would fork a vendored asset that gets replaced wholesale on the next update. The number is its current size plus headroom so ordinary upstream drift does not fire an advisory. If it grows a lot, re-check that the vendored copy is still wanted rather than raising this."
     }
   ],
   "files": [
@@ -301,7 +312,7 @@
     {
       "name": "playwright@claude-plugins-official",
       "required": false,
-      "role": "Browser driving. Required by CLAUDE.md G-10 (show visual results as Playwright screenshots)."
+      "role": "Browser driving. Required by CLAUDE.md G-25 (show visual results as Playwright screenshots)."
     }
   ],
   "settingsKeys": [

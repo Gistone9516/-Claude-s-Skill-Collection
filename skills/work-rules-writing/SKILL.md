@@ -5,7 +5,7 @@ description: Rules for Korean human-facing deliverables and for design - removin
 
 # work-rules-writing — Korean deliverables and design
 
-Rules: WR-1..WR-14 (14).
+Rules: WR-1..WR-15 (15).
 The output of everything here is Korean; this file is instruction, so it is English (CLAUDE.md G-01).
 
 ## 1. Which language, and where it applies
@@ -58,5 +58,7 @@ The output of everything here is Korean; this file is instruction, so it is Engl
 **WR-13 Subtract, and stay calm.** The user dislikes dense, cluttered information: strip to essentials. Colour is a muted, brightness-adjusted chromatic — neither pastel nor achromatic, and not either extreme. Form is rounded and soft.
 
 ## 6. New rules
+
+**WR-15 Verification status stays out of the deliverable (user directive 2026-08-09).** Evidence grades, bracketed source caveats and my own open questions — "미검증", "측정해야 함", "확인할 것" — go in the message to the user, never into the body of the thing a person reads. G-05 and G-07 govern what I must know and must say; they do not license annotating the artifact. And match verification depth to the stakes: a hackathon pitch is not a legal filing. Measured 2026-08-09 — the user said "기획이 합리적이되 반드시 모든 부분이 객관적이지 않아도 됨. 약간의 망상 가능", and the diagnosis was that what burdened the deck was the homework list outside the slides, not the slides. Loosening the prose instead is the overcorrection that followed, and it was rejected too ("너무 캐주얼 해졌는데.. 대체 너는 어떤 기준인거야?"). Depth changes are said in chat; the artifact just reads clean.
 
 **WR-14** Add new writing and design directives here, and update the rule count in the header. Per-deliverable detail (verb-ending conventions and the like) goes in that project's memory.

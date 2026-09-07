@@ -18,7 +18,7 @@
     brief-nudge.sh           처음 건드리는 파일에 브리핑 쌍을 제안
     manifest-nudge.sh        SKILL.md를 고치면 매니페스트도 함께 고치라고 알림
     validate_doc.py          한국어 분량 실측용
-  skills/                    스킬 21개(직접 만든 14개, 외부 7개)
+  skills/                    스킬 22개(직접 만든 14개, 외부 8개)
   projects/<경로키>/memory/  폴더별 프로젝트 메모리
 ```
 
@@ -152,7 +152,7 @@ SH-10(대소문자가 같은 변수를 덮어쓰는 것)은 이 표에 없습니
 
 ### 그 외
 
-`new-hwpx-master`는 hwpx 공문 양식에 내용을 채우는 절차, `discord-bridge`와 `learning-harness`는 각각의 앱을 현재 폴더에 물리는 실행 안내다. `caveman` 계열 7개는 외부 제작물이고 매니페스트에 external로 등록만 해 뒀다.
+`new-hwpx-master`는 hwpx 공문 양식에 내용을 채우는 절차, `discord-bridge`와 `learning-harness`는 각각의 앱을 현재 폴더에 물리는 실행 안내다. `caveman` 계열 7개와 `skill-creator`는 외부 제작물이고 매니페스트에 external로 등록만 해 뒀다.
 
 ## 4. 매니페스트와 이식
 

@@ -5,7 +5,7 @@ description: Evidence grading and the indexing protocol for documents and code -
 
 # verify-fanout — grade the evidence, index it, verify cheaply
 
-Rules: VF-1..VF-22 (22). Sections are ordered by how much a violation costs.
+Rules: VF-1..VF-23 (23). Sections are ordered by how much a violation costs.
 CLAUDE.md G-05..G-10 point here.
 
 ## 1. Evidence grades
@@ -51,9 +51,17 @@ State the grade when the answer rests on grade 4 or 5.
 
 Running the wrong mode returns nothing and costs the budget anyway.
 
+**VF-23 Gates batch by default; a single-item gate has to earn itself (user directive 2026-09-07:** "단건 게이트가 오버헤드와 추론 토큰을 너무 많이 먹고있어"**).** A gate's cost is paid per firing, not per item. An agent's floor is about 90,000 billable tokens (`agent-ops` AO-13), and the operator pays again to read and re-judge each return, so ten claims checked in one pass cost a fraction of ten passes of one claim and answer just as well.
+
+- **Collect, then fire once.** Hold items in a list as they arise and run them at the natural boundary — end of the file group, end of the task, before the deliverable goes out. §7 already batches 5-8 claims per agent; that is the default shape, not a concession.
+- **Fire a single-item gate only when the item cannot wait:** it is destructive or irreversible, it blocks everything after it, or a wrong answer changes what is done next. Name which of the three applies, in one clause.
+- **A parked gate is not a skipped gate.** Write it where it will be seen at the boundary and report what was batched. Quietly dropping an item is the failure this rule must not become (AI-8).
+
 ## 3. brief mode — runs first, always
 
-**VF-7 Standing exception (user directive 2026-07-29).** The brief pair is exempt from fan-out pre-approval, from any "spawn agents only when asked" restriction, and from ordering behind the rest of the preamble. Do not ask for it; do not count it against an agent budget. Gating it inverts its purpose: it exists to be cheap enough that it always runs, and anything conditional gets skipped exactly when the session is busiest, which is when the locally-reasonable-globally-wrong defect appears. Two agents rather than one does not change that arithmetic — what is being weighed is not the agents but a plan built on a wrong premise and every commit that follows it.
+**VF-7 Standing exception (user directive 2026-07-29).** The brief pair is exempt from fan-out pre-approval, from any "spawn agents only when asked" restriction, and from ordering behind the rest of the preamble. Do not ask for it. **Do count it:** measured 2026-09-07, the standing pairs were 45% of every agent spawned in this install and 41% of all agent spend, and the exemption that hid that made every cap meaningless. What the pair is exempt from is permission, not arithmetic.
+
+Gating it inverts its purpose: anything conditional gets skipped exactly when the session is busiest, which is when the locally-reasonable-globally-wrong defect appears (`work-rules-automation` AU-22). Note what this argument is **not**. The pair is not cheap — 313,408 billable tokens per agent, the second most expensive role measured. It runs unconditionally because a judged threshold is an unrun rule, not because it costs little; a rationale that claims cheapness gets falsified by the first measurement and takes the rule down with it (AI-7). What is weighed against the price is a plan built on a wrong premise and every commit that follows it.
 
 **VF-8 The triggers are countable, not a judgement (user directive 2026-07-30).** The former wording — "before editing anything not authored this turn" — required a judgement at every edit, and `work-rules-automation` AU-22 applies to rules as much as to hooks: a threshold that must be judged is what gets skipped exactly when the session is busy. Run the pair at these four moments, and count them.
 

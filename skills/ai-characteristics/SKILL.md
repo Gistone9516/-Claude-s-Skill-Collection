@@ -9,7 +9,7 @@ Rules: AI-1..AI-15 (15).
 
 This file holds **rationale, not procedure.** Every entry is a measured behaviour of the model itself, followed by the rules that exist because of it. Other skills cite `AI-n` instead of re-explaining the reason, so a reason lives in exactly one place.
 
-**Read this before relaxing or deleting a rule.** A rule whose rationale is not visible looks like overhead, and the next session removes it and reproduces the original problem (that is itself AI-11). If a rule seems unnecessary, find its `AI-n` first — if the characteristic still holds, the rule still holds.
+**Read this before relaxing or deleting a rule.** A rule whose rationale is not visible looks like overhead, and the next session removes it and reproduces the original problem (that is itself AI-7). If a rule seems unnecessary, find its `AI-n` first — if the characteristic still holds, the rule still holds. A rationale that is *measurably false* is worse than none, because the first session to check it deletes the rule along with the reason: correct the reason and keep the rule (measured 2026-09-07 — the brief pair's stated ground was that it is "cheap enough that it always runs", and it is the second most expensive role in the install).
 
 ## 1. What the model does with truth
 

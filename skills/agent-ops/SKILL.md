@@ -60,19 +60,21 @@ This is deliberately not the tool's default. The `Workflow` description recommen
 
 **AO-8 Multi-agent work is opt-in.** Run a `Workflow` only on explicit opt-in. Otherwise propose it with a rough cost and do not launch.
 
-**AO-9 Unattended continuation is a different tool from cost offload.** `Workflow` offloads work; `ScheduleWakeup` and `CronCreate` re-invoke opus so a run continues while the user is away. Pick the wakeup delay from what is actually being waited on — an external CI run, a deploy, a queue — not from cache behaviour. Never schedule a wakeup to keep a cache warm. When harness-tracked work will notify on completion, a wakeup is only a long fallback in case it never does.
+**AO-9 Unattended continuation is a different tool from cost offload.** `Workflow` offloads work; `ScheduleWakeup` and `CronCreate` re-invoke opus so a run continues while the user is away. Delay selection lives in the `ScheduleWakeup` description, not here (AO-1).
 
 **AO-10 Continue an existing agent instead of respawning when its context is the point.** `SendMessage` resumes a previously spawned agent with its context intact; a fresh `Agent` call starts from nothing. Re-sending a large brief to a new agent to ask one follow-up is waste.
 
-**AO-11 A finished Workflow's journal is the ground truth for what it returned.** Before diagnosing an empty or surprising result, read the run's journal rather than assuming a cached result was non-empty. To iterate on a script, edit the persisted script file and re-invoke against it; to continue after an edit, resume from the prior run id so the unchanged prefix is not re-run.
+**AO-11 A finished Workflow's journal is the ground truth for what it returned.** Before diagnosing an empty or surprising result, read the run's journal rather than assuming a cached result was non-empty. Iteration and resume mechanics are in the `Workflow` description (AO-1).
 
 ## 5. Fan-out
 
 **AO-12 Fan-out needs prior approval (user directive 2026-07-20).** Before starting any fan-out, `Workflow` included, report the expected total agent count with a per-stage breakdown and get approval. For a prebuilt workflow, estimate its multiplying stages and present the total first — measured: deep-research expanded to 66 agents through three verification votes per claim, which the user judged excessive.
 
-Exceptions: one or two one-shot lookups, and the `verify-fanout` brief pair (VF-21 — both agents, not one of them), which is a standing exception and is never counted. Resuming inside an approved budget needs no re-approval; expecting to exceed it does.
+Pre-approved, and still counted in the reported total: one or two one-shot lookups, and the `verify-fanout` brief pair (VF-21 — both agents, not one of them). Measured 2026-09-07 over 83 agents: the standing pairs were 45% of every agent spawned and 41% of all agent spend, none of it visible to this gate. Exemption from permission is not exemption from arithmetic. Resuming inside an approved budget needs no re-approval; expecting to exceed it does.
 
-**AO-13 Caps are a synthesis limit, not a technical one.** The runtime's own concurrency and total limits are in the tool description and are far above anything used here; the session may also carry a workflow-size guideline. The binding constraint is different: **the most agents whose output opus can still synthesize sharply.** Empirical starting points are about 10 for work (explore, gather) and about 2 for machine verification, with lens as its own tier. Raise them where it demonstrably helps quality.
+**AO-13 Two caps bind: synthesis, and cost.** Runtime concurrency limits are in the tool description and are not the constraint; the session may also carry a workflow-size guideline. What binds is **the most agents whose output opus can still synthesize sharply**, and the price. Measured 2026-09-07 over 83 agents: **floor 89,749 billable tokens, median 323,453, mean 332,344.** There is no cheap agent, and the agent type does not change it — `Explore` averaged 325,995 against `general-purpose` 327,598. So read every count as its price: about 10 for work (explore, gather) is ~3.2M tokens, about 2 for machine verification is ~650k, with lens as its own tier. Raise where it demonstrably helps quality, and say the price when you do.
+
+**The cost is reading, not writing.** Output was 1,095,207 of 27,584,616 billable tokens — 4%. Telling an agent to be brief saves almost nothing; naming the files it may open, and forbidding it to survey past them, saves most of it.
 
 **AO-14 Writes are serial; parallel is for reading.** The parallel-write pattern is one agent per folder in its own worktree, with shared files and the final merge staying with opus.
 
@@ -82,7 +84,9 @@ Exceptions: one or two one-shot lookups, and the `verify-fanout` brief pair (VF-
 
 **AO-15 Defaults for a spawned agent:** sonnet for mechanical work per AO-4; output style caveman-ultra for enumeration and data, with judgement, caveats and verbatim blocks never compressed; and the Report envelope as the return shape.
 
-Raise reasoning by the means the substrate provides — inside a `Workflow`, the `effort` option on that call; with the `Agent` tool, the prompt (`think hard`, `ultrathink`), which is the only lever there.
+**Effort floors low (user directive 2026-09-07: "어차피 정확한 내용을 원하는게 아니니까").** Inside a `Workflow`, pass `effort: 'low'` and raise it only for a stage that judges. The `Agent` tool has **no effort parameter** — there the lever is the prompt, so omit `think hard` / `ultrathink` by default and raise reasoning only where the stage judges. Raising is a decision to be stated, not a default.
+
+**Fix the return size at delegation time, not on receipt (user directive 2026-09-07).** Every agent bills twice: once to run, once for opus to read what it returns. So the delegation says how much comes back and in what shape. A standing pair returns 3-5 decision lines (`verify-fanout` VF-10) — asking a brief for an exhaustive report is an operator error, not thoroughness. Measured 2026-08-22: brief-pair repo forensics flowed into a student internship diary and had to be rewritten.
 
 **AO-16 Evidence-grounding is mandatory for factual, research and feasibility tasks.** Instruct the agent to search for grounds rather than lean on recall. `[fact-cited]` means a real source — URL, file, or run output. Any factual, version, pricing, API or feasibility claim without one is tagged `[assumption]` with lowered confidence and never dressed as fact (AI-2). Skip search for pure logic and mechanical tasks.
 
@@ -174,5 +178,26 @@ the target agent might naturally have chosen, 자세히 and 더 알아보기, al
 model" elsewhere on the same screen. Neither agent could have returned the other's finding, and
 the rejected mechanism would have shipped from a single-agent review.
 
-The pair is **pre-approved as a standing pair** and needs no G-22 count, like the brief pair — but
-unlike the brief pair it is not exempt from being skipped when there is no UI in the change.
+The pair is **pre-approved as a standing pair** — no permission round-trip, like the brief pair —
+but it **is counted in the reported total** (AO-12), and unlike the brief pair it is not exempt
+from being skipped when there is no UI in the change.
+
+**On UI work the standing agents are three, not four (2026-09-07).** G-10's 주변 lens and this
+pair's 주변 scope ask one question — does this agree with what is already here, and what breaks
+when it changes — so running both buys the same answer twice (AI-4). Run **현장** (what the target
+files say, which of my premises are wrong) · **대상** (the control itself) · **주변** (continuity
+and blast radius, covering both halves), and say that the fourth was merged. Measured 2026-09-07:
+a toggle and a delete dialog each drew four standing agents and ~1.2 MB of subagent transcript,
+and the delete dialog still shipped a button no human could see or click — so a fourth agent was
+never what was missing.
+
+## 10. Large and unattended runs
+
+**AO-23 As scope grows, the partition becomes the deliverable.** At small scale a bad split costs a merge; at large scale it costs the run. Before fanning out over a big surface:
+
+- **Partition so each unit is independently checkable**, and write the check with the partition. A unit whose result cannot be verified without reading the others was not partitioned.
+- **Name the shared surface explicitly** and freeze it first (AO-22). Everything not in it is local to a unit.
+- **Declare coverage as data, not prose** — the work list is enumerable, each item's result is one row, and the count is compared. "All done" is a claim (AI-8); a row count is a fact.
+- **Verify by execution wherever execution is possible.** Agents generate; deterministic runs prove.
+
+For an unattended run, add: a periodic health check rather than waiting only for a completion signal, resumption from the run id rather than restarting, and **park-and-continue** — when a decision genuinely needs the user, append it to a decisions log, skip only that sub-part, continue the rest of the same task, and present every parked decision in one briefing at the end. A hard-floor failure (test or integration failure, corruption) still halts, because parking applies to decisions and not to a broken state. Details in `work-rules-automation` and `buildflow`.
