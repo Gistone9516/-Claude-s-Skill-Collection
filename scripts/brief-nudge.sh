@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 # brief-nudge.sh
-# Reminds the model to run the verify-fanout brief pair before editing a file it did not write
+# Reminds the model to run the verify-fanout brief before editing a file it did not write
 # in this session (CLAUDE.md G-10, verify-fanout VF-7..VF-10 and VF-21).
 #
-# The message stays one imperative sentence plus the rule ID (work-rules-automation AU-24). It
-# named the shape of a brief until 2026-07-30, and when the rule changed to a pair that copy was
-# left saying "one agent" - a hook that restates a rule is a second copy of it (VF-16).
+# The message stays one imperative sentence plus the rule ID (work-rules-automation AU-24), and
+# it names no shape at all. It said "one agent" until 2026-07-30 and then named the two lenses
+# until 2026-09-07; both went stale the same way, because the rule moved and this copy did not.
+# AO-24 now merges the brief and design pairs to three agents on UI work, which the 2026-07-30
+# fix would have gone stale against too - it swapped one restatement for another instead of
+# removing it. A hook that restates a rule is a second copy of it (VF-16); pointing at the ID
+# is the only version that cannot drift.
 #
 # This is a SUGGESTION, not a gate. It does not deny the edit and it does not run an agent -
 # a script cannot spawn one. It puts the reminder in front of the model at the moment of the
@@ -69,7 +73,7 @@ esac
 esc="${path//\\/\\\\}"
 esc="${esc//\"/\\\"}"
 
-msg="[G-10] First touch of ${esc} this session - run the verify-fanout brief pair (현장 + 주변, VF-21) before editing it, or say why you are skipping it."
+msg="[G-10] First touch of ${esc} this session - run the verify-fanout brief before editing it (VF-21 sets its shape), or say why you are skipping it."
 
 # If this file has a decision note, name it. The note answers what the brief cannot: what earlier
 # decisions cost, and what breaks if this edit reverses one (VF-22). Repo root is inferred by
