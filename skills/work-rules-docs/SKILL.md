@@ -5,7 +5,7 @@ description: Editing and extracting document files (hwpx, pptx, docx, xlsx) - a 
 
 # work-rules-docs — document file editing and extraction
 
-Rules: DC-1..DC-15 (15).
+Rules: DC-1..DC-17 (17).
 For filling an hwpx official-document template end to end, use `new-hwpx-master`; this file holds the corruption rules that apply to any document work.
 
 ## 1. Extracting text (docx, xlsx, hwpx, pptx)
@@ -63,8 +63,22 @@ $hwp.Clear(1); $hwp.Quit()
 - The stale-preview corollary: `Preview/PrvImage.png` inside an hwpx is whatever the last editor saved, not the current content. One 회의록 preview showed an empty 회의 내용 cell that was actually filled. **Never use PrvImage as a rendering of the document** — render through COM.
 - **A `PDF_FAIL` from the oracle is not proof of corruption — it can be the environment (measured 2026-08-01).** Twice the export hit its `Wait-Job` timeout and returned `PDF_FAIL` on a freshly built file; a control run of the **previous session's known-good file** returned `PDF_FAIL` **too**, both hanging the full 120 s. So the failure was environmental — Hangul wedged, or, most likely, the target file already open in the Hangul GUI so COM's `Open` blocks — not the new file. **Before concluding a build is corrupt, re-run the same export on a file you know opens (last delivered version, or the untouched original).** Original fails too → environment, and the new file's `PDF_FAIL` is uninformative; fall back to DC-6 plus a byte-identical-construction argument and let the user do the definitive open. Original succeeds, new one fails → the build really is corrupt. This is the DC-12 one-variable rule applied to the oracle itself.
 
+## 3.6 hwpx table layout — the two traps that cost a rebuild each
+
+**DC-16 A table with `treatAsChar="1"` cannot split across pages, so growing it past one page blanks the page before it (measured 2026-08-22).** 서식6 종합보고서's table is declared `<hp:pos treatAsChar="1" ... horzRelTo="PARA" ...>`. After filling it to ~2 pages the export put an **empty page 1** and started the table on page 2 — the table is an inline character, and a character cannot be broken, so Hangul pushed the whole thing to the next page and only then split it. Setting `pageBreak="CELL"` alone does **not** fix it; 글자처럼 취급 disables cell splitting.
+
+- Fix: `treatAsChar="0"` and `horzRelTo="COLUMN"` (plus `pageBreak="CELL"`), i.e. the same `hp:pos` profile that 서식7 일일보고서's 48-row table already carries and which splits across pages correctly.
+- The tell is a first page containing only the running header. Do not chase the content — check `treatAsChar` first.
+- Corollary: when a form's table must stay one page, `treatAsChar="1"` is why. Only flip it when the content genuinely exceeds a page.
+
+**DC-17 Under-estimate `cellSz height`, never over-estimate.** Hangul honours a declared cell height that is larger than the content, leaving dead whitespace it will not reclaim; a height that is too small it silently grows to fit. Measured 2026-08-22: estimating 36 chars/line on a 37.7-char line and flooring every body cell at the template's original 10370 pushed a 2-page 종합보고서 to 3 pages with visible gaps. Re-estimating at 40 chars/line with a 5500 floor gave exactly 2 pages and no clipping.
+
+- So bias the estimate low. `lines = ceil(len(text) / chars_per_line)` with `chars_per_line` set slightly **above** the true value, and drop the template's original row height as a floor — keep only a floor big enough for the label cell's own text.
+- The label cell and the content cell of the same row must be set to the same height, or the row geometry disagrees with itself.
+- Verify by page count in the exported PDF (DC-15), not by trusting the arithmetic.
+
 ## 4. New lessons
 
-**DC-13** Add document-editing and extraction lessons here with the measured date, and update the rule count in the header.
+**DC-13** Add document-editing and extraction lessons here with the measured date, and update the rule count in the header **and the matching `ruleIds` in `manifest.json`, in the same change**.
 
 **DC-14** A trap that turns out to belong to the shell or encoding layer rather than the document format goes to `work-rules-shell` instead, so each file keeps one responsibility.

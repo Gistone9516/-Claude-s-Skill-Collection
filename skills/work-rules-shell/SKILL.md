@@ -5,7 +5,7 @@ description: Shell, git and terminal discipline for this environment (Windows 11
 
 # work-rules-shell — shell, git and terminal discipline
 
-Rules: SH-1..SH-30 (30). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
+Rules: SH-1..SH-34 (34). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
 Every rule came from an actual incident. None is safe to skip on the assumption that this time is different.
 
 Thirteen of these are also enforced mechanically by hooks, because reading this file has repeatedly failed to prevent them — a rule is followed best when it is closest to the action, and a hook is closer than any document.
@@ -23,6 +23,15 @@ The remaining fifteen have no reliable mechanical signature and stay in the text
 
 **SH-2 Escapes handed to the Write tool become real control characters in the file (measured 2026-07-21).** Writing a placeholder `\0` into JS source put a **raw NUL byte** in the file. What follows is worse: the Read tool renders NUL as whitespace so the source looks fine, and Edit fails with "String to replace not found" because the `old_string` built from what is visible does not match the actual bytes — repeated three times before the cause was found. Write control characters from a Python script, not with the Write tool. Detect by dumping the line with `repr()` the moment Edit claims it cannot find something that is plainly there; never retry on a guess.
 
+**SH-33 A doubled backslash collapses to one before the shell or Python ever sees it (measured 2026-09-02, twice in one session).** SH-2 is about the Write tool; this is the same class one layer up, and a **quoted heredoc does not save you** — the collapse happens at the tool-argument layer, above the shell.
+
+- Measured: `\\` written into a `<<'EOF'` heredoc arrived as `\`, so the TS regex `/\\/g` became `/\/g`, a regex that never closes. A single `\n` or `\r` in the same heredoc survived intact, which is what makes this hard to spot: most escapes work.
+- Worse through an intermediary: `\\n`, written to put the two characters `\n` into a generated file, collapsed to `\n`, which Python then read as a **real newline** — producing unterminated string literals in the output. The script was correct; its source was not what was typed.
+- **Never type a literal backslash into a file-writing script.** Build it from its code point (`BS = chr(92)`, then `BS + "n"`) and assemble the target text as a list joined with `chr(10)`. Code points are immune because no escape crosses the boundary.
+- Better still, restructure so no backslash is needed: `relative(a, b).split(sep).join("/")` instead of `.replace(/\\/g, "/")`.
+- **Detect** with `grep -n 'pattern' file | cat -A` right after writing, or a syntax check (`npx tsc --noEmit`, `node --check`) run **per edit, not per batch** (SH-3). The symptom is a parse error on a line that looks correct in the Read output.
+- Sibling trap hit twice while writing these very scripts: in Python, splitting a concatenation across lines needs a trailing `+` on every line. Implicit adjacent-literal concatenation does **not** apply once an expression is in the chain, and the error points at the wrong line.
+
 > This file itself carried two raw NUL bytes until 2026-07-29, inside the paragraph above. ripgrep classified it as binary and the Grep tool could not search it at all.
 
 **SH-3 Anchor-append duplication in edit scripts (measured 2026-07-29, twice in one session).** When patching a file with a script, `s.replace(anchor, add + anchor)` is correct **only if `add` does not itself end with the anchor text**. Twice in one session a block was written as:
@@ -36,7 +45,7 @@ producing `export function reduce(export function reduce(` and `if (failuresif (
 
 - When inserting **before** an anchor, `add` must end at the boundary and never restate the anchor.
 - **Assert the result, not just the input**: after replacing, `assert s.count(anchor) == 1`, or check that the joined text does not contain `anchor + anchor`.
-- **Run the syntax check immediately after each script edit** (`node --check file.mjs`, `npx tsc -b`), not after a batch of three. The second occurrence survived because two edits landed before any build.
+- **Run the syntax check immediately after each script edit** (`node --check file.mjs`, `npx tsc --noEmit`), not after a batch of three. The second occurrence survived because two edits landed before any build. **Not `tsc -b`** — this line recommended it until 2026-09-05, and following it emitted 64 `.js` files into a source tree and left the test suite reading them instead of the sources. See SH-34.
 
 ## 1. Data loss
 
@@ -68,13 +77,20 @@ while ($stack.Count -gt 0) { $cur = $stack.Pop()
 
 Always return and report a `denied` count: a subtree measured with denied>0 is a **floor, not a total**. Sanity-check any drive scan by comparing the sum of top-level folders against `(Get-PSDrive C).Used`; a large gap means the walk collapsed, not that space vanished.
 
-**SH-9 `Get-Item` and `Get-ChildItem` without `-Force` cannot see Hidden+System files, so `pagefile.sys` and `hiberfil.sys` report as absent (measured 2026-07-28).** `Test-Path C:\pagefile.sys` also returns False for the *active* pagefile even elevated, which is normal Windows behavior and not evidence of absence. Measured failure: reporting "16 GB of unidentified loose files at C:\ root" and "pagefile.sys does not exist" — both were the same 16.4 GB pagefile. Always pass `-Force` when enumerating a drive root or a system location. Confirm pagefile facts with `Get-CimInstance Win32_PageFileUsage` / `Win32_PageFileSetting` / `Win32_ComputerSystem.AutomaticManagedPagefile`, never with Test-Path. `C:\$Recycle.Bin` needs `-Force` plus the per-directory walker above; it hid **33.9 GB** from a naive scan that reported 0 MB.
+**SH-9 `Get-Item` and `Get-ChildItem` without `-Force` cannot see Hidden+System files, so `pagefile.sys` and `hiberfil.sys` report as absent (measured 2026-07-28).** `Test-Path C:\pagefile.sys` also returns False for the *active* pagefile even elevated — normal Windows behavior, not evidence of absence. Measured: reporting "16 GB of unidentified loose files at C:\ root" and "pagefile.sys does not exist", both the same 16.4 GB pagefile. Always pass `-Force` on a drive root or system location. Confirm pagefile facts with `Get-CimInstance Win32_PageFileUsage` / `Win32_PageFileSetting` / `Win32_ComputerSystem.AutomaticManagedPagefile`, never Test-Path. `C:\$Recycle.Bin` needs `-Force` plus the per-directory walker above; it hid **33.9 GB** from a scan that reported 0 MB.
 
-**SH-10 PowerShell variable names are case-insensitive, so `$l` silently clobbers `$L` (measured 2026-07-27).** A report script used `$L = New-Object ArrayList` as its accumulator and later `foreach ($l in $rows)`. PowerShell treats them as one variable, so the loop overwrote the ArrayList with a string, every later `$L.Add(...)` failed under `SilentlyContinue`, and the script wrote a 91-byte file instead of a 90-line report while still printing its success line. **The symptom is a silently truncated output file, not an error.** Never use single-letter loop variables next to an accumulator differing only in case; give accumulators descriptive names (`$acc`, `$lines`). Have the script print its own item count so a collapse is immediately visible.
+**SH-10 PowerShell variable names are case-insensitive, so `$l` silently clobbers `$L` (measured 2026-07-27).** A script used `$L = New-Object ArrayList` then `foreach ($l in $rows)`. One variable: the loop overwrote the ArrayList with a string, every later `$L.Add(...)` failed under `SilentlyContinue`, and it wrote a 91-byte file instead of a 90-line report while printing its success line. **The symptom is a truncated output file, not an error.** Never put a single-letter loop variable beside an accumulator differing only in case; name accumulators (`$acc`, `$lines`) and have the script print its own item count.
 
 **SH-11 `Measure-Object -Line` does not count blank lines (measured 2026-07-20).** It undercounts: a 764-line file was reported as 480, and a chunked fan-out nearly left the last 40% of the document uncovered. Count lines with `(Get-Content file).Count`. Derived defense that worked: tell each delegated agent "if the assigned range disagrees with the actual file, use the actual file and report the mismatch" — the miscount then self-detects.
 
 **SH-12 The Korean console is cp949.** Python output dies with `UnicodeEncodeError` on Korean or special characters such as `\xa9` or an em dash. Write extraction and processing results to a UTF-8 file and read them with the Read tool; never print them to stdout. Detail in `work-rules-docs`.
+
+**SH-34 `tsc -b` emits `.js` beside the sources and the bundler imports those instead of the `.ts` (measured 2026-09-05).** A bundler's tsconfig has no `noEmit` and no `outDir` because the project checks with `tsc --noEmit`; `-b` therefore compiles the whole `include` set to disk (64 files measured), and Vite/vitest resolve `./study` to the `.js` sibling first. **The suite then tests a compiled snapshot, not the source.** The tell sends you to the wrong place: the edit lands, the type-check passes, and a test fails with `X is not a function` for a function plainly there.
+
+- Read `package.json` scripts before inventing a command. Here: `tsc --noEmit && vite build`.
+- Detect: untracked `.js` files in `git status`, a `.js` twin beside a `.ts`, or a root `tsconfig.tsbuildinfo`.
+- Clean by classification, never by glob: delete only untracked `.js` that have a same-named `.ts` sibling (a hand-written `.js` never does), after confirming the without-twin list is empty.
+- Same shape in any bundler toolchain: that tsconfig is a type-check config, and `-b` is for project references with real outputs.
 
 ## 3. Stopped runs and broken parsing
 
@@ -112,7 +128,7 @@ Always return and report a `denied` count: a subtree measured with denied>0 is a
 
 **SH-21 Windows `autocrlf=true` line-ending trap.** `git stash` / `pop` / checkout rewrites working-tree files LF → CRLF, and prettier (default `endOfLine: lf`) then flags every file including ones never touched. The cause is line endings alone, so `npx prettier --write` normalizes it away. git normalizes to LF on commit, so an EOL-only change does not appear in a diff, which is safe. "Prettier suddenly shows everything as red" means this trap, not your edits.
 
-**SH-27 Check for a prettier config before running `prettier --write` (measured 2026-07-30).** SH-21 above recommends that command; it is only safe where a config exists. With no `.prettierrc` and no `prettier` key in `package.json`, `printWidth: 80` lands on code written at ~120 and the real change becomes invisible — measured at `App.tsx` returning 221 changed lines of which ~206 were re-wrapping. Behavior was identical, which is the problem: nothing fails, and the noise ships. `git diff -w --stat` ignores whitespace and gives the true size in one command — reach for it whenever a diff looks bigger than the edit. Formatting an existing repo is its own commit. To re-indent a block after wrapping it, use a script asserting `before.split() == after.split()`, which proves only whitespace moved.
+**SH-27 Check for a prettier config before running `prettier --write` (measured 2026-07-30).** SH-21 recommends that command; it is only safe where a config exists. With no `.prettierrc` and no `prettier` key in `package.json`, `printWidth: 80` lands on code written at ~120 and the real change disappears — `App.tsx` returned 221 changed lines, ~206 of them re-wrapping. Behavior was identical, which is the problem: nothing fails and the noise ships. `git diff -w --stat` ignores whitespace and gives the true size — use it whenever a diff looks bigger than the edit. Formatting an existing repo is its own commit. To re-indent a block, use a script asserting `before.split() == after.split()`, which proves only whitespace moved.
 
 **SH-28 When a destructive git verb is blocked by permission, reach the same end with a read-only git command plus an ordinary file operation (measured 2026-07-30).** `git checkout -- <paths>` was refused twice, including after the user approved it in conversation — the classifier does not see the conversation, so retrying is wasted. `git show HEAD:<path>` writes nothing, so dumping it to a scratchpad file and copying that over the target restores the file with no destructive verb. Wrap it in a `.sh` (SH-1) printing each path and byte count, then confirm with `git status --porcelain`. Same shape for `git stash` and `git restore`. With no read-only equivalent, stop and ask rather than working around the denial.
 
@@ -146,5 +162,23 @@ Invoked as `npm run build`, `InvocationName` is `npm` (3) and the strip is corre
 - **`& npm -v` is a false-negative probe.** It prints the version even as `npm pm -v`, because `-v` short-circuits before command dispatch. Confirming with it "proves" npm works and sends the diagnosis somewhere else — measured, cost one wrong hypothesis (`chcp`/`.bat` encoding) before the real cause.
 - **Fix: resolve `npm.cmd` and call that.** `$Npm = (Get-Command npm.cmd).Source`, then `& $Npm run build`. Bare `npm run build` (no `&`) also works, but breaks the moment the command name comes from a variable, which is the usual reason for reaching for `&`.
 - **Generalization.** Any Node-shipped `*.ps1` shim built from this template is affected. When a CLI installed by Node behaves as if its first argument lost a character, check for a `.ps1` sibling next to the `.cmd` before suspecting your own quoting.
+
+**SH-31 A file the Write tool creates inherits the parent folder's ACL, and OpenSSH refuses any `~/.ssh` file that another principal can read (measured 2026-08-15).** Writing `C:\Users\USER\.ssh\config` with the Write tool produced a file carrying an inherited `BOOK-AKVD4HPQJF\SSUserGroup` ACE. Every `ssh` invocation then died at exit 255 before reaching the network:
+
+```
+Bad permissions. Try removing permissions for user: BOOK-AKVD4HPQJF\SSUserGroup (S-1-5-21-...-1007) on file C:/Users/USER/.ssh/config.
+Bad owner or permissions on C:\Users\USER/.ssh/config
+```
+
+- **The symptom misdirects toward the remote.** It arrives exactly when a first connection would, so the natural next suspects are the key registration, the host and the network — all of which were correct. Nothing in the message says the file was created seconds ago by a tool that never touches ACLs.
+- **Fix, run before the first `ssh` call rather than after the failure:** `icacls <path> /inheritance:r /grant:r "${me}:F"`, with `$me = "$env:USERDOMAIN\$env:USERNAME"`. Build the principal into a variable — writing `"$env:USERNAME:F"` inline invites the parser to read the trailing colon as part of the variable path.
+- **`ssh-keygen` sets its own ACL correctly**, so the key it generates is fine; only files written by other means (`Write`, `Copy-Item`, redirection) carry the inherited ACE. `known_hosts` is exempt from the check, `config` and private keys are not.
+
+**SH-32 The PowerShell tool runs elevated, so token-scoped state is invisible to the user — and checking it from that same shell is not verification (measured 2026-08-15).** `net use Z: \\suan-desktop\workspace /persistent:yes` reported success, and `net use`, `Get-SmbMapping`, `Get-PSDrive Z` and `Test-Path Z:\projects` all agreed. The user then reported no `Z:` in File Explorer. Windows scopes mapped drives per logon token: the tool process is `IsInRole(Administrator) = True` while `explorer.exe` runs the same account's filtered token, so the drive existed only inside the shell that made it. **All four checks came from inside that shell, so all four agreed and all four were worthless** — evidence gathered on the wrong side of a boundary agrees with itself whatever the user sees.
+
+- **Second symptom, same cause.** The elevated `/persistent:yes` also left `HKCU:\Network\Z` unwritten, so the mapping would not have survived a logoff; the same command in the limited token created the key at once. Reporting it as a separate defect sent the diagnosis briefly the wrong way.
+- **Probe the other token before believing a result.** `schtasks /create /tn <n> /tr "cmd /c <cmd> > <ascii-path> 2>&1" /sc ONCE /st 00:00 /rl LIMITED /it /f`, then `/run`, read the file, `/delete /f`. `/rl LIMITED /it` lands in the interactive user's filtered token — Explorer's. Output is cp949: read it with the Read tool (SH-12), where Korean arrives mojibaked but the ASCII lines that settle the question stay legible. Keep the redirect path space-free so `/tr` needs no nested quotes (SH-13). `schtasks /query` on a deleted task exits 1 — confirmation, not failure.
+- **The same channel performs the fix.** Store credentials first (`cmdkey /add`) so no password reaches the task command line, and delete the task immediately after.
+- **Scope.** Mapped network drives, subst drives, per-session device mappings. Files, services and HKLM are unaffected. `EnableLinkedConnections=1` merges the two views but needs a reboot and is machine-wide, so ask; prefer UNC paths (`\\host\share`), which need no mapping at all.
 
 Add shell, git and terminal lessons here with the measured date, and update the rule count in the header.

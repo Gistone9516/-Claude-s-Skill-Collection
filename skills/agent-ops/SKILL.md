@@ -5,7 +5,7 @@ description: Delegation policy - the opus/sonnet division, model and effort per 
 
 # agent-ops — delegation policy
 
-Rules: AO-1..AO-23 (23). CLAUDE.md §1 routes here and §4 points here; only the fan-out approval gate stays in CLAUDE.md, as G-22. Rationale for the rules here lives in `ai-characteristics`.
+Rules: AO-1..AO-24 (24). CLAUDE.md §1 routes here and §4 points here; only the fan-out approval gate stays in CLAUDE.md, as G-22. Rationale for the rules here lives in `ai-characteristics`.
 
 > **Terminology (user directive 2026-06-10).** "opus" is a **role name** meaning the model currently applied to this session — the main judge model. It is not the fixed `claude-opus-*`; when the session model changes, every "opus" reference follows. "sonnet" stays literal.
 
@@ -146,13 +146,33 @@ sonnet gathers, locates, executes and mechanically verifies; opus judges, compos
 
 **AO-22 opus owns integration and contracts.** Cross-chunk interfaces, integration and merges are never delegated. **Author the shared-interface SoT first** — shared types, field names, enums, error codes, serialization, wiring — before any parallel per-chunk drafting. Independent drafts reconciled afterwards cost N rounds of churn; measured at 7 rounds on a 6-contract spec.
 
-## 10. Large and unattended runs
+**AO-24 UI work carries a design pair, one agent per scope (user directive 2026-09-02).** Any time
+a UI is written or changed, attach two `frontend-design` agents before the edit and split them by
+scope, the same way the `verify-fanout` brief pair splits by lens — one agent given the same brief
+twice returns the same answer (AI-4), so the second only pays when its framing differs.
 
-**AO-23 As scope grows, the partition becomes the deliverable.** At small scale a bad split costs a merge; at large scale it costs the run. Before fanning out over a big surface:
+| Scope | Its question | What it catches |
+|---|---|---|
+| **대상 (target)** | What should this element be, given its own constraints? | The control itself: form, placement, states, the exact CSS and copy |
+| **주변 (surroundings)** | Will it be continuous with what is already here, and can it actually be built? | A second vocabulary for a job the product already has a word for; a label that means something else three panels away; layout consequences; blast radius into a sibling consumer |
 
-- **Partition so each unit is independently checkable**, and write the check with the partition. A unit whose result cannot be verified without reading the others was not partitioned.
-- **Name the shared surface explicitly** and freeze it first (AO-22). Everything not in it is local to a unit.
-- **Declare coverage as data, not prose** — the work list is enumerable, each item's result is one row, and the count is compared. "All done" is a claim (AI-8); a row count is a fact.
-- **Verify by execution wherever execution is possible.** Agents generate; deterministic runs prove.
+Both are proposals, never edits — `AO-5` holds, and the adopt-or-reject call is opus's against the
+source. Feed the target agent any measurement it would otherwise guess at; a design decision sized
+from an estimate is an `[assumption]` wearing a number.
 
-For an unattended run, add: a periodic health check rather than waiting only for a completion signal, resumption from the run id rather than restarting, and **park-and-continue** — when a decision genuinely needs the user, append it to a decisions log, skip only that sub-part, continue the rest of the same task, and present every parked decision in one briefing at the end. A hard-floor failure (test or integration failure, corruption) still halts, because parking applies to decisions and not to a broken state. Details in `work-rules-automation` and `buildflow`.
+Three things decide whether the pair returns anything. **Call it once there is a concrete change to
+review** — asked before that, both lenses return the same generalities. **Give each lens its own
+half and say the other half is covered**, exactly as `verify-fanout` VF-21 requires: an agent that
+believes it is alone widens to the whole surface, and then both return the same survey. And **let
+either answer "주의할 것 없음"** (VF-9) — an agent obliged to find something produces noise, and
+noise gets skimmed.
+
+Measured on the first run, and the split is what produced it: the target agent designed a control
+and reached for a `<details>` element, which forced the summary text to exist twice in the DOM —
+adopted structure, rejected mechanism. Independently, the surroundings agent found that two labels
+the target agent might naturally have chosen, 자세히 and 더 알아보기, already meant "waits on the
+model" elsewhere on the same screen. Neither agent could have returned the other's finding, and
+the rejected mechanism would have shipped from a single-agent review.
+
+The pair is **pre-approved as a standing pair** and needs no G-22 count, like the brief pair — but
+unlike the brief pair it is not exempt from being skipped when there is no UI in the change.

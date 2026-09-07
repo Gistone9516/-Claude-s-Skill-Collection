@@ -3,7 +3,6 @@
   "updated": "2026-08-10",
   "purpose": "Single source of truth for what this ~/.claude install is supposed to contain. scripts/check-manifest.ps1 validates the live filesystem against this file at SessionStart and reports drift.",
   "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
-
   "policy": {
     "claudeMdMaxBytes": 9000,
     "claudeMdMaxBytesReason": "CLAUDE.md is loaded into every turn. It reached 17848 bytes by accretion before the 2026-07-29 reorganization, which cut it to 8555 across 27 rules with no rule dropped - the detail moved into skills. 9000 is that measured floor plus a little headroom. It was briefly set to 7000, which could only have been met by deleting rules that must be true before a skill loads, so the number was raised deliberately and recorded here rather than adjusted silently later. The gate exists to catch drift back toward 17848, not to force deletion.",
@@ -13,7 +12,6 @@
     "onOrphan": "A skill on disk but absent from this manifest is unregistered. Either add it here or delete it. Report it; do not ignore it.",
     "userWarningTemplate": "<이름> 스킬이 없습니다. 확인 바랍니다."
   },
-
   "retiredGlobalRules": {
     "note": "Retired on 2026-07-29 when CLAUDE.md dropped its summaries of skill content. The rules were not deleted; they live in the named skill and are reached through the CLAUDE.md section 1 routing table. Retired numbers are never reused.",
     "G-14": "work-rules-diagnosis DG-4 (spec precedes substantial change)",
@@ -27,7 +25,6 @@
     "G-23": "agent-ops AO-3 (reasoning depth, ROUTE)",
     "G-24": "agent-ops AO-14 (writes serial, true independence)"
   },
-
   "skills": [
     {
       "name": "ai-characteristics",
@@ -65,9 +62,9 @@
       "lang": "en",
       "tier": 1,
       "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene.",
-      "ruleIds": "SH-1..SH-30",
-      "warnBytes": 26000,
-      "warnBytesReason": "Asked again on 2026-08-03 as the previous note required, rather than raising on reflex. The answer did not change: this is one responsibility - the trap catalogue for one environment - reached by a single routing trigger covering shell, git and terminal together, so splitting it would mean loading two skills to make one commit. It is also the only skill that grows by design, every entry being an incident that already happened, so deleting one to stay under a number reintroduces the incident. What crossed 23000 was SH-30, one more measured trap. 26000 is the 2026-08-03 size (24658) plus headroom; when it is next exceeded, ask the question again rather than raising this."
+      "ruleIds": "SH-1..SH-34",
+      "warnBytes": 32000,
+      "warnBytesReason": "Third raise: 26000 -> 28000 -> 30000 (both 2026-08-15) -> 32000 on 2026-09-05. DG-5's responsibility question, answered the same way a fifth time: one responsibility, the trap catalogue for one environment, reached by a single routing trigger that covers shell, git and terminal together, so splitting it means loading two skills to make one commit; and it is the only skill that grows by design, every entry an incident that already happened. The trim pass demanded by the previous reason was done FIRST and before this number moved: 705 bytes out of SH-9, SH-10 and SH-27 with no measured fact lost (31728 -> 31023), plus SH-34 itself cut roughly in half from its first draft. What is left is content, not padding. Note for the drift record: the file was ALREADY over 30000 when this session opened it -- SH-33 (2026-09-02) crossed the line and the budget was never revisited, so only ~700 of the overrun is this session's. What crossed it here is SH-34 (tsc -b emits .js beside the sources and the bundler then imports those, so the suite silently tests a compiled snapshot), squarely inside the same responsibility, and it also corrected SH-3, which had been recommending 'npx tsc -b' as a syntax check and was the source of the habit. NEXT TIME: three raises means the answer is no longer 'raise'. Do not move this number again -- propose a split (candidate seam: encoding and file-writing traps SH-2/4/12/15/29/33 as their own skill, loaded by the same trigger) or delete rules whose environment no longer exists, and put that proposal to the user. Prior sizes for drift: 24658 on 2026-08-03 (crossed by SH-30), 26283 on 2026-08-15 (crossed by SH-31), 31728 on 2026-09-05 (crossed by SH-33 unnoticed, then SH-34)."
     },
     {
       "name": "agent-ops",
@@ -76,7 +73,7 @@
       "lang": "en",
       "tier": 2,
       "role": "Delegation POLICY: model and effort per stage, Agent vs Workflow, fan-out approval and caps, Report envelope, large and unattended runs. Tool descriptions stay canonical for mechanics (AO-1). CLAUDE.md §4 routes here; approval gate G-22 stays in CLAUDE.md.",
-      "ruleIds": "AO-1..AO-23"
+      "ruleIds": "AO-1..AO-24"
     },
     {
       "name": "work-rules-automation",
@@ -103,7 +100,7 @@
       "lang": "en",
       "tier": 2,
       "role": "hwpx / pptx / docx / xlsx editing and extraction; corruption traps.",
-      "ruleIds": "DC-1..DC-15"
+      "ruleIds": "DC-1..DC-17"
     },
     {
       "name": "work-rules-kit",
@@ -164,7 +161,6 @@
       "externalApp": "learningHarness",
       "note": "Excluded from the 2026-07-29 reorganization by user instruction. Body left as-is."
     },
-
     {
       "name": "caveman",
       "required": false,
@@ -173,33 +169,115 @@
       "role": "Compressed communication mode.",
       "restore": "Third-party skill set. Present in this repo as regular files; on a fresh machine they are restored by the clone. The symlink into ~/.agents is a local convenience, not a requirement."
     },
-    { "name": "cavecrew", "required": false, "kind": "external", "source": "~/.agents/skills/cavecrew", "role": "Delegation guide for caveman-style subagents." },
-    { "name": "caveman-commit", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-commit", "role": "Compressed commit messages." },
-    { "name": "caveman-compress", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-compress", "role": "Compress memory files." },
-    { "name": "caveman-help", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-help", "role": "Caveman quick reference." },
-    { "name": "caveman-review", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-review", "role": "Compressed review comments." },
-    { "name": "caveman-stats", "required": false, "kind": "external", "source": "~/.agents/skills/caveman-stats", "role": "Session token stats." }
+    {
+      "name": "cavecrew",
+      "required": false,
+      "kind": "external",
+      "source": "~/.agents/skills/cavecrew",
+      "role": "Delegation guide for caveman-style subagents."
+    },
+    {
+      "name": "caveman-commit",
+      "required": false,
+      "kind": "external",
+      "source": "~/.agents/skills/caveman-commit",
+      "role": "Compressed commit messages."
+    },
+    {
+      "name": "caveman-compress",
+      "required": false,
+      "kind": "external",
+      "source": "~/.agents/skills/caveman-compress",
+      "role": "Compress memory files."
+    },
+    {
+      "name": "caveman-help",
+      "required": false,
+      "kind": "external",
+      "source": "~/.agents/skills/caveman-help",
+      "role": "Caveman quick reference."
+    },
+    {
+      "name": "caveman-review",
+      "required": false,
+      "kind": "external",
+      "source": "~/.agents/skills/caveman-review",
+      "role": "Compressed review comments."
+    },
+    {
+      "name": "caveman-stats",
+      "required": false,
+      "kind": "external",
+      "source": "~/.agents/skills/caveman-stats",
+      "role": "Session token stats."
+    }
   ],
-
   "files": [
-    { "path": "CLAUDE.md", "required": true, "role": "Always-loaded global rules. Budget-checked against policy.claudeMdMaxBytes." },
-    { "path": "manifest.json", "required": true, "role": "This file." },
-    { "path": "GUIDE.ko.md", "required": true, "role": "Human-facing Korean guide to the whole setup. Not loaded by the model." },
-    { "path": "README.md", "required": true, "role": "Repo entry point." },
-    { "path": "settings.hooks.example.json", "required": true, "role": "The portable half of settings.json: the hooks block only, with the install path written as <CLAUDE_HOME> and forward slashes throughout (measured 2026-08-10: powershell -File accepts a forward-slash path, so one placeholder form serves both the PowerShell and the bash entries). settings.json itself is NOT tracked and is named in .gitignore's permanent-exclusion block - it carries machine-absolute paths and this install's permission posture, and the repo is public. check-manifest.ps1 compares this file against the live settings.json at every SessionStart and reports any hook present in one and not the other, so that pair cannot drift silently; the comparison is by event, matcher, command and if-filter, which means event order, key order and path form are free to differ but a missing hook is not. settingsKeys below is still only prose and is NOT validated against anything. Added 2026-08-10 after finding that README documented only the SessionStart hook, so a fresh clone reproduced 1 of 7 hook groups." },
-    { "path": "scripts/check-manifest.ps1", "required": true, "role": "The validator this manifest drives. SessionStart hook." },
-    { "path": "scripts/guard.ps1", "required": true, "role": "Mechanical enforcement of the four rules with a zero-false-positive signature: work-rules-shell SH-2 NUL bytes, SH-15 .bat with LF, SH-12 UnicodeEncodeError, SH-23 README after a structural commit. Registered on PostToolUse (Write|Edit asyncRewake, Bash filtered to git) and PostToolUseFailure. No PreToolUse: see work-rules-automation AU-21." },
-    { "path": "scripts/pattern-guard.sh", "required": true, "role": "PreToolUse scanner for command text naming a construct known to be wrong: work-rules-shell SH-1, SH-4, SH-5, SH-8, SH-9, SH-11, SH-26, SH-27, SH-28. Bash built-ins only, no forks - measured 190 ms per call against 550 ms with one grep per pattern and 600-700 ms in PowerShell. The SH-11 check cited SH-10 until 2026-07-30, and this line repeated the wrong id, so an unchecked rule read as covered." },
-    { "path": "scripts/manifest-nudge.sh", "required": true, "role": "Fires after a SKILL.md write to say that this manifest declares that skill's ruleIds, byte budget and role and does not update itself. Registered on PostToolUse (Write|Edit), synchronous so its additionalContext reaches the model. A reminder, not a gate - it never denies (work-rules-automation AU-22). Written 2026-08-03 after ai-characteristics, work-rules-shell and new-hwpx-master each gained a rule and corrected their own header while this file still declared the previous range; the drift is one-directional and silent because the body header looks authoritative, and only the SessionStart validator caught it a session later." },
-    { "path": "scripts/brief-nudge.sh", "required": true, "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored." },
-    { "path": "scripts/validate_doc.py", "required": false, "role": "Korean document length measurement, used by work-rules-writing WR-12." },
-    { "path": "projects/C--Users-USER/memory/MEMORY.md", "required": false, "role": "Global memory index for the home directory scope. Machine-specific path key; absent on a fresh machine is normal." }
+    {
+      "path": "CLAUDE.md",
+      "required": true,
+      "role": "Always-loaded global rules. Budget-checked against policy.claudeMdMaxBytes."
+    },
+    {
+      "path": "manifest.json",
+      "required": true,
+      "role": "This file."
+    },
+    {
+      "path": "GUIDE.ko.md",
+      "required": true,
+      "role": "Human-facing Korean guide to the whole setup. Not loaded by the model."
+    },
+    {
+      "path": "README.md",
+      "required": true,
+      "role": "Repo entry point."
+    },
+    {
+      "path": "settings.hooks.example.json",
+      "required": true,
+      "role": "The portable half of settings.json: the hooks block only, with the install path written as <CLAUDE_HOME> and forward slashes throughout (measured 2026-08-10: powershell -File accepts a forward-slash path, so one placeholder form serves both the PowerShell and the bash entries). settings.json itself is NOT tracked and is named in .gitignore's permanent-exclusion block - it carries machine-absolute paths and this install's permission posture, and the repo is public. check-manifest.ps1 compares this file against the live settings.json at every SessionStart and reports any hook present in one and not the other, so that pair cannot drift silently; the comparison is by event, matcher, command and if-filter, which means event order, key order and path form are free to differ but a missing hook is not. settingsKeys below is still only prose and is NOT validated against anything. Added 2026-08-10 after finding that README documented only the SessionStart hook, so a fresh clone reproduced 1 of 7 hook groups."
+    },
+    {
+      "path": "scripts/check-manifest.ps1",
+      "required": true,
+      "role": "The validator this manifest drives. SessionStart hook."
+    },
+    {
+      "path": "scripts/guard.ps1",
+      "required": true,
+      "role": "Mechanical enforcement of the four rules with a zero-false-positive signature: work-rules-shell SH-2 NUL bytes, SH-15 .bat with LF, SH-12 UnicodeEncodeError, SH-23 README after a structural commit. Registered on PostToolUse (Write|Edit asyncRewake, Bash filtered to git) and PostToolUseFailure. No PreToolUse: see work-rules-automation AU-21."
+    },
+    {
+      "path": "scripts/pattern-guard.sh",
+      "required": true,
+      "role": "PreToolUse scanner for command text naming a construct known to be wrong: work-rules-shell SH-1, SH-4, SH-5, SH-8, SH-9, SH-11, SH-26, SH-27, SH-28. Bash built-ins only, no forks - measured 190 ms per call against 550 ms with one grep per pattern and 600-700 ms in PowerShell. The SH-11 check cited SH-10 until 2026-07-30, and this line repeated the wrong id, so an unchecked rule read as covered."
+    },
+    {
+      "path": "scripts/manifest-nudge.sh",
+      "required": true,
+      "role": "Fires after a SKILL.md write to say that this manifest declares that skill's ruleIds, byte budget and role and does not update itself. Registered on PostToolUse (Write|Edit), synchronous so its additionalContext reaches the model. A reminder, not a gate - it never denies (work-rules-automation AU-22). Written 2026-08-03 after ai-characteristics, work-rules-shell and new-hwpx-master each gained a rule and corrected their own header while this file still declared the previous range; the drift is one-directional and silent because the body header looks authoritative, and only the SessionStart validator caught it a session later."
+    },
+    {
+      "path": "scripts/brief-nudge.sh",
+      "required": true,
+      "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored."
+    },
+    {
+      "path": "scripts/validate_doc.py",
+      "required": false,
+      "role": "Korean document length measurement, used by work-rules-writing WR-12."
+    },
+    {
+      "path": "projects/C--Users-USER/memory/MEMORY.md",
+      "required": false,
+      "role": "Global memory index for the home directory scope. Machine-specific path key; absent on a fresh machine is normal."
+    }
   ],
-
   "externalApps": [
     {
       "id": "discordAgents",
-      "path": "C:\\Users\\USER\\Desktop\\2026-\ud558\uacc4\\Discord Agents",
+      "path": "C:\\Users\\USER\\Desktop\\2026-하계\\Discord Agents",
       "envOverride": "CLAUDE_APP_DISCORD_AGENTS",
       "required": false,
       "role": "bridge.py, .env (bot token), skills/. Consumed by the discord-bridge skill.",
@@ -207,33 +285,82 @@
     },
     {
       "id": "learningHarness",
-      "path": "C:\\Users\\USER\\Desktop\\2026-\ud558\uacc4\\learning-harness",
+      "path": "C:\\Users\\USER\\Desktop\\2026-하계\\learning-harness",
       "envOverride": "CLAUDE_APP_LEARNING_HARNESS",
       "required": false,
       "role": "Generic subject-agnostic learning bot code. Consumed by the learning-harness skill.",
       "onMissing": "Machine-specific. Report, do not block."
     }
   ],
-
   "plugins": [
-    { "name": "frontend-design@claude-plugins-official", "required": false, "role": "Visual design guidance for new UI." },
-    { "name": "playwright@claude-plugins-official", "required": false, "role": "Browser driving. Required by CLAUDE.md G-10 (show visual results as Playwright screenshots)." }
+    {
+      "name": "frontend-design@claude-plugins-official",
+      "required": false,
+      "role": "Visual design guidance for new UI."
+    },
+    {
+      "name": "playwright@claude-plugins-official",
+      "required": false,
+      "role": "Browser driving. Required by CLAUDE.md G-10 (show visual results as Playwright screenshots)."
+    }
   ],
-
   "settingsKeys": [
-    { "key": "model", "expected": "opus[1m]", "role": "Session model." },
-    { "key": "effortLevel", "expected": "xhigh", "role": "Reasoning ceiling." },
-    { "key": "alwaysThinkingEnabled", "expected": true, "role": "Thinking on by default." },
-    { "key": "hooks.SessionStart", "expected": "runs scripts/check-manifest.ps1", "role": "Where this manifest gets enforced." },
-    { "key": "hooks.PostToolUse", "expected": "Write|Edit -> guard.ps1 with asyncRewake true", "role": "Background file checks; wakes the model only on a finding, so a clean write costs nothing." },
-    { "key": "hooks.PostToolUseFailure", "expected": "Bash -> guard.ps1", "role": "Catches the cp949 UnicodeEncodeError signature in a failed command." },
-    { "key": "hooks.PreToolUse", "expected": "Bash|PowerShell -> pattern-guard.sh", "role": "Command-text patterns. Pre, not post, because command text does not change between hook and execution and these constructs are destructive (work-rules-automation AU-21)." },
-    { "key": "hooks.PostToolUse[Write|Edit] third entry", "expected": "manifest-nudge.sh, synchronous", "role": "Names this manifest at the moment a SKILL.md is edited. Deliberately NOT async: brief-nudge's record pass is fire-and-forget, but this one must return additionalContext, and an async hook's stdout does not reach the model. Post rather than pre, because the reminder is 'now also update the manifest' - there is nothing to say before the edit." },
-    { "key": "hooks.PreToolUse[Write|Edit]", "expected": "brief-nudge.sh check", "role": "Suggests a brief on a file new to this session. Paired with a PostToolUse brief-nudge.sh record that maintains the ledger." },
-    { "key": "hooks.PostToolUse[Bash]", "expected": "guard.ps1 with if Bash(git *)", "role": "README check on the commit that landed. Deliberately post, not pre: a pre hook reads the index before git add runs (work-rules-automation AU-21). The if filter is prefix matching, which is why work-rules-shell SH-26 requires git -C over cd && git, and why SH-26 now has its own PreToolUse pattern - violating it disables this check." },
-    { "key": "hooks.PostToolUse[PowerShell]", "expected": "guard.ps1 with if PowerShell(git *)", "role": "The same README check for the other first-class shell. Registered 2026-07-30: PostToolUse and PostToolUseFailure were Bash-only, so a commit made through the PowerShell tool skipped the check entirely. A separate entry rather than a widened matcher, because the if filter names its tool." }
+    {
+      "key": "model",
+      "expected": "opus[1m]",
+      "role": "Session model."
+    },
+    {
+      "key": "effortLevel",
+      "expected": "xhigh",
+      "role": "Reasoning ceiling."
+    },
+    {
+      "key": "alwaysThinkingEnabled",
+      "expected": true,
+      "role": "Thinking on by default."
+    },
+    {
+      "key": "hooks.SessionStart",
+      "expected": "runs scripts/check-manifest.ps1",
+      "role": "Where this manifest gets enforced."
+    },
+    {
+      "key": "hooks.PostToolUse",
+      "expected": "Write|Edit -> guard.ps1 with asyncRewake true",
+      "role": "Background file checks; wakes the model only on a finding, so a clean write costs nothing."
+    },
+    {
+      "key": "hooks.PostToolUseFailure",
+      "expected": "Bash -> guard.ps1",
+      "role": "Catches the cp949 UnicodeEncodeError signature in a failed command."
+    },
+    {
+      "key": "hooks.PreToolUse",
+      "expected": "Bash|PowerShell -> pattern-guard.sh",
+      "role": "Command-text patterns. Pre, not post, because command text does not change between hook and execution and these constructs are destructive (work-rules-automation AU-21)."
+    },
+    {
+      "key": "hooks.PostToolUse[Write|Edit] third entry",
+      "expected": "manifest-nudge.sh, synchronous",
+      "role": "Names this manifest at the moment a SKILL.md is edited. Deliberately NOT async: brief-nudge's record pass is fire-and-forget, but this one must return additionalContext, and an async hook's stdout does not reach the model. Post rather than pre, because the reminder is 'now also update the manifest' - there is nothing to say before the edit."
+    },
+    {
+      "key": "hooks.PreToolUse[Write|Edit]",
+      "expected": "brief-nudge.sh check",
+      "role": "Suggests a brief on a file new to this session. Paired with a PostToolUse brief-nudge.sh record that maintains the ledger."
+    },
+    {
+      "key": "hooks.PostToolUse[Bash]",
+      "expected": "guard.ps1 with if Bash(git *)",
+      "role": "README check on the commit that landed. Deliberately post, not pre: a pre hook reads the index before git add runs (work-rules-automation AU-21). The if filter is prefix matching, which is why work-rules-shell SH-26 requires git -C over cd && git, and why SH-26 now has its own PreToolUse pattern - violating it disables this check."
+    },
+    {
+      "key": "hooks.PostToolUse[PowerShell]",
+      "expected": "guard.ps1 with if PowerShell(git *)",
+      "role": "The same README check for the other first-class shell. Registered 2026-07-30: PostToolUse and PostToolUseFailure were Bash-only, so a commit made through the PowerShell tool skipped the check entirely. A separate entry rather than a widened matcher, because the if filter names its tool."
+    }
   ],
-
   "restore": {
     "newMachine": [
       "git clone <repo> into ~/.claude (or clone elsewhere and copy CLAUDE.md, manifest.json, GUIDE.ko.md, settings.hooks.example.json, skills/, scripts/ in).",

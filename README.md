@@ -5,7 +5,7 @@ Claude Code의 전역 규칙과 스킬을 담아 여러 컴퓨터 사이에서 �
 ## 구조
 
 ```
-CLAUDE.md          전역 규칙 17개. 매 턴 자동 로드. 나머지는 전부 스킬에 있다
+CLAUDE.md          전역 규칙 18개. 매 턴 자동 로드. 나머지는 전부 스킬에 있다
 manifest.json      이 설치본이 갖춰야 할 스킬, 파일, 외부 앱 경로의 단일 출처
 GUIDE.ko.md        사람이 읽는 상세 안내. 스킬 목록과 선택 기준, 이식 절차
 settings.hooks.example.json  훅 배선 템플릿. settings.json 자체는 컴퓨터마다 달라 넣지 않는다

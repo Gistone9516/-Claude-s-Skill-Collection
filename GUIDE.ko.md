@@ -6,7 +6,7 @@
 
 ```
 ~/.claude/
-  CLAUDE.md                  전역 규칙. 매 턴 자동 로드. 활성 17개, ID는 G-27까지 나갔다
+  CLAUDE.md                  전역 규칙. 매 턴 자동 로드. 활성 18개, ID는 G-28까지 나갔다
   manifest.json              이 설치본이 무엇을 갖춰야 하는지 선언한 단일 출처
   GUIDE.ko.md                이 문서
   README.md                  저장소 입구
@@ -94,12 +94,12 @@ SH-10(대소문자가 같은 변수를 덮어쓰는 것)은 이 표에 없습니
 
 | 스킬 | 언제 | 규칙 수 |
 |---|---|---|
-| `work-rules-shell` | 셸, git, 터미널, WSL 명령, 커밋, 폴더 이동 | 30 |
+| `work-rules-shell` | 셸, git, 터미널, WSL 명령, 커밋, 폴더 이동 | 34 |
 | `work-rules-diagnosis` | 원인 진단, 디버깅, 기능 제거, 코드 구현 및 리팩토링 착수 | 18 |
 | `verify-fanout` | 남이 쓴 모듈 수정, 있다 없다 단정, 스펙 확정, 이식 코드 감사 | 22 |
 | `work-rules-automation` | Workflow, 백그라운드 자동화, 장시간 멀티스텝 | 26 |
 | `work-rules-writing` | 자소서, 보고서, 슬라이드, 주석 등 사람이 읽는 산출물과 디자인 | 14 |
-| `work-rules-docs` | hwpx, pptx, docx, xlsx 편집과 텍스트 추출 | 15 |
+| `work-rules-docs` | hwpx, pptx, docx, xlsx 편집과 텍스트 추출 | 17 |
 | `work-rules-kit` | 재사용 킷, 프레임워크 공용 코드 | 4 |
 
 전부 실제 사고에서 나온 규칙이다. 예를 들어 `work-rules-shell` SH-4는 PowerShell로 한글 파일을 한 줄 치환하려다 README 전체를 날린 사고에서 나왔다.
