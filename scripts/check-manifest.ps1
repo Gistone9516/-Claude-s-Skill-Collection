@@ -58,13 +58,45 @@ function Get-HookSignature {
   return ($signatures | Sort-Object)
 }
 
+# Platform name used to resolve manifest "exempt" entries. $IsLinux and $IsMacOS exist from
+# PowerShell 6 onward; on Windows PowerShell 5.1 they are simply undefined and read as $null,
+# so both branches fall through to "windows", which is the right answer there. Nothing else in
+# this script is platform-aware, and nothing here should be - an exemption is a declaration in
+# manifest.json, and this function only tells it which machine it is standing on.
+function Get-PlatformName {
+  if ($IsLinux) { return "linux" }
+  if ($IsMacOS) { return "macos" }
+  return "windows"
+}
+
+# True when the entry declares an "exempt" object that covers the running platform. An omitted
+# platforms list means everywhere, "*" the same. Absent "exempt" is never an exemption, so the
+# default stays "report it" and an exemption has to be written down to exist.
+function Test-Exempt {
+  param($exempt, [string]$platform)
+
+  if ($null -eq $exempt) { return $false }
+  if ($null -eq $exempt.platforms) { return $true }
+  foreach ($name in $exempt.platforms) {
+    if ($name -eq "*") { return $true }
+    if ($name -eq $platform) { return $true }
+  }
+  return $false
+}
+
 # The findings text is ASCII, but manifest.json supplies a Korean phrasing template that has to
 # survive to stdout. Pin the encoding so the result does not depend on the console code page,
 # which is cp949 on this machine.
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
 
 try {
-  $base = Join-Path $env:USERPROFILE ".claude"
+  # USERPROFILE is Windows-only and is null under pwsh on Linux, where Join-Path then throws
+  # "Cannot bind argument to parameter 'Path'" and the whole validator dies before its first
+  # check. HOME is the POSIX equivalent. On Windows the first branch still wins, so behaviour
+  # there is unchanged. (Measured on Ubuntu + pwsh 7.6.4, 2026-08-14.)
+  $userHome = $env:USERPROFILE
+  if (-not $userHome) { $userHome = $env:HOME }
+  $base = Join-Path $userHome ".claude"
   $manifestPath = Join-Path $base "manifest.json"
 
   if (-not (Test-Path -LiteralPath $manifestPath)) {
@@ -80,16 +112,29 @@ try {
   $orphans         = New-Object System.Collections.ArrayList
   $budget          = New-Object System.Collections.ArrayList
   $appNotes        = New-Object System.Collections.ArrayList
+  # Exempted entries are collected rather than dropped. They never reach $findings, so they cannot
+  # wake the model, but -Mode report always prints them: a suppression nobody can see is how an
+  # exception decays into drift, which is the one thing this validator exists to prevent.
+  $exempted        = New-Object System.Collections.ArrayList
+  $platform        = Get-PlatformName
 
   # ---------- skills ----------
   $declared = @{}
   foreach ($skill in $manifest.skills) {
     $declared[$skill.name] = $true
-    $skillDir = Join-Path $base ("skills\" + $skill.name)
+    # Built with Join-Path rather than a literal "skills\" because a backslash is an ordinary
+    # filename character on Linux, so the concatenated form looked for a single file named
+    # "skills\agent-ops" and reported every declared skill as missing. Join-Path emits the
+    # platform separator on both. (Measured on Ubuntu + pwsh 7.6.4, 2026-08-14.)
+    $skillDir = Join-Path (Join-Path $base "skills") $skill.name
     $skillMd  = Join-Path $skillDir "SKILL.md"
 
     if (-not (Test-Path -LiteralPath $skillMd)) {
       $entry = "skill '" + $skill.name + "' (" + $skill.role + ")"
+      if (Test-Exempt $skill.exempt $platform) {
+        [void]$exempted.Add($entry + " - exempt on " + $platform)
+        continue
+      }
       if ($skill.required -eq $true) { [void]$missingRequired.Add($entry) }
       else { [void]$missingOptional.Add($entry) }
       continue
@@ -155,6 +200,10 @@ try {
     $filePath = Join-Path $base $item.path
     if (-not (Test-Path -LiteralPath $filePath)) {
       $entry = "file '" + $item.path + "' (" + $item.role + ")"
+      if (Test-Exempt $item.exempt $platform) {
+        [void]$exempted.Add($entry + " - exempt on " + $platform)
+        continue
+      }
       if ($item.required -eq $true) { [void]$missingRequired.Add($entry) }
       else { [void]$missingOptional.Add($entry) }
     }
@@ -172,11 +221,19 @@ try {
   # ---------- external apps ----------
   foreach ($app in $manifest.externalApps) {
     $appPath = $app.path
+    $overrideSet = $false
     if ($app.envOverride) {
       $override = [Environment]::GetEnvironmentVariable($app.envOverride)
-      if ($override) { $appPath = $override }
+      if ($override) { $appPath = $override; $overrideSet = $true }
     }
     if (-not (Test-Path -LiteralPath $appPath)) {
+      # Setting the env override is a deliberate statement that this machine does want the app,
+      # so it re-arms the check even where an exemption is declared. Without that, pointing the
+      # override at a typo would be silently swallowed by the exemption and read as "fine".
+      if ((-not $overrideSet) -and (Test-Exempt $app.exempt $platform)) {
+        [void]$exempted.Add("external app '" + $app.id + "' not present at " + $appPath + " - exempt on " + $platform + "; set " + $app.envOverride + " to re-arm the check")
+        continue
+      }
       [void]$appNotes.Add("external app '" + $app.id + "' not found at " + $appPath + "; set " + $app.envOverride + " or move the app there")
     }
   }
@@ -238,10 +295,14 @@ try {
   if ($Mode -eq "report") {
     Write-Output ("manifest check - " + (Get-Date -Format "yyyy-MM-dd HH:mm"))
     Write-Output ("declared skills: " + $manifest.skills.Count)
+    Write-Output ("platform: " + $platform)
     if ($findings.Count -eq 0) {
       Write-Output "OK - every declared asset is present and registered."
     } else {
       foreach ($finding in $findings) { Write-Output $finding }
+    }
+    if ($exempted.Count -gt 0) {
+      Write-Output ("EXEMPT (" + $exempted.Count + "): " + ($exempted -join " | ") + " - declared in manifest.json; absent by decision, not by drift")
     }
     exit 0
   }
