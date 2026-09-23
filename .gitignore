@@ -11,6 +11,12 @@
 !/settings.hooks.example.json
 !/skills/
 !/scripts/
+# Third-party caveman hook runtime, installed at the vendor's own path so an
+# upstream refresh stays a straight copy and the vendor uninstaller still finds
+# it. Tracked because settings.hooks.example.json wires it: untracked here, a
+# clone would get the wiring and not the files. State files the hooks write
+# (.caveman-active, .caveman-sessions/) sit at the repo root and stay ignored.
+!/hooks/
 
 # Global memory for the home-directory scope. Re-included level by level,
 # because git cannot re-include a file whose parent directory is excluded.

@@ -1,17 +1,15 @@
 ---
 name: caveman-compress
 description: >
-  Compress natural language memory files (CLAUDE.md, todos, preferences) into caveman format
-  to save input tokens. Preserves all technical substance, code, URLs, and structure.
-  Compressed version overwrites the original file. Human-readable backup saved as FILE.original.md.
-  Trigger: /caveman-compress FILEPATH or "compress memory file"
+  Compress a memory file such as CLAUDE.md or a todo list into caveman format
+  to save input tokens, keeping a readable backup. Trigger: /caveman-compress.
 ---
 
 # Caveman Compress
 
 ## Purpose
 
-Compress natural language files (CLAUDE.md, todos, preferences) into caveman-speak to reduce input tokens. Compressed version overwrites original. Human-readable backup saved as `<filename>.original.md`.
+Compress natural language files (CLAUDE.md, todos, preferences) into caveman-speak to reduce input tokens. Compressed version overwrites original. Human-readable backup saved as `<filename>.original.md`, but NOT beside the source file — it lives in an out-of-tree data dir (`$XDG_DATA_HOME/caveman-compress/backups/<parent-dir-name>/`, or `%LOCALAPPDATA%\caveman-compress\backups\<parent-dir-name>\` on Windows) so skill auto-loaders don't re-ingest it as a live file.
 
 ## Trigger
 
@@ -38,11 +36,14 @@ python3 -m scripts <absolute_filepath>
 ## Compression Rules
 
 ### Remove
-- Articles: a, an, the
-- Filler: just, really, basically, actually, simply, essentially, generally
-- Pleasantries: "sure", "certainly", "of course", "happy to", "I'd recommend"
-- Hedging: "it might be worth", "you could consider", "it would be good to"
-- Redundant phrasing: "in order to" → "to", "make sure to" → "ensure", "the reason is because" → "because"
+
+Articles, filler, pleasantries and hedging are defined once, by CM-1 and CM-2 in the caveman
+skill's `SKILL.md`. Use those lists; do not keep a second copy here. The two copies had already
+drifted by two items when they were consolidated on 2026-09-23.
+
+Two removals are specific to files and are not covered by CM-1:
+
+- Redundant phrasing: "in order to" becomes "to", "make sure to" becomes "ensure", "the reason is because" becomes "because"
 - Connective fluff: "however", "furthermore", "additionally", "in addition"
 
 ### Preserve EXACTLY (never modify)
@@ -107,5 +108,5 @@ Compressed:
 - NEVER modify: .py, .js, .ts, .json, .yaml, .yml, .toml, .env, .lock, .css, .html, .xml, .sql, .sh
 - If file has mixed content (prose + code), compress ONLY the prose sections
 - If unsure whether something is code or prose, leave it unchanged
-- Original file is backed up as FILE.original.md before overwriting
+- Original file is backed up as FILE.original.md before overwriting — in the out-of-tree backup data dir (see Purpose), not beside the source file
 - Never compress FILE.original.md (skip it)

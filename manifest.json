@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "updated": "2026-08-10",
+  "updated": "2026-09-23",
   "purpose": "Single source of truth for what this ~/.claude install is supposed to contain. scripts/check-manifest.ps1 validates the live filesystem against this file at SessionStart and reports drift.",
   "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
   "policy": {
@@ -93,7 +93,7 @@
       "lang": "en",
       "tier": 2,
       "role": "Korean human-facing deliverables and design: AI-tell removal, punctuation, verbatim rule, slide minimalism, measured length.",
-      "ruleIds": "WR-1..WR-15"
+      "ruleIds": "WR-1..WR-17"
     },
     {
       "name": "work-rules-docs",
@@ -168,8 +168,15 @@
       "required": false,
       "kind": "external",
       "source": "~/.agents/skills/caveman",
-      "role": "Compressed communication mode.",
-      "restore": "Third-party skill set. Present in this repo as regular files; on a fresh machine they are restored by the clone. The symlink into ~/.agents is a local convenience, not a requirement."
+      "upstream": "https://github.com/JuliusBrussee/caveman",
+      "upstreamVersion": "2.7.0",
+      "upstreamPulled": "2026-09-23",
+      "forkedFromUpstream": "2026-09-23",
+      "ruleIds": "CM-1..CM-28",
+      "role": "Compressed communication mode. Forked, not vendored as-is: the rules carry CM-* ids and a count header so check-manifest compares the declared range against the body every session, which is the failure signal the upstream documentation never had. SKILL.md holds the rule text; RULES.md beside it holds source, rationale, test, the platform-specific config paths, and the constraints on editing SKILL.md.",
+      "restore": "Third-party skill set, MIT (LICENSING.md declares skills/ MIT; engine/, proxy/, rewriter/, browse/, mcp/, shrink/ are BSL-1.1 and none of them is vendored here). Present in this repo as regular files; on a fresh machine they are restored by the clone. The junction into ~/.agents is a local convenience, not a requirement - the real files live at ~/.agents/skills/<name> and skills/<name> is an NTFS junction onto it, which git follows and commits as ordinary files.",
+      "updateProcedure": "MIRRORING UPSTREAM WOULD DISCARD THE FORK. Four skills are now local work and must be diffed, never overwritten: caveman (SKILL.md rewritten, RULES.md is ours, README.md amended), caveman-help (config path and resolution order corrected against caveman-config.js), caveman-compress (duplicate rule lists replaced by a CM-1/CM-2 reference), and their READMEs. caveman-commit, caveman-review and cavecrew are untouched and can still be mirrored straight. hooks/ is unforked and refreshes by straight copy from upstream src/hooks, verified against checksums.sha256. To take an upstream release: clone it, diff upstream skills/caveman/SKILL.md against the v2.7.0 baseline rather than against ours, port the behavioural deltas into the CM-* rules by hand, and re-run the per-level injection check described in caveman/RULES.md before trusting the result. Do NOT run the vendor installer: bin/install.js and src/hooks/install.ps1 rewrite settings.json directly and know nothing about settings.hooks.example.json, so the SessionStart validator would report the result as drift. The seven skill names are deliberate - upstream 2.7.0 ships 21 and the other 14 were declined on 2026-09-23 because a skill description costs context every session and several duplicate work-rules-*, verify-fanout and agent-ops.",
+      "editingConstraint": "caveman/SKILL.md is injected into context by the SessionStart hook, which filters it line by line (caveman-config.js:765-787) and DELETES any line matching ^\\|\\s*\\*\\*(\\S+?)\\*\\*\\s*\\| or ^- (\\S+?):\\s whose leading token is not the active level name. A rule written as '- **CM-1**: text' therefore vanishes at injection while the file still looks correct on disk. Never start a line in that file with '- word: ' unless word is a level name, and keep the Intensity table the only table with bold first cells. Verify after any structural edit by calling loadFilteredRuleset for all seven level strings and checking that every CM id survives; the procedure is in caveman/RULES.md."
     },
     {
       "name": "cavecrew",
@@ -280,6 +287,23 @@
       "role": "Korean document length measurement, used by work-rules-writing WR-12."
     },
     {
+      "path": "hooks/caveman-activate.js",
+      "required": false,
+      "role": "Third-party caveman runtime, wired on SessionStart. Installed 2026-09-23 from upstream src/hooks at the vendor's own path (hooks/, not scripts/) so a later refresh is a straight copy and the vendor uninstaller still finds it. Nine files travel together - package.json declaring type commonjs, caveman-config.js, caveman-parse.js, caveman-activate.js, caveman-mode-tracker.js, caveman-stats.js, caveman-statusline.sh, caveman-statusline.ps1, cavecrew-model-overrides.js - because mode-tracker resolves config and parse as siblings by require('./name'). Node >=18, no npm dependencies. Verified against upstream checksums.sha256 at install: 9 of 9 matched.",
+      "note": "THIS hook decides whether caveman is on. On a real session start it resets the mode to the resolved default and writes ~/.claude/.caveman-active, and the vendor's built-in default is 'full' (caveman-config.js getDefaultMode step 4), so installing the hooks and changing nothing turns compressed prose on for every session. Measured 2026-09-23 by clearing the flag and running each hook alone: mode-tracker did not create it, activate did, with the value 'full'. Resolution order is CAVEMAN_DEFAULT_MODE, then a repo-local config, then the user config, then that built-in. This install pins the user config at %APPDATA%/caveman/config.json to {\"defaultMode\":\"off\"} (user decision 2026-09-23), so sessions start normal and /caveman turns it on for that session. That file is outside this repo and does not travel with a clone - a fresh machine gets the vendor default instead, which is the opposite of what was chosen here.",
+      "measuredCost": "UserPromptSubmit caveman-mode-tracker.js: median 71 ms over five runs (52-76), one node process per prompt. SessionStart caveman-activate.js: 60-115 ms. For scale, pattern-guard.sh was written with bash built-ins and no forks to reach 190 ms, and the git guards are filtered to git commands because a process costs 600-700 ms."
+    },
+    {
+      "path": "hooks/caveman-mode-tracker.js",
+      "required": false,
+      "role": "Third-party caveman runtime, wired on UserPromptSubmit. Also the supplier of the /caveman-stats report, which it produces by resolving caveman-stats.js next to itself, which is why the caveman-stats skill is inert without this file. Hook state lives at ~/.claude/.caveman-active and ~/.claude/.caveman-sessions/, both outside hooks/ and both gitignored."
+    },
+    {
+      "path": "hooks/caveman-statusline.ps1",
+      "required": false,
+      "role": "Third-party caveman statusline badge, wired as the top-level statusLine key. Unlike the hooks it is NOT covered by the example-vs-live comparison, because Get-HookSignature walks only the hooks tree - so a clone gets the badge from settings.hooks.example.json's siblings but never the statusLine key itself, and it has to be added by hand. This install had no statusLine before 2026-09-23; removing the key removes the badge and breaks nothing else."
+    },
+    {
       "path": "projects/C--Users-USER/memory/MEMORY.md",
       "required": false,
       "role": "Global memory index for the home directory scope. Machine-specific path key; absent on a fresh machine is normal."
@@ -367,6 +391,21 @@
       "role": "README check on the commit that landed. Deliberately post, not pre: a pre hook reads the index before git add runs (work-rules-automation AU-21). The if filter is prefix matching, which is why work-rules-shell SH-26 requires git -C over cd && git, and why SH-26 now has its own PreToolUse pattern - violating it disables this check."
     },
     {
+      "key": "hooks.SessionStart second group",
+      "expected": "node <CLAUDE_HOME>/hooks/caveman-activate.js",
+      "role": "Third-party caveman mode activation. A separate group rather than a second command inside the validator's group, because the two are unrelated and the vendor's own installer appends a group. Registered 2026-09-23."
+    },
+    {
+      "key": "hooks.UserPromptSubmit",
+      "expected": "node <CLAUDE_HOME>/hooks/caveman-mode-tracker.js",
+      "role": "Third-party caveman mode tracking, and the only supplier of /caveman-stats. The first UserPromptSubmit hook in this install, so it runs a node process on every prompt - measured cost is recorded beside the hook, and this is the one entry here that is a feature rather than a rule."
+    },
+    {
+      "key": "statusLine",
+      "expected": "\"C:/Program Files/Git/bin/bash.exe\" \"<CLAUDE_HOME>/hooks/caveman-statusline.sh\"",
+      "role": "Caveman mode badge. The .sh variant, not the .ps1 the vendor installs on Windows: measured 2026-09-23 through cmd.exe, five runs each after a warm-up, bash 262 ms against powershell 436 ms with a mode active and 152 ms against 463 ms with none, identical badge output. Git Bash is named by absolute path on purpose - bash.exe on PATH here is WSL's (C:\\Windows\\system32\\bash.exe), which cannot take a C:/ path as an argument (work-rules-shell SH-17). Not under hooks, so check-manifest.ps1 cannot see this key drift; the note on files[] hooks/caveman-statusline.ps1 carries that warning."
+    },
+    {
       "key": "hooks.PostToolUse[PowerShell]",
       "expected": "guard.ps1 with if PowerShell(git *)",
       "role": "The same README check for the other first-class shell. Registered 2026-07-30: PostToolUse and PostToolUseFailure were Bash-only, so a commit made through the PowerShell tool skipped the check entirely. A separate entry rather than a widened matcher, because the if filter names its tool."
@@ -375,7 +414,8 @@
   "restore": {
     "newMachine": [
       "git clone <repo> into ~/.claude (or clone elsewhere and copy CLAUDE.md, manifest.json, GUIDE.ko.md, settings.hooks.example.json, skills/, scripts/ in).",
-      "Copy the hooks block of settings.hooks.example.json into ~/.claude/settings.json and replace the nine <CLAUDE_HOME> placeholders with C:/Users/<account>/.claude. All seven hook groups, not just SessionStart - registering only the validator leaves the other six checks silently absent.",
+      "Copy the hooks block of settings.hooks.example.json into ~/.claude/settings.json and replace the eleven <CLAUDE_HOME> placeholders with C:/Users/<account>/.claude. All nine hook groups, not just SessionStart - registering only the validator leaves the other checks silently absent.",
+      "Add the statusLine key by hand if the caveman badge is wanted; it is the one piece of wiring the example file cannot carry, because the example holds only the hooks tree. The command is in settingsKeys below.",
       "Start a session. The validator reports every missing or unregistered asset.",
       "Set the externalApps env overrides, or move the apps to the declared paths, if those skills are needed.",
       "projects/*/memory/ path keys encode the absolute project path; they do not transfer to a machine with different folder layout. That is expected."

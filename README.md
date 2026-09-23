@@ -16,6 +16,7 @@ scripts/
   brief-nudge.sh       상기시키는 훅. 처음 건드리는 파일에 브리핑을 제안
   manifest-nudge.sh    상기시키는 훅. SKILL.md를 고치면 매니페스트도 함께 고치라고 알림
   validate_doc.py      한국어 분량 실측
+hooks/             외부 caveman 스킬이 쓰는 런타임 9개. 규칙을 강제하는 훅이 아니라 그 스킬의 기능이라 `scripts/`와 섞지 않고 벤더 기본 경로에 그대로 둔다
 skills/            스킬 22개. 직접 만든 14개와 외부 8개
 projects/<경로키>/memory/   폴더 단위 프로젝트 메모리
 ```
@@ -44,7 +45,7 @@ AI가 읽는 파일은 전부 영어로 쓴다. 사람이 읽는 파일(이 READ
 git clone https://github.com/Gistone9516/-Claude-s-Skill-Collection.git ~/.claude
 ```
 
-그다음 훅을 등록한다. `settings.hooks.example.json`의 `hooks` 블록을 통째로 `~/.claude/settings.json`에 옮기고, 안에 있는 `<CLAUDE_HOME>` 아홉 군데를 자기 경로로 바꾸면 끝이다.
+그다음 훅을 등록한다. `settings.hooks.example.json`의 `hooks` 블록을 통째로 `~/.claude/settings.json`에 옮기고, 안에 있는 `<CLAUDE_HOME>` 열한 군데를 자기 경로로 바꾸면 끝이다.
 
 ```
 <CLAUDE_HOME>  ->  C:/Users/<계정>/.claude
@@ -54,14 +55,19 @@ git clone https://github.com/Gistone9516/-Claude-s-Skill-Collection.git ~/.claud
 
 `settings.json` 자체는 저장소에 넣지 않는다. 모델과 권한 설정처럼 컴퓨터마다 다른 값이 함께 들어 있어서, 옮겨 가면 맞을 이유가 없는 파일이기 때문이다. 옮겨야 하는 것은 훅 배선뿐이고 그것만 예제 파일로 떼어 뒀다.
 
-등록되는 훅은 네 이벤트에 걸쳐 일곱 묶음, 명령 아홉 개다.
+등록되는 훅은 다섯 이벤트에 걸쳐 아홉 묶음, 명령 열한 개다.
 
 | 이벤트 | 등록되는 것 |
 |---|---|
-| SessionStart | check-manifest.ps1 |
+| SessionStart | check-manifest.ps1, caveman-activate.js |
+| UserPromptSubmit | caveman-mode-tracker.js |
 | PreToolUse | pattern-guard.sh(셸 명령), brief-nudge.sh check(파일 편집) |
 | PostToolUse | guard.ps1(파일 편집), brief-nudge.sh record, manifest-nudge.sh, guard.ps1(git 명령, Bash와 PowerShell 각각) |
 | PostToolUseFailure | guard.ps1(셸 실패) |
+
+`hooks/`에 있는 둘은 성격이 다르다. 규칙을 강제하는 것이 아니라 외부 `caveman` 스킬이 모드 상태를 유지하고 `/caveman-stats`를 만들어 내는 데 쓰는 런타임이다. 위 표의 나머지와 달리 없어도 규칙은 그대로 산다.
+
+상태 표시줄 배지(`statusLine`)는 이 예제 파일이 나르지 못한다. 검사기가 `hooks` 트리만 비교하기 때문에 갈라져도 잡히지 않으니, 배지를 쓰려면 `manifest.json`의 `settingsKeys`에 적힌 명령을 직접 넣는다. 안 넣어도 나머지는 전부 동작한다.
 
 세션을 띄우면 검사기가 빠진 스킬, 미등록 스킬, 이름 불일치, 규칙 ID 범위 어긋남, 예산 초과, 그리고 이 예제 파일과 실제 `settings.json`이 갈라진 것까지 알려 준다. 아홉 가지 항목 전부는 [GUIDE.ko.md](GUIDE.ko.md)에 있다. 수동 확인은 아래와 같다.
 
