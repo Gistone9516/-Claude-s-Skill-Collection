@@ -5,7 +5,7 @@ description: Evidence grading and the indexing protocol for documents and code -
 
 # verify-fanout — grade the evidence, index it, verify cheaply
 
-Rules: VF-1..VF-23 (23). Sections are ordered by how much a violation costs.
+Rules: VF-1..VF-24 (24). Sections are ordered by how much a violation costs.
 CLAUDE.md G-05..G-10 point here.
 
 ## 1. Evidence grades
@@ -110,6 +110,18 @@ Measured: the `DEV_FORCE_TIER` reimplementation, the duplicated model ids, and t
 - **VF-14 Normative and narrative sections are separated**, so a reader can skip narrative without losing a rule.
 - **VF-15 Correct a wrong document; do not annotate it (user directive 2026-07-29).** Write what is true now. No "개정 사유", no "원래는 X였으나", no dated correction notes. Git holds history; the document holds state. Distinguish the two kinds of why: a *rule's* rationale stays because it stops a future session from reverting the rule; a *document's* change history goes.
 - **VF-16 Do not create a new document for repeated work — revise in place.** Two documents stating the same rule is the document-layer form of two counters. A protocol lives in exactly one file; project docs reference it and never restate it.
+
+- **VF-24 A document set whose proper nouns keep drifting gets a symbol registry — one table, no enforcement script (user directive 2026-09-23).** This is a technique to reach for when the symptoms appear, not a default. **The symptoms:** the same entity is spelled several ways across files; a term counts two different things; a setting was dropped in one revision and quietly returns in the next; nouns appear that nothing ever defines.
+
+  Measured on a worldbuilding set of 16 documents written a year apart with no version control: one faction carried three English spellings, one character name had a one-off misspelling, "회차" counted both a character's tenure and a world loop, a resource deleted by decision had no record stopping its return, and three nouns (`Alignment`, the creator civilization, "entropy erosion") were load-bearing yet defined nowhere.
+
+  **Shape.** One markdown table, parseable and readable, as the single source (VF-16). Per row: ID, canonical spelling, English, known variants, status (canonical / retired / conflicted / undefined), and where it is defined. Prefix by kind so a row's class is visible at a glance. Definition sites get an anchor comment; **prose keeps writing the plain word.** Inline IDs in narrative text are what makes a design document stop being read, and a design document nobody reads has no readers to protect.
+
+  **IDs go only where a machine already reads:** data contracts, tables, asset fields. There they were going to exist anyway.
+
+  **No checker by default (same directive).** A registry is a reference table; a linter over a solo creative project is a gate that fires on prose. It buys the author nothing and costs them a build step. Add enforcement only for a set that several people write to, and then only for the one rule worth a hard failure: **a retired symbol reappearing**, which is the document-layer form of a silently reversed decision.
+
+  The registry's real payoff is upstream of any check — it makes the naming conflicts *visible in one place*, so the session reading it spends its judgement on design contradictions instead of rediscovering that a faction has three names.
 
 - **VF-22 A decision gets a note at `_shadow/<same relative path>.md` (user directive 2026-07-30).** Specs and commits are addressed *by slice*; nothing tells a session which decisions govern **the file it is about to edit**. Mirror the repo tree under `_shadow/`, written as part of the work — **the main model writes it, not an agent** — holding only what the source cannot.
 
