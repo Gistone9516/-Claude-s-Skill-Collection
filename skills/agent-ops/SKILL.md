@@ -128,7 +128,7 @@ sonnet gathers, locates, executes and mechanically verifies; opus judges, compos
 
 | Task | sonnet | opus |
 |---|---|---|
-| Human-read writing (자소서, 회의록, papers, reports) | gather, extract source verbatim, lay out | composition (remove AI tells, 음슴체 voice) |
+| Human-read writing (자소서, 회의록, papers, reports) | gather, extract source verbatim, lay out | composition (`work-rules-writing` WR-2) |
 | Document-file editing (hwpx, pptx, docx) | run scripts, run the validation, report | the final "OK to deliver?" call |
 | Research and information gathering | search, fetch, extract | synthesis and adversarial verification, if load-bearing |
 | Design (slides, figures, Figma) | scan, export, render | judging the render (subtract, stay calm) |

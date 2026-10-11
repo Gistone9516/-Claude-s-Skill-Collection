@@ -18,7 +18,7 @@
     brief-nudge.sh           처음 건드리는 파일에 브리핑을 제안
     manifest-nudge.sh        SKILL.md를 고치면 매니페스트도 함께 고치라고 알림
     validate_doc.py          한국어 분량 실측용
-  skills/                    스킬 22개(직접 만든 14개, 외부 8개)
+  skills/                    스킬 23개(직접 만든 14개, 외부 9개)
   projects/<경로키>/memory/  폴더별 프로젝트 메모리
 ```
 
@@ -166,7 +166,7 @@ SH-10(대소문자가 같은 변수를 덮어쓰는 것)은 이 표에 없습니
 
 ### 그 외
 
-`new-hwpx-master`는 hwpx 공문 양식에 내용을 채우는 절차, `discord-bridge`와 `learning-harness`는 각각의 앱을 현재 폴더에 물리는 실행 안내다. `skill-creator`는 외부 제작물이고 매니페스트에 external로 등록만 해 뒀다.
+`new-hwpx-master`는 hwpx 공문 양식에 내용을 채우는 절차, `discord-bridge`와 `learning-harness`는 각각의 앱을 현재 폴더에 물리는 실행 안내다. `skill-creator`는 외부 제작물이고 매니페스트에 external로 등록만 해 뒀다. `portfolio-log`는 하루 동안의 세션에서 이슈가 있었던 부분을 골라 비공개 공부 노트로 남기는 스킬이다. 원본은 프로젝트 폴더에 있고 `skills/portfolio-log`는 그곳을 가리키는 링크라서, 이 저장소는 추적하지 않고 매니페스트에 external로 위치만 적어 둔다.
 
 `caveman` 계열 7개는 2026년 9월 23일에 업스트림 v2.7.0으로 갱신한 뒤 **포크했다.** 그쪽은 스킬이 21개로 늘어 있는데 7개만 가져왔다. 스킬 설명은 매 세션 컨텍스트에 실리는 비용이고, 나머지 중 `verify-and-stop`이나 `investigate-first`처럼 이미 `work-rules-*`와 `verify-fanout`이 하는 일을 다시 하는 것이 여럿이라서다.
 

@@ -5,7 +5,7 @@ description: Multi-cycle plan→design→build workflow for vibecoding. Operator
 
 # buildflow — plan → design → build workflow
 
-Rules: BF-1..BF-6 (6), tagged on the load-bearing points only; the stage and cycle headings carry the rest of the procedure. Section order is execution order, not importance.
+Rules: BF-1..BF-7 (7), tagged on the load-bearing points only; the stage and cycle headings carry the rest of the procedure. Section order is execution order, not importance.
 Execution mechanics are canonical in `agent-ops`; change discipline in `work-rules-diagnosis`; delegation policy in `agent-ops`.
 
 > **Terminology (user directive, 2026-06-10):** "opus" / "Operator Opus" in this skill = **the model currently applied to the Claude Code session** (role name), not the fixed `claude-opus-*`. "sonnet" stays literal. Canonical definition: `agent-ops`.
@@ -92,6 +92,7 @@ Asymmetric risk: a missed major ≫ an unneeded check → when unsure, lean to t
     - Hard-floor failures (test/integration fail, corruption) still **halt** — can't build on broken. Park applies to *decisions*, not to *broken state*.
 
 ## Cross-cutting rules
+- **BF-7 Code is built with software-engineering discipline, always (user directive 2026-10-11:** "코드 구현은 반드시 소프트웨어 공학을 따르며 만들어야 한다"**).** Layers separated behind explicit contracts, one implementation per decision, derived values over stored ones, and a spec with rule IDs before the code. The standard itself is `work-rules-diagnosis` DG-1..DG-6; it is not restated here so the two cannot drift. It binds opus and every implementer: a delegated build prompt states it, and a slice that edits a template or existing code in place without that structure is rework, not progress. Measured 2026-10-11: a blog template was first patched file by file for its base path, and only the spec written afterwards produced the layered design.
 - **Hard floor (any class/mode):** regression/integration test fail → stop & report · irreversible/external/security → always user · spec resync always · accumulating auto-cycles → periodic summary.
 - **git prerequisite:** buildflow assumes a git repo (cycle boundaries · rollback · merge · spec-drift gate are all git-based). Not a repo at entry → propose `git init` first.
 - **Applicability:** parallelize only *independently decomposable* work (N CRUDs · tests · boilerplate · isomorphic migration · multiple components). High coupling → serial (Amdahl). Don't lay this down as a default reflex.

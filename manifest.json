@@ -34,7 +34,7 @@
       "lang": "en",
       "tier": 1,
       "role": "Catalogue of measured model behaviours and the rules each one generates. Rationale store cited by verify-fanout, agent-ops, deepflow, work-rules-automation and work-rules-diagnosis, so a reason lives in one place. CLAUDE.md G-04 routes model-behaviour lessons here.",
-      "ruleIds": "AI-1..AI-16"
+      "ruleIds": "AI-1..AI-17"
     },
     {
       "name": "verify-fanout",
@@ -93,7 +93,7 @@
       "kind": "local",
       "lang": "en",
       "tier": 2,
-      "role": "Korean human-facing deliverables and design: AI-tell removal, punctuation, verbatim rule, slide minimalism, measured length.",
+      "role": "Korean human-facing deliverables and design: writing from the features of user-chosen exemplars, by genre (WR-2, rebuilt 2026-10-11; exemplars in reference/), punctuation, verbatim rule, slide minimalism, measured length. Measured prose baselines moved to reference/ so they are not read as targets.",
       "ruleIds": "WR-1..WR-17"
     },
     {
@@ -129,8 +129,8 @@
       "kind": "local",
       "lang": "en",
       "tier": 3,
-      "role": "Multi-cycle plan-design-build workflow with per-folder contracts and parallel implementers.",
-      "ruleIds": "BF-1..BF-6"
+      "role": "Multi-cycle plan-design-build workflow with per-folder contracts and parallel implementers. BF-7 makes software-engineering discipline (work-rules-diagnosis DG-1..DG-6) mandatory for every implementation.",
+      "ruleIds": "BF-1..BF-7"
     },
     {
       "name": "new-hwpx-master",
@@ -229,6 +229,15 @@
       "role": "Authoring and evaluating skills themselves - scaffold a new skill, edit an existing one, run evals, tune a description for trigger accuracy. Anthropic-authored and vendored into skills/ with its own LICENSE.txt, so it carries no local rule IDs and is not part of the G-series rule set. Registered 2026-09-07 after sitting unregistered on disk; it had been reported as drift at every SessionStart.",
       "warnBytes": 34000,
       "warnBytesReason": "SKILL.md is 33,168 bytes, well past the 20000 default, and DG-5's responsibility question does not apply the way it does to the local skills: this file is upstream's, shipped with a LICENSE, and splitting or trimming it would fork a vendored asset that gets replaced wholesale on the next update. The number is its current size plus headroom so ordinary upstream drift does not fire an advisory. If it grows a lot, re-check that the vendored copy is still wanted rather than raising this."
+    },
+    {
+      "name": "portfolio-log",
+      "required": false,
+      "kind": "external",
+      "source": "C:\\Users\\USER\\Desktop\\2026-2 docs\\포트폴리오 자동화\\skills\\portfolio-log",
+      "lang": "en",
+      "ruleIds": "PL-1..PL-16",
+      "role": "Collect today's Claude Code sessions (day boundary 05:30 KST), let the user mark each issue 깊게/짧게/빼기, ask their view on the deep ones, and write a private Korean study note in the work-rules-writing TIL exemplar's form; two review agents rewrite the draft. Registered 2026-10-11. The skill folder is a junction into the user's project folder, which also holds plog.py's tests and the README; edit it there, not through the junction."
     }
   ],
   "files": [

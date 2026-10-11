@@ -5,7 +5,7 @@ description: The catalogue of model behaviours that the working rules were desig
 
 # ai-characteristics — why the rules exist
 
-Rules: AI-1..AI-16 (16).
+Rules: AI-1..AI-17 (17).
 
 This file holds **rationale, not procedure.** Every entry is a measured behaviour of the model itself, followed by the rules that exist because of it. Other skills cite `AI-n` instead of re-explaining the reason, so a reason lives in exactly one place.
 
@@ -55,7 +55,9 @@ It does not stop and report the gap. It invents something shaped like the missin
 
 Measured: a consumer agent run co-parallel with its producer manufactured a substitute input, forcing an opus merge.
 
-Generates: `agent-ops` AO-14 (parallel needs true independence; producer to consumer is a pipeline), `buildflow` BF-5.
+Measured 2026-09-29, in prose: asked to *emphasize* a view in a 자소서, I wrote it as the user's *motive* for taking the team lead. The missing input was their actual reason, and an invented one filled the slot.
+
+Generates: `agent-ops` AO-14 (parallel needs true independence; producer to consumer is a pipeline), `buildflow` BF-5, CLAUDE.md G-29 (ask for a narrative's direction; never invent it).
 
 ### AI-7 A rule without rationale gets improved away
 
@@ -155,6 +157,14 @@ and say why it is not changing; "touching it is harder" is the work, not the rea
 drafted as CLAUDE.md G-28 on a Linux-only branch while Windows took that number for another rule; at the
 2026-09-14 merge the user chose to keep it here rather than raise CLAUDE.md's byte budget. Sits next to
 AI-3 — a layer bolted onto an unexamined shape is exactly what a session that only sees its own window produces.
+
+### AI-17 It records every failure by appending, until following the rules is itself the failure
+
+Asked to stop a mistake from recurring, the model appends a paragraph of case history to the rule file. Each addition is reasonable; together they turn guidance into a checklist that output is fitted to.
+
+Measured 2026-10-11: `work-rules-writing` had grown by appended cases, and a blind three-way test ranked it below a five-line guide. The user: "프롬프트에 남겨놔야 같은 실수를 반복하지 않는다지만, 정도가 과해지는 것 같아."
+
+Generates: `work-rules-writing` WR-14 (rewrite the rule in one or two lines; long data goes to `reference/`). The same holds for any skill: revise in place (`verify-fanout` VF-16), keep the evidence short.
 
 ## 5. Adding an entry
 

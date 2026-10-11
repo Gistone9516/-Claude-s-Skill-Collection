@@ -328,7 +328,7 @@ The body is Korean official-document prose:
 - Body order: 목적·배경 → 세부 내용 → 요청·협조 사항 → 붙임.
 - Standard phrasing: "~와 관련하여", "아래와 같이", "~하여 주시기 바랍니다".
 
-Punctuation and AI-tell rules from `work-rules-writing` WR-2..WR-4 apply to this text.
+`work-rules-writing` WR-3 (punctuation) applies to this text, and WR-2 (composition) applies within the fixed body order above.
 
 ## HX-11 Checklist
 

@@ -17,7 +17,7 @@ scripts/
   manifest-nudge.sh    상기시키는 훅. SKILL.md를 고치면 매니페스트도 함께 고치라고 알림
   validate_doc.py      한국어 분량 실측
 hooks/             외부 caveman 스킬이 쓰는 런타임 9개. 규칙을 강제하는 훅이 아니라 그 스킬의 기능이라 `scripts/`와 섞지 않고 벤더 기본 경로에 그대로 둔다
-skills/            스킬 22개. 직접 만든 14개와 외부 8개
+skills/            스킬 23개. 직접 만든 14개와 외부 9개
 projects/<경로키>/memory/   폴더 단위 프로젝트 메모리
 ```
 

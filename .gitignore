@@ -17,6 +17,10 @@
 # clone would get the wiring and not the files. State files the hooks write
 # (.caveman-active, .caveman-sessions/) sit at the repo root and stay ignored.
 !/hooks/
+# portfolio-log is a junction into its own project folder, which is the source of
+# truth; manifest.json records that path as an external skill. Tracking the junction
+# would copy the project into this public repo. Decided 2026-10-11.
+/skills/portfolio-log/
 
 # Global memory for the home-directory scope. Re-included level by level,
 # because git cannot re-include a file whose parent directory is excluded.
