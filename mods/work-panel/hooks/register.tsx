@@ -225,12 +225,17 @@ export const register: Register = on => {
       name: 'panel_post',
       isDeferred: false,
       description:
-        '작업 현황판에 진행 메모를 올린다. kind는 progress(진행), done(완료), decision(사용자 결정 필요). 메모는 세 문장까지 쓸 수 있다. ' +
-        '응답에 현황판이 켜져 있는지가 온다. 켜져 있으면 진행 보고는 여기에만 하고 채팅에는 결정이 필요한 것과 결론만 쓴다. ' +
-        '꺼져 있으면 채팅에 평소처럼 보고한다.',
+        // P-4, P-17: 쓰는 법은 부르는 순간 항상 보이는 이 설명에 둔다. 모델이 읽는 글이라 영어로 쓴다(G-01).
+        'Post a note to the work panel the user watches beside this session. Write the text in Korean. ' +
+        'The panel has room, so several sentences are fine: what was done and why, what is left. ' +
+        'kind=progress when a plan step starts (once per step, never per tool call); ' +
+        'kind=done when a unit of work finishes, with its result (test count, commit); ' +
+        'kind=decision only while waiting on the user. Skip the panel for a task of only a few tool calls. ' +
+        'The reply says whether the panel is open. Open: progress goes only here, and chat carries only what the user ' +
+        'must decide and the conclusion, never a restatement of what was posted. Closed: report in chat as usual.',
       inputSchema: {
         type: 'object',
-        properties: { kind: { type: 'string', enum: ['progress', 'done', 'decision'] }, text: { type: 'string', description: '세 문장까지의 메모. 무엇을 했고 무엇이 남았는지' } },
+        properties: { kind: { type: 'string', enum: ['progress', 'done', 'decision'] }, text: { type: 'string', description: 'Korean. Several sentences are fine.' } },
         required: ['kind', 'text'],
       },
     })
@@ -238,8 +243,9 @@ export const register: Register = on => {
       name: 'todo',
       isDeferred: false,
       description:
-        '작업 계획을 현황판 계획 탭에 적는다 (plan 모드처럼). 여러 단계 작업을 시작할 때 op=set, steps에 단계 문장들을 순서대로. ' +
-        '단계를 시작하면 op=start, 끝나면 op=done, step은 1부터 센 번호. op=list는 지금 계획을 돌려준다. 계획이 바뀌면 다시 set한다.',
+        'Write the work plan to the panel plan tab, like plan mode. Only for work of three or more steps. ' +
+        'op=set once at the start, steps in order, one Korean sentence each. op=start when a step begins and op=done ' +
+        'when it ends, step counted from 1. Set again only when the plan changes. op=list returns the current plan.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -315,8 +321,8 @@ export const register: Register = on => {
     // 플러그인 도구의 결과는 문자열 그대로 돌려준다 (측정 2026-10-13)
     return {
       result: alive
-        ? '현황판 켜짐: 진행 보고는 현황판에만 하고, 채팅에는 결정이 필요한 것과 결론만 쓴다.'
-        : '현황판 꺼짐: 채팅에 평소처럼 보고한다.',
+        ? 'Panel open.'
+        : 'Panel closed: report in chat as usual.',
     }
   })
 

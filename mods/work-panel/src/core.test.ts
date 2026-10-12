@@ -147,7 +147,7 @@ test('P-3 session sections show only posts after the current request, newest fir
   expect(sec.planShown).toBe(true)
 })
 
-test('P-4 a post keeps up to three sentences across lines, capped and masked', () => {
+test('P-4 a post keeps several sentences across lines, capped and masked', () => {
   const r = applyPost(emptyRecord('a', 'x', 0), 'progress', '첫 문장.' + String.fromCharCode(10) + ' 둘째 문장 sk-ant-abcdefghijklmnopqrstuv.', 1)
   expect(r.posts[0]?.text).toBe('첫 문장. 둘째 문장 [MASKED].')
   const long = applyPost(emptyRecord('a', 'x', 0), 'done', 'ㄱ'.repeat(POST_TEXT_LIMIT + 5), 1)
