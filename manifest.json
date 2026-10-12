@@ -239,7 +239,7 @@
       "kind": "external",
       "source": "C:\\Users\\USER\\Desktop\\2026-2 docs\\포트폴리오 자동화\\skills\\portfolio-log",
       "lang": "en",
-      "ruleIds": "PL-1..PL-16",
+      "ruleIds": "PL-1..PL-18",
       "role": "Collect today's Claude Code sessions (day boundary 05:30 KST), let the user mark each issue 깊게/짧게/빼기, ask their view on the deep ones, and write a private Korean study note in the work-rules-writing TIL exemplar's form; two review agents rewrite the draft. Registered 2026-10-11. The skill folder is a junction into the user's project folder, which also holds plog.py's tests and the README; edit it there, not through the junction."
     }
   ],
