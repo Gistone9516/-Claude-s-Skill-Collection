@@ -1,48 +1,67 @@
-import type { Candidate, ErrorSummary, GlobalCheck, PostKind, SessionRecord, Todo } from './core'
-import { clock, derivedTodos, folderName, globalChecks, sortTodos } from './core'
+import type { Candidate, ErrorSummary, GlobalCheck, PostKind, SessionRecord, StepStatus } from './core'
+import { clock, derivedTodos, folderName, globalChecks } from './core'
 
 // 화면 조각. 상태와 동작 함수를 받아 트리만 그린다. 상태를 바꾸지 않는다 (설계서 2장).
-// 디자인 검토 2026-10-13: 라벨 칸 6칸 고정, 색 대신 흐림과 굵게, 행 버튼에는 숫자 단축키 없음,
-// 탭 이름은 다른 곳의 말과 겹치지 않게 세션 / 할 일 / 규칙 / 문제 / 후보.
+// 디자인 검토 2026-10-13: 색 대신 흐림과 굵게, 행 버튼에는 숫자 단축키 없음,
+// 탭 이름은 다른 곳의 말과 겹치지 않게 세션 / 계획 / 규칙 / 문제 / 후보.
+// 사용자 2026-10-13: 한눈에 보려는 것이라 중요한 줄은 자르지 않고 전부 보인다.
 
 export type Tab = 1 | 2 | 3 | 4 | 5
+
+// P-6: 규칙 ID마다 한국어 한 문장 (data/rules-ko.json), 스킬마다 한 줄 설명
+export type Glossary = Record<string, string>
 
 export type ViewData = {
   tab: Tab
   shown: SessionRecord | null
   others: number
-  todos: Todo[]
-  draft: string
   errors: ErrorSummary | null
   errorsFailed: boolean
   candidates: Candidate[]
   marked: Set<string>
   globalRules: number | null
+  glossary: Glossary
   now: number
 }
 
 export type Actions = {
   setTab: (t: Tab) => void
   nextSession: () => void
-  todoInput: (v: string) => void
-  todoSubmit: (v: string) => void
-  todoDone: (id: string) => void
   mark: (c: Candidate) => void
   unmark: (c: Candidate) => void
 }
 
-type Ui = { Box: any; Text: any; Button: any; Input: any }
+type Ui = { Box: any; Text: any; Button: any }
 
 const KIND: Record<PostKind, string> = { progress: '진행', done: '완료', decision: '결정' }
 const ERROR_KIND: Record<string, string> = {
   tool_error: '도구 에러', blocked: '차단', rejected: '사용자 거부', interrupted: '중단', correction: '지적 후보',
 }
+const STEP_MARK: Record<StepStatus, string> = { todo: '[ ]', doing: '[>]', done: '[v]' }
 
-// 라벨 칸은 가장 긴 라벨 "에이전트"(한글 4자, 8칸)가 한 줄에 들어가는 폭으로 고정하고,
-// 라벨과 내용 사이를 세로 막대로 나눈다 (사용자 요청 2026-10-13)
+// 스킬 이름마다 한 줄 설명 (GUIDE.ko.md의 스킬 표와 같은 말)
+const SKILL_KO: Record<string, string> = {
+  'work-rules-shell': '셸, git, 커밋 수칙',
+  'work-rules-diagnosis': '원인 진단과 코드 변경 수칙',
+  'verify-fanout': '근거 등급과 검증, 사전 확인',
+  'work-rules-automation': '자동화와 Workflow, 훅 작성 수칙',
+  'work-rules-writing': '사람이 읽는 한국어 글 수칙',
+  'readme-writing': 'README 작성 지침',
+  'work-rules-docs': 'hwpx, pptx 등 문서 파일 수칙',
+  'work-rules-kit': '재사용 킷 프로젝트 수칙',
+  'agent-ops': '에이전트 위임 정책',
+  'ai-characteristics': '규칙이 왜 있는지 (AI 특성)',
+  deepflow: '다각도 자문단',
+  buildflow: '기획에서 구현까지 흐름',
+  'new-hwpx-master': 'hwpx 공문 양식 채우기',
+  'portfolio-log': '오늘 작업을 공부 노트로 기록',
+  'plugin-authoring': 'mod 만들기',
+}
+
+// 라벨 칸은 가장 긴 라벨 "에이전트"(한글 4자, 8칸)가 한 줄에 들어가는 폭
 const LABEL_COLUMNS = 9
 
-function Row(ui: Ui, label: string, body: any, opts: { bold?: boolean; dim?: boolean; wrap?: boolean } = {}) {
+function Row(ui: Ui, label: string, body: any, opts: { bold?: boolean; dim?: boolean; full?: boolean } = {}) {
   const { Box, Text } = ui
   return (
     <Box flexDirection="row">
@@ -52,7 +71,7 @@ function Row(ui: Ui, label: string, body: any, opts: { bold?: boolean; dim?: boo
         </Text>
       </Box>
       <Text dimColor>│ </Text>
-      <Text bold={opts.bold} dimColor={opts.dim} wrap={opts.wrap ? 'wrap' : 'truncate-end'}>
+      <Text bold={opts.bold} dimColor={opts.dim} wrap={opts.full ? 'wrap' : 'truncate-end'}>
         {body}
       </Text>
     </Box>
@@ -63,9 +82,9 @@ export function tabBar(ui: Ui, d: ViewData, a: Actions) {
   const { Box, Button } = ui
   const names: [Tab, string][] = [
     [1, '세션'],
-    [2, '할 일'],
+    [2, '계획'],
     [3, '규칙'],
-    [4, d.errors ? `문제` : '문제'],
+    [4, '문제'],
     [5, d.candidates.length ? `후보(${d.candidates.length})` : '후보'],
   ]
   return (
@@ -77,6 +96,7 @@ export function tabBar(ui: Ui, d: ViewData, a: Actions) {
   )
 }
 
+// 출력 우선순위: 요청과 결정 > 최근 진행 3개 > 계획 요약 > 에이전트, 저장소 > 지난 메모(한 줄로 자름)
 export function sessionTab(ui: Ui, d: ViewData, a: Actions) {
   const { Box, Text, Button } = ui
   const s = d.shown
@@ -91,7 +111,11 @@ export function sessionTab(ui: Ui, d: ViewData, a: Actions) {
   }
   const age = Math.max(0, Math.round((d.now - s.updatedAt) / 60000))
   const decision = [...s.posts].reverse().find(p => p.kind === 'decision')
-  const posts = s.posts.filter(p => p !== decision).slice(-6).reverse()
+  const rest = s.posts.filter(p => p !== decision).reverse()
+  const recent = rest.slice(0, 3)
+  const older = rest.slice(3, 8)
+  const doing = s.plan.find(p => p.status === 'doing')
+  const doneSteps = s.plan.filter(p => p.status === 'done').length
   return (
     <Box flexDirection="column">
       <Box flexDirection="row" columnGap={2}>
@@ -100,48 +124,46 @@ export function sessionTab(ui: Ui, d: ViewData, a: Actions) {
         </Text>
         {d.others > 1 && <Button key="next-session" label={`다른 세션 ${d.others - 1}개`} plain onPress={a.nextSession} />}
       </Box>
-      {Row(ui, '요청', s.task || '없음')}
-      {decision && Row(ui, '결정', `${clock(decision.at)} ${decision.text}`, { bold: true, wrap: true })}
-      {posts.length === 0 && !decision && Row(ui, '진행', '진행 메모 없음', { dim: true })}
-      {posts.map(p => Row(ui, KIND[p.kind], `${clock(p.at)} ${p.text}`, { dim: p.kind === 'done' }))}
-      {Row(ui, '에이전트', s.agents.length === 0 ? '없음' : s.agents.map(x => `${x.name} ${x.status}`).join(', '))}
+      {Row(ui, '요청', s.task || '없음', { full: true })}
+      {decision && Row(ui, '결정', `${clock(decision.at)} ${decision.text}`, { bold: true, full: true })}
+      {recent.length === 0 && !decision && Row(ui, '진행', '진행 메모 없음', { dim: true })}
+      {recent.map(p => Row(ui, KIND[p.kind], `${clock(p.at)} ${p.text}`, { full: true, dim: p.kind === 'done' }))}
+      {s.plan.length > 0 &&
+        Row(ui, '계획', `${doneSteps}/${s.plan.length}${doing ? ` 진행 중: ${doing.text}` : ''}`, { full: true })}
+      {Row(ui, '에이전트', s.agents.length === 0 ? '없음' : s.agents.map(x => `${x.name} ${x.status}`).join(', '), { full: true })}
       {s.repos.length === 0 && Row(ui, '저장소', '확인 전', { dim: true })}
       {s.repos.map(r =>
-        Row(ui, '저장소', r.failed ? `${folderName(r.path)} 갱신 실패` : `${folderName(r.path)}  변경 ${r.dirty} · push 대기 ${r.unpushed}`),
+        Row(ui, '저장소', r.failed ? `${folderName(r.path)} 갱신 실패` : `${folderName(r.path)}  변경 ${r.dirty} · push 대기 ${r.unpushed}`, { full: true }),
       )}
+      {older.length > 0 && <Text> </Text>}
+      {older.map(p => Row(ui, KIND[p.kind], `${clock(p.at)} ${p.text}`, { dim: true }))}
     </Box>
   )
 }
 
-export function todoTab(ui: Ui, d: ViewData, a: Actions) {
-  const { Box, Text, Button, Input } = ui
-  const open = sortTodos(d.todos).filter(t => !t.done)
-  const doneCount = d.todos.filter(t => t.done).length
+// P-5: Claude가 적는 작업 계획. 사람은 보기만 한다.
+export function planTab(ui: Ui, d: ViewData) {
+  const { Box, Text } = ui
+  const plan = d.shown?.plan ?? []
   const auto = d.shown ? derivedTodos(d.shown.repos) : []
   return (
     <Box flexDirection="column">
-      <Input key="todo-input" label="추가" placeholder="적고 Enter" value={d.draft} submitLabel="추가" onInput={a.todoInput} onSubmit={a.todoSubmit} />
-      <Text dimColor>Tab 이동 · 입력 중 숫자는 글자로 들어감 · Esc 프롬프트로</Text>
-      {open.length === 0 && auto.length === 0 && <Text dimColor>할 일이 없습니다. 위 칸에 적고 Enter를 누르세요.</Text>}
-      {open.map(t => (
-        <Box key={'todo-' + t.id} flexDirection="row" columnGap={1}>
-          <Text wrap="truncate-end">
-            {t.text}
-            {t.by === 'claude' ? ' (Claude)' : ''}
-          </Text>
-          <Button key={'done-' + t.id} label="완료" onPress={() => a.todoDone(t.id)} />
-        </Box>
+      {plan.length === 0 && <Text dimColor>작업 계획이 없습니다. 여러 단계 작업을 시작하면 Claude가 여기에 단계를 적습니다.</Text>}
+      {plan.map((p, i) => (
+        <Text bold={p.status === 'doing'} dimColor={p.status === 'done'} wrap="wrap">
+          {STEP_MARK[p.status]} {i + 1}. {p.text}
+        </Text>
       ))}
+      {auto.length > 0 && <Text> </Text>}
       {auto.map(line => (
         <Text dimColor>{line} (자동)</Text>
       ))}
-      {doneCount > 0 && <Text dimColor>완료 {doneCount}건</Text>}
     </Box>
   )
 }
 
-function checkLine(c: GlobalCheck) {
-  return `${c.id} ${c.label}  ${c.state}`
+function describe(g: Glossary, id: string): string {
+  return g[id] ?? ''
 }
 
 export function rulesTab(ui: Ui, d: ViewData) {
@@ -149,31 +171,38 @@ export function rulesTab(ui: Ui, d: ViewData) {
   const s = d.shown
   const stale = s ? s.skills.filter(x => x.stale) : []
   const fresh = s ? s.skills.filter(x => !x.stale) : []
+  const skillLine = (name: string, rules: string | null) => `${name}  ${SKILL_KO[name] ?? ''}${rules ? `  (${rules})` : ''}`
   return (
     <Box flexDirection="column">
       <Text dimColor>CLAUDE.md 전역 규칙 {d.globalRules ?? '?'}개 · 항상 적재</Text>
+      <Text> </Text>
+      <Text dimColor>읽은 스킬</Text>
       {stale.map(x => (
-        <Text bold wrap="truncate-end">
-          {x.name} {x.rules ?? ''} 다시 읽기 필요
+        <Text bold wrap="wrap">
+          {skillLine(x.name, x.rules)}  다시 읽기 필요
         </Text>
       ))}
       {fresh.length === 0 && stale.length === 0 && <Text dimColor>이번 구간에 읽은 스킬이 없습니다.</Text>}
       {fresh.map(x => (
-        <Text wrap="truncate-end">
-          {x.name} {x.rules ?? ''} <Text dimColor>"{x.task}"</Text>
+        <Text wrap="wrap">{skillLine(x.name, x.rules)}</Text>
+      ))}
+      <Text> </Text>
+      <Text dimColor>이번 요청의 전역 규칙</Text>
+      {s && globalChecks(s).map((c: GlobalCheck) => (
+        <Text bold={c.ok === false} wrap="wrap">
+          {c.id} {describe(d.glossary, c.id) || c.label}  {c.state}
         </Text>
       ))}
       <Text> </Text>
-      {s && globalChecks(s).map(c => <Text bold={c.ok === false}>{checkLine(c)}</Text>)}
-      <Text> </Text>
-      {(!s || s.fired.length === 0) && <Text dimColor>발동한 규칙이 없습니다.</Text>}
+      <Text dimColor>발동한 규칙</Text>
+      {(!s || s.fired.length === 0) && <Text dimColor>없음</Text>}
       {s &&
         s.fired
           .slice(-6)
           .reverse()
           .map(f => (
-            <Text wrap="truncate-end">
-              {clock(f.at)} 발동 {f.id} <Text dimColor>{f.text}</Text>
+            <Text wrap="wrap">
+              {clock(f.at)} {f.id} {describe(d.glossary, f.id)}
             </Text>
           ))}
     </Box>
@@ -204,7 +233,7 @@ export function problemsTab(ui: Ui, d: ViewData, a: Actions) {
     <Box flexDirection="column">
       {!e && <Text dimColor>{d.errorsFailed ? '에러 기록을 읽지 못했습니다.' : '에러 기록을 아직 만들지 않았습니다.'}</Text>}
       {e && (
-        <Text dimColor wrap="truncate-end">
+        <Text dimColor wrap="wrap">
           30일 {Object.keys(ERROR_KIND).map(k => `${ERROR_KIND[k]} ${e.counts[k] ?? 0}`).join(' · ')}
         </Text>
       )}
@@ -240,13 +269,14 @@ export function candidatesTab(ui: Ui, d: ViewData, a: Actions) {
   )
 }
 
-// P-2: 높이를 고정해 탭을 바꿔도 패널 크기가 변하지 않게 한다. 넘치면 패널 안에서 스크롤된다.
-export function pane(ui: Ui, d: ViewData, a: Actions, height: number) {
+// P-2: 최소 높이를 주어 탭을 바꿔도 패널이 줄지 않게 하고, 넘치는 내용은 엔진이 스크롤한다
+// (패널에 포커스가 있을 때 위아래 화살표, PageUp, PageDown).
+export function pane(ui: Ui, d: ViewData, a: Actions, minRows: number) {
   const { Box, Text } = ui
   const body =
-    d.tab === 1 ? sessionTab(ui, d, a) : d.tab === 2 ? todoTab(ui, d, a) : d.tab === 3 ? rulesTab(ui, d) : d.tab === 4 ? problemsTab(ui, d, a) : candidatesTab(ui, d, a)
+    d.tab === 1 ? sessionTab(ui, d, a) : d.tab === 2 ? planTab(ui, d) : d.tab === 3 ? rulesTab(ui, d) : d.tab === 4 ? problemsTab(ui, d, a) : candidatesTab(ui, d, a)
   return (
-    <Box flexDirection="column" height={height}>
+    <Box flexDirection="column" minHeight={minRows}>
       {tabBar(ui, d, a)}
       <Text> </Text>
       {body}

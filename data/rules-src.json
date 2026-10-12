@@ -1,0 +1,890 @@
+{
+ "G-01": {
+  "en": "Language split",
+  "file": "CLAUDE.md"
+ },
+ "G-02": {
+  "en": "User is Korean",
+  "file": "CLAUDE.md"
+ },
+ "G-03": {
+  "en": "\"opus\" is a role name",
+  "file": "CLAUDE.md"
+ },
+ "G-04": {
+  "en": "Self-learning routing",
+  "file": "CLAUDE.md"
+ },
+ "G-05": {
+  "en": "No canonical source exists, only evidence grades",
+  "file": "CLAUDE.md"
+ },
+ "G-06": {
+  "en": "The user's statement is not canonical either",
+  "file": "CLAUDE.md"
+ },
+ "G-07": {
+  "en": "A label is not a source",
+  "file": "CLAUDE.md"
+ },
+ "G-08": {
+  "en": "Read the file before asserting anything about it",
+  "file": "CLAUDE.md"
+ },
+ "G-09": {
+  "en": "Never pass internal recall off as fact",
+  "file": "CLAUDE.md"
+ },
+ "G-10": {
+  "en": "Self-brief first, as a pair",
+  "file": "CLAUDE.md"
+ },
+ "G-11": {
+  "en": "Then brief the user",
+  "file": "CLAUDE.md"
+ },
+ "G-22": {
+  "en": "Fan-out needs prior approval",
+  "file": "CLAUDE.md"
+ },
+ "G-12": {
+  "en": "Analysis requests produce analysis only",
+  "file": "CLAUDE.md"
+ },
+ "G-13": {
+  "en": "Keep simple commands simple",
+  "file": "CLAUDE.md"
+ },
+ "G-29": {
+  "en": "A narrative's direction is the user's, never mine",
+  "file": "CLAUDE.md"
+ },
+ "G-28": {
+  "en": "A document must be closed before I touch it",
+  "file": "CLAUDE.md"
+ },
+ "G-25": {
+  "en": "Show visual results with Playwright screenshots, never file attachments",
+  "file": "CLAUDE.md"
+ },
+ "G-26": {
+  "en": "Route memory by scope, and say where it went",
+  "file": "CLAUDE.md"
+ },
+ "G-27": {
+  "en": "manifest.json declares what this install must contain",
+  "file": "CLAUDE.md"
+ },
+ "AI-1": {
+  "en": "It asserts false things with full confidence",
+  "file": "ai-characteristics"
+ },
+ "AI-2": {
+  "en": "It presents recall as fact",
+  "file": "ai-characteristics"
+ },
+ "AI-3": {
+  "en": "A session sees a part, never the whole, so its defects are locally reasonable and globally wrong",
+  "file": "ai-characteristics"
+ },
+ "AI-4": {
+  "en": "Same model, same blind spots — consensus is a weak signal",
+  "file": "ai-characteristics"
+ },
+ "AI-5": {
+  "en": "It wants to converge, so it downgrades valid critique",
+  "file": "ai-characteristics"
+ },
+ "AI-6": {
+  "en": "It fabricates a stand-in when a required input is missing",
+  "file": "ai-characteristics"
+ },
+ "AI-7": {
+  "en": "A rule without rationale gets improved away",
+  "file": "ai-characteristics"
+ },
+ "AI-8": {
+  "en": "Success signals are self-reported, not verified",
+  "file": "ai-characteristics"
+ },
+ "AI-9": {
+  "en": "Subagents write relative to cwd even when handed an absolute path",
+  "file": "ai-characteristics"
+ },
+ "AI-10": {
+  "en": "Relay compresses away the finding",
+  "file": "ai-characteristics"
+ },
+ "AI-11": {
+  "en": "Instruction adherence degrades as one response grows",
+  "file": "ai-characteristics"
+ },
+ "AI-12": {
+  "en": "Output is hard-capped, and hitting the cap loses the whole run",
+  "file": "ai-characteristics"
+ },
+ "AI-13": {
+  "en": "It gravitates to the files that look important and skims the rest",
+  "file": "ai-characteristics"
+ },
+ "AI-14": {
+  "en": "A panel that is usually right stops being checked",
+  "file": "ai-characteristics"
+ },
+ "AI-15": {
+  "en": "It fills every section to a similar length and pads with 사족 to reach it",
+  "file": "ai-characteristics"
+ },
+ "AI-16": {
+  "en": "It substitutes a workaround for the commanded fix, and reports it as the fix",
+  "file": "ai-characteristics"
+ },
+ "AI-17": {
+  "en": "It records every failure by appending, until following the rules is itself the failure",
+  "file": "ai-characteristics"
+ },
+ "VF-1": {
+  "en": "There is no canonical source, only grades",
+  "file": "verify-fanout"
+ },
+ "VF-2": {
+  "en": "A document is not canonical",
+  "file": "verify-fanout"
+ },
+ "VF-3": {
+  "en": "A label is not a source",
+  "file": "verify-fanout"
+ },
+ "VF-4": {
+  "en": "A session asserts false things with full confidence",
+  "file": "verify-fanout"
+ },
+ "VF-5": {
+  "en": "The signature of a session's defects is: locally reasonable, globally wrong",
+  "file": "verify-fanout"
+ },
+ "VF-6": {
+  "en": "Agents discover new defect shapes; scripts remember known ones",
+  "file": "verify-fanout"
+ },
+ "VF-23": {
+  "en": "Gates batch by default; a single-item gate has to earn itself (user directive 2026-09-07",
+  "file": "verify-fanout"
+ },
+ "VF-7": {
+  "en": "Standing exception (user directive 2026-07-29)",
+  "file": "verify-fanout"
+ },
+ "VF-8": {
+  "en": "The triggers are countable, not a judgement (user directive 2026-07-30)",
+  "file": "verify-fanout"
+ },
+ "VF-21": {
+  "en": "The brief is a pair, one agent per lens (user directive 2026-07-30",
+  "file": "verify-fanout"
+ },
+ "VF-9": {
+  "en": "Either lens must be able to answer \"주의할 것 없음\"",
+  "file": "verify-fanout"
+ },
+ "VF-10": {
+  "en": "Shape is imperative",
+  "file": "verify-fanout"
+ },
+ "VF-11": {
+  "en": "Every normative statement carries an ID",
+  "file": "verify-fanout"
+ },
+ "VF-12": {
+  "en": "Every ID carries source, rationale, test",
+  "file": "verify-fanout"
+ },
+ "VF-13": {
+  "en": "The header states ID ranges and counts",
+  "file": "verify-fanout"
+ },
+ "VF-14": {
+  "en": "Normative and narrative sections are separated",
+  "file": "verify-fanout"
+ },
+ "VF-15": {
+  "en": "Correct a wrong document; do not annotate it (user directive 2026-07-29)",
+  "file": "verify-fanout"
+ },
+ "VF-16": {
+  "en": "Do not create a new document for repeated work — revise in place",
+  "file": "verify-fanout"
+ },
+ "VF-24": {
+  "en": "A document set whose proper nouns keep drifting gets a symbol registry: one table, no enforcement script (user directive 2026-09-23)",
+  "file": "verify-fanout"
+ },
+ "VF-22": {
+  "en": "A decision gets a note at _shadow/<same relative path>.md (user directive 2026-07-30)",
+  "file": "verify-fanout"
+ },
+ "VF-18": {
+  "en": "Never re-read a package to answer a question the index answers",
+  "file": "verify-fanout"
+ },
+ "VF-19": {
+  "en": "Read whole units, never line windows",
+  "file": "verify-fanout"
+ },
+ "VF-20": {
+  "en": "grep returning nothing is not proof of absence",
+  "file": "verify-fanout"
+ },
+ "DG-1": {
+  "en": "Behavior rules carry ID, source, rationale, test",
+  "file": "work-rules-diagnosis"
+ },
+ "DG-2": {
+  "en": "Classify before fixing",
+  "file": "work-rules-diagnosis"
+ },
+ "DG-3": {
+  "en": "Prefer impossible over checked",
+  "file": "work-rules-diagnosis"
+ },
+ "DG-4": {
+  "en": "Spec precedes substantial change",
+  "file": "work-rules-diagnosis"
+ },
+ "DG-5": {
+  "en": "Size is a signal, not a rule",
+  "file": "work-rules-diagnosis"
+ },
+ "DG-6": {
+  "en": "No stacked patchwork",
+  "file": "work-rules-diagnosis"
+ },
+ "DG-7": {
+  "en": "No single-axis confirmation bias",
+  "file": "work-rules-diagnosis"
+ },
+ "DG-12": {
+  "en": "Shallow preparation yields shallow results",
+  "file": "work-rules-diagnosis"
+ },
+ "DG-17": {
+  "en": "Removing inert code: classify by git history first",
+  "file": "work-rules-diagnosis"
+ },
+ "DG-18": {
+  "en": "Removing working code: never remove a verified feature on a side effect alone",
+  "file": "work-rules-diagnosis"
+ },
+ "SH-1": {
+  "en": "No complex inline shell",
+  "file": "work-rules-shell"
+ },
+ "SH-2": {
+  "en": "Escapes handed to the Write tool become real control characters (measured 2026-07-21)",
+  "file": "work-rules-shell"
+ },
+ "SH-33": {
+  "en": "A doubled backslash collapses to one before the shell or Python sees it, and a quoted heredoc does not prevent it (measured 2026-09-02)",
+  "file": "work-rules-shell"
+ },
+ "SH-3": {
+  "en": "Anchor-append duplication in edit scripts (measured 2026-07-29, twice)",
+  "file": "work-rules-shell"
+ },
+ "SH-4": {
+  "en": "Never round-trip a file through Get-Content -Raw | Set-Content (measured 2026-07-22)",
+  "file": "work-rules-shell"
+ },
+ "SH-5": {
+  "en": "Remove-Item -Recurse cannot delete paths of 260+ characters and fails silently under -ErrorAction SilentlyContinue (measured 2026-07-27)",
+  "file": "work-rules-shell"
+ },
+ "SH-6": {
+  "en": "A 260+ character path throws PathTooLongException, and a generic catch misreports it as a file lock",
+  "file": "work-rules-shell"
+ },
+ "SH-7": {
+  "en": "No git stash / checkout / restore while parallel agents are running",
+  "file": "work-rules-shell"
+ },
+ "SH-9": {
+  "en": "Get-Item and Get-ChildItem without -Force cannot see Hidden+System files (measured 2026-07-28)",
+  "file": "work-rules-shell"
+ },
+ "SH-10": {
+  "en": "PowerShell variable names are case-insensitive, so $l clobbers $L (measured 2026-07-27)",
+  "file": "work-rules-shell"
+ },
+ "SH-11": {
+  "en": "Measure-Object -Line does not count blank lines (measured 2026-07-20)",
+  "file": "work-rules-shell"
+ },
+ "SH-12": {
+  "en": "The Korean console is cp949",
+  "file": "work-rules-shell"
+ },
+ "SH-32": {
+  "en": "The PowerShell tool runs elevated, so token-scoped state is invisible to the user, and checking it from that same shell is not verification (measured 2026-08-15)",
+  "file": "work-rules-shell"
+ },
+ "SH-34": {
+  "en": "tsc -b emits .js beside the sources and the bundler imports those instead of the .ts (measured 2026-09-05)",
+  "file": "work-rules-shell"
+ },
+ "SH-13": {
+  "en": "Nested quotes inline break the parser",
+  "file": "work-rules-shell"
+ },
+ "SH-14": {
+  "en": "A PowerShell here-string still splits if its body contains double quotes (measured 2026-07-20)",
+  "file": "work-rules-shell"
+ },
+ "SH-15": {
+  "en": "A .bat with LF line endings is not understood by cmd (measured 2026-07-21)",
+  "file": "work-rules-shell"
+ },
+ "SH-16": {
+  "en": "This does not show up in git diff",
+  "file": "work-rules-shell"
+ },
+ "SH-29": {
+  "en": "A .ps1 without a BOM is read by PowerShell 5.1 as cp949, so Korean inside the script is mojibaked (measured 2026-08-01)",
+  "file": "work-rules-shell"
+ },
+ "SH-17": {
+  "en": "It is the /mnt/c/... WSL form that breaks on non-ASCII paths, not the Bash tool (re-measured 2026-07-30)",
+  "file": "work-rules-shell"
+ },
+ "SH-18": {
+  "en": "The Bash tool and PowerShell wsl bash are separate shell contexts",
+  "file": "work-rules-shell"
+ },
+ "SH-19": {
+  "en": "wsl restarts silently between tool calls and empties /tmp",
+  "file": "work-rules-shell"
+ },
+ "SH-20": {
+  "en": "Node's # subpath imports fail on paths containing Korean and spaces (measured 2026-07-21)",
+  "file": "work-rules-shell"
+ },
+ "SH-30": {
+  "en": "Calling npm or npx with the call operator from PowerShell mangles the arguments (measured 2026-08-02)",
+  "file": "work-rules-shell"
+ },
+ "SH-31": {
+  "en": "A file the Write tool creates in ~/.ssh inherits the folder ACL, and OpenSSH refuses it (measured 2026-08-15)",
+  "file": "work-rules-shell"
+ },
+ "SH-21": {
+  "en": "Windows autocrlf=true rewrites line endings on stash, pop and checkout",
+  "file": "work-rules-shell"
+ },
+ "SH-27": {
+  "en": "Check for a prettier config before running prettier --write (measured 2026-07-30)",
+  "file": "work-rules-shell"
+ },
+ "SH-28": {
+  "en": "When a destructive git verb is blocked by permission, reach the same end with a read-only git command plus a file operation (measured 2026-07-30)",
+  "file": "work-rules-shell"
+ },
+ "SH-22": {
+  "en": "git add -- <paths> refuses the whole set if one path is ignored (measured 2026-07-21)",
+  "file": "work-rules-shell"
+ },
+ "SH-23": {
+  "en": "Update the root README.md before committing",
+  "file": "work-rules-shell"
+ },
+ "SH-26": {
+  "en": "Write git commands as git -C <repo> ..., never cd <repo> && git",
+  "file": "work-rules-shell"
+ },
+ "SH-24": {
+  "en": "Hunt hardcoded absolute paths",
+  "file": "work-rules-shell"
+ },
+ "SH-25": {
+  "en": "Project memory and session records live under ~/.claude/projects/<path key>/",
+  "file": "work-rules-shell"
+ },
+ "AO-1": {
+  "en": "The tool descriptions are canonical for mechanics; this file is canonical for policy",
+  "file": "agent-ops"
+ },
+ "AO-2": {
+  "en": "opus is the bottleneck and the highest-value judge, not the budget constraint",
+  "file": "agent-ops"
+ },
+ "AO-3": {
+  "en": "Match reasoning depth to stakes",
+  "file": "agent-ops"
+ },
+ "AO-4": {
+  "en": "Split the decision by what the stage does, not by a blanket default",
+  "file": "agent-ops"
+ },
+ "AO-5": {
+  "en": "Load-bearing judgement is never an agent()",
+  "file": "agent-ops"
+ },
+ "AO-6": {
+  "en": "Choose by structure",
+  "file": "agent-ops"
+ },
+ "AO-7": {
+  "en": "The idle model",
+  "file": "agent-ops"
+ },
+ "AO-8": {
+  "en": "A Workflow runs only on the user's explicit opt-in",
+  "file": "agent-ops"
+ },
+ "AO-9": {
+  "en": "Unattended continuation is a different tool from cost offload",
+  "file": "agent-ops"
+ },
+ "AO-10": {
+  "en": "Continue an existing agent instead of respawning when its context is the point",
+  "file": "agent-ops"
+ },
+ "AO-11": {
+  "en": "A finished Workflow's journal is the ground truth for what it returned",
+  "file": "agent-ops"
+ },
+ "AO-12": {
+  "en": "Report the count with its breakdown before fanning out (G-22)",
+  "file": "agent-ops"
+ },
+ "AO-13": {
+  "en": "Two caps bind: synthesis, and cost",
+  "file": "agent-ops"
+ },
+ "AO-14": {
+  "en": "Writes are serial; parallel is for reading",
+  "file": "agent-ops"
+ },
+ "AO-15": {
+  "en": "Defaults for a spawned agent",
+  "file": "agent-ops"
+ },
+ "AO-16": {
+  "en": "Evidence-grounding is mandatory for factual, research and feasibility tasks",
+  "file": "agent-ops"
+ },
+ "AO-17": {
+  "en": "High-output tasks are split, never single-shot",
+  "file": "agent-ops"
+ },
+ "AO-19": {
+  "en": "Guard both failure directions",
+  "file": "agent-ops"
+ },
+ "AO-20": {
+  "en": "Scout, edit, verify",
+  "file": "agent-ops"
+ },
+ "AO-21": {
+  "en": "An agent that writes code reads its whole assignment first",
+  "file": "agent-ops"
+ },
+ "AO-22": {
+  "en": "opus owns integration and contracts",
+  "file": "agent-ops"
+ },
+ "AO-24": {
+  "en": "UI work carries a design pair, one agent per scope (user directive 2026-09-02)",
+  "file": "agent-ops"
+ },
+ "AO-23": {
+  "en": "As scope grows, the partition becomes the deliverable",
+  "file": "agent-ops"
+ },
+ "AU-1": {
+  "en": "One call at a time, format verified",
+  "file": "work-rules-automation"
+ },
+ "AU-2": {
+  "en": "Response truncation produces a malformed call, the leading cause of a long session stopping silently",
+  "file": "work-rules-automation"
+ },
+ "AU-3": {
+  "en": "Wrap every automation script in per-stage try/except",
+  "file": "work-rules-automation"
+ },
+ "AU-4": {
+  "en": "Make it idempotent and resumable",
+  "file": "work-rules-automation"
+ },
+ "AU-17": {
+  "en": "It is JavaScript, not TypeScript",
+  "file": "work-rules-automation"
+ },
+ "AU-18": {
+  "en": "Date.now(), Math.random() and argless new Date() throw,",
+  "file": "work-rules-automation"
+ },
+ "AU-19": {
+  "en": "Scale the fan-out from the declared budget, not from a guess",
+  "file": "work-rules-automation"
+ },
+ "AU-5": {
+  "en": "Health-check every 20 minutes (user directive 2026-06-22)",
+  "file": "work-rules-automation"
+ },
+ "AU-6": {
+  "en": "No git stash / checkout / restore while parallel agents run",
+  "file": "work-rules-automation"
+ },
+ "AU-7": {
+  "en": "Subagents write files relative to cwd even when given an absolute path (measured 2026-06-24, AI-9),",
+  "file": "work-rules-automation"
+ },
+ "AU-8": {
+  "en": "Do not trust a workflow's own success signal (AI-8)",
+  "file": "work-rules-automation"
+ },
+ "AU-9": {
+  "en": "When handing an agent an absolute path, also state the fallback",
+  "file": "work-rules-automation"
+ },
+ "AU-11": {
+  "en": "On receiving it, never end empty (user directive)",
+  "file": "work-rules-automation"
+ },
+ "AU-12": {
+  "en": "The code that opens a session owns its close and cleanup",
+  "file": "work-rules-automation"
+ },
+ "AU-13": {
+  "en": "With the default tool set it performs the work on disk",
+  "file": "work-rules-automation"
+ },
+ "AU-14": {
+  "en": "The system key in a stdin JSON payload is ignored",
+  "file": "work-rules-automation"
+ },
+ "AU-15": {
+  "en": "Check reachability with a sentinel",
+  "file": "work-rules-automation"
+ },
+ "AU-21": {
+  "en": "A hook must not inspect state that the observed command is about to change; pick the event by what the check reads",
+  "file": "work-rules-automation"
+ },
+ "AU-25": {
+  "en": "Escape anything interpolated into a hand-built JSON hook response",
+  "file": "work-rules-automation"
+ },
+ "AU-26": {
+  "en": "A script hook cannot spawn an agent",
+  "file": "work-rules-automation"
+ },
+ "AU-24": {
+  "en": "A hook message is one imperative sentence plus the rule ID, never the rationale",
+  "file": "work-rules-automation"
+ },
+ "AU-22": {
+  "en": "The selection criterion for a guard hook is zero false positives",
+  "file": "work-rules-automation"
+ },
+ "AU-23": {
+  "en": "Cost the hook before registering it",
+  "file": "work-rules-automation"
+ },
+ "WR-1": {
+  "en": "Language split",
+  "file": "work-rules-writing"
+ },
+ "WR-2": {
+  "en": "Write from the features of writing the user chose, not from rules (user directives 2026-10-11)",
+  "file": "work-rules-writing"
+ },
+ "WR-3": {
+  "en": "Punctuation restraint (user directive 2026-06-12)",
+  "file": "work-rules-writing"
+ },
+ "WR-4": {
+  "en": "Code comments follow the same rule, more strictly (user directive 2026-06-13)",
+  "file": "work-rules-writing"
+ },
+ "WR-5": {
+  "en": "Text supplied by a person is verbatim — never reworded, summarized or paraphrased",
+  "file": "work-rules-writing"
+ },
+ "WR-6": {
+  "en": "Presentation slides are minimalist",
+  "file": "work-rules-writing"
+ },
+ "WR-7": {
+  "en": "Style is 개조식 음슴체",
+  "file": "work-rules-writing"
+ },
+ "WR-8": {
+  "en": "The card pattern",
+  "file": "work-rules-writing"
+ },
+ "WR-9": {
+  "en": "Analyze the existing style first, then inherit it",
+  "file": "work-rules-writing"
+ },
+ "WR-10": {
+  "en": "Preserve originals and data integrity",
+  "file": "work-rules-writing"
+ },
+ "WR-11": {
+  "en": "Show visual results with Playwright screenshots, not file attachments",
+  "file": "work-rules-writing"
+ },
+ "WR-12": {
+  "en": "Never estimate length by eye — measure it with a script first (user directive 2026-07-23)",
+  "file": "work-rules-writing"
+ },
+ "WR-13": {
+  "en": "Subtract, and stay calm",
+  "file": "work-rules-writing"
+ },
+ "WR-15": {
+  "en": "Verification status stays out of the deliverable (user directive 2026-08-09)",
+  "file": "work-rules-writing"
+ },
+ "WR-16": {
+  "en": "A narrative deliverable is written for the reader's decision, not as my audit trail (user directive 2026-09-09)",
+  "file": "work-rules-writing"
+ },
+ "WR-17": {
+  "en": "Measured prose baselines live in reference/korean-prose-baselines.md",
+  "file": "work-rules-writing"
+ },
+ "WR-14": {
+  "en": "How a lesson enters this file (user directive 2026-10-11)",
+  "file": "work-rules-writing"
+ },
+ "RD-1": {
+  "en": "The reader decides the form (user 2026-10-12)",
+  "file": "readme-writing"
+ },
+ "RD-2": {
+  "en": "Write from the exemplar's features, not from a checklist",
+  "file": "readme-writing"
+ },
+ "RD-3": {
+  "en": "Portfolio repo: first screen, then problems, then the rest",
+  "file": "readme-writing"
+ },
+ "RD-4": {
+  "en": "Working repo: the SH-23 five, in reading order",
+  "file": "readme-writing"
+ },
+ "RD-5": {
+  "en": "Fold depth, never the point",
+  "file": "readme-writing"
+ },
+ "RD-6": {
+  "en": "The AI index lives in the structure map and in sub-folder READMEs",
+  "file": "readme-writing"
+ },
+ "RD-7": {
+  "en": "Evidence a reader can click",
+  "file": "readme-writing"
+ },
+ "RD-8": {
+  "en": "What GitHub renders (measured 2026-10-12 through gh api markdown, mode gfm)",
+  "file": "readme-writing"
+ },
+ "RD-9": {
+  "en": "Report, and how this file changes",
+  "file": "readme-writing"
+ },
+ "DC-1": {
+  "en": "Always write extraction output to a UTF-8 file",
+  "file": "work-rules-docs"
+ },
+ "DC-2": {
+  "en": "Remove every linesegarray in the section you touched",
+  "file": "work-rules-docs"
+ },
+ "DC-3": {
+  "en": "Delete the hashkey when replacing an embedded image",
+  "file": "work-rules-docs"
+ },
+ "DC-4": {
+  "en": "No CJK regex character classes in a text patch",
+  "file": "work-rules-docs"
+ },
+ "DC-5": {
+  "en": "Repackaging",
+  "file": "work-rules-docs"
+ },
+ "DC-6": {
+  "en": "Verify before delivery",
+  "file": "work-rules-docs"
+ },
+ "DC-7": {
+  "en": "\"복구하시겠습니까?\" is a warning, not an error",
+  "file": "work-rules-docs"
+ },
+ "DC-8": {
+  "en": "The usual cause is <Default xmlns=\"\" .../> in [Content_Types].xml",
+  "file": "work-rules-docs"
+ },
+ "DC-9": {
+  "en": "The diagnostic oracle is .NET System.IO.Packaging.Package.Open",
+  "file": "work-rules-docs"
+ },
+ "DC-10": {
+  "en": "A python-pptx round-trip drops embedded fonts (.fntdata) and breaks the deck",
+  "file": "work-rules-docs"
+ },
+ "DC-11": {
+  "en": "Removing a slide means removing both the sldIdLst entry in presentation.xml and its rId in presentation.xml.rels",
+  "file": "work-rules-docs"
+ },
+ "DC-12": {
+  "en": "Change one variable at a time when diagnosing",
+  "file": "work-rules-docs"
+ },
+ "DC-15": {
+  "en": "Hangul COM works here and is the only oracle that proves a document opens (measured 2026-08-01)",
+  "file": "work-rules-docs"
+ },
+ "DC-16": {
+  "en": "A table with treatAsChar=\"1\" cannot split across pages, so growing it past one page blanks the page before it (measured 2026-08-22)",
+  "file": "work-rules-docs"
+ },
+ "DC-17": {
+  "en": "Under-estimate cellSz height, never over-estimate",
+  "file": "work-rules-docs"
+ },
+ "KT-1": {
+  "en": "Kit code stays generic — zero instance literals",
+  "file": "work-rules-kit"
+ },
+ "KT-2": {
+  "en": "Never fork or clone the code per instance",
+  "file": "work-rules-kit"
+ },
+ "KT-3": {
+  "en": "While working on one instance, do not push that instance's specifics into the kit",
+  "file": "work-rules-kit"
+ },
+ "KT-4": {
+  "en": "Guard it with a test that fails when an instance literal leaks into kit code",
+  "file": "work-rules-kit"
+ },
+ "DF-1": {
+  "en": "Lenses are the same model and are therefore not epistemically independent",
+  "file": "deepflow"
+ },
+ "DF-3": {
+  "en": "opus self-grading bias (AI-5)",
+  "file": "deepflow"
+ },
+ "DF-4": {
+  "en": "Never flatten the user's explicit design intent (user directive, 2026-06-28)",
+  "file": "deepflow"
+ },
+ "DF-6": {
+  "en": "Improve only the scoped sections",
+  "file": "deepflow"
+ },
+ "DF-7": {
+  "en": "Re-extract the canonical each round",
+  "file": "deepflow"
+ },
+ "DF-8": {
+  "en": "A critique is a lead, not a verdict",
+  "file": "deepflow"
+ },
+ "BF-1": {
+  "en": "Correct beats predict",
+  "file": "buildflow"
+ },
+ "BF-2": {
+  "en": "Three alignment checks",
+  "file": "buildflow"
+ },
+ "BF-3": {
+  "en": "Anti-infinite",
+  "file": "buildflow"
+ },
+ "BF-4": {
+  "en": "Volume is not verification",
+  "file": "buildflow"
+ },
+ "BF-5": {
+  "en": "opus",
+  "file": "buildflow"
+ },
+ "BF-6": {
+  "en": "Non-blocking autonomy for full-delegation runs",
+  "file": "buildflow"
+ },
+ "BF-7": {
+  "en": "Code is built with software-engineering discipline, always (user directive 2026-10-11",
+  "file": "buildflow"
+ },
+ "HX-3": {
+  "en": "Apply styleIDRef. Changing only paraPrIDRef is fake",
+  "file": "new-hwpx-master"
+ },
+ "HX-4": {
+  "en": "Do not bundle information with separators — decompose into levels",
+  "file": "new-hwpx-master"
+ },
+ "HX-5": {
+  "en": "Read the template's level system out of header.xml before starting",
+  "file": "new-hwpx-master"
+ },
+ "HX-6": {
+  "en": "Build a depth-to-level mapping table and apply it literally",
+  "file": "new-hwpx-master"
+ },
+ "HX-7": {
+  "en": "Delete linesegarray — the single most important rule",
+  "file": "new-hwpx-master"
+ },
+ "HX-8": {
+  "en": "Absolute prohibitions",
+  "file": "new-hwpx-master"
+ },
+ "HX-9": {
+  "en": "Process sections in reverse order (Ⅳ → Ⅲ → Ⅱ → Ⅰ)",
+  "file": "new-hwpx-master"
+ },
+ "HX-10": {
+  "en": "Writing conventions for the body",
+  "file": "new-hwpx-master"
+ },
+ "HX-11": {
+  "en": "Checklist",
+  "file": "new-hwpx-master"
+ },
+ "HX-12": {
+  "en": "How this file changes",
+  "file": "new-hwpx-master"
+ },
+ "HX-1": {
+  "en": "Do not simply walk the text; establish each paragraph's parent structure",
+  "file": "new-hwpx-master"
+ },
+ "HX-2": {
+  "en": "Never put a bullet marker (◦, ·, -, ①, 1., 가.) into <hp:t> text",
+  "file": "new-hwpx-master"
+ },
+ "HX-13": {
+  "en": "Address cells by cellAddr, and replace the template's grey example styles",
+  "file": "new-hwpx-master"
+ },
+ "HX-14": {
+  "en": "Embedding a picture takes three coordinated changes, and the units are not obvious",
+  "file": "new-hwpx-master"
+ },
+ "HX-15": {
+  "en": "Page fit is arithmetic; shrinking a font inside a narrow column does not help",
+  "file": "new-hwpx-master"
+ },
+ "HX-16": {
+  "en": "A new outline level needs its own named style, never a paraPr override on a shared one (measured 2026-08-02)",
+  "file": "new-hwpx-master"
+ }
+}

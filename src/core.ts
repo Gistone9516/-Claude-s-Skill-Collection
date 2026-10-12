@@ -7,6 +7,9 @@ export type Fired = { id: string; text: string; at: number }
 export type SessionError = { tool: string; text: string; at: number }
 export type AgentRow = { id: string; name: string; status: string }
 export type RepoState = { path: string; dirty: number; unpushed: number; checkedAt: number; failed: boolean }
+// P-5: Claude가 여러 단계 작업을 시작할 때 올리는 작업 계획 (사용자 2026-10-13: "너가 작업함에 있어서 plan 모드처럼 다음 작업 할 일을 적어두는 것")
+export type StepStatus = 'todo' | 'doing' | 'done'
+export type PlanStep = { text: string; status: StepStatus }
 
 // P-8: 이번 요청 안에서 센 값. 요청이 바뀌면 처음부터 센다.
 export type TaskStats = { agents: number; agentsBeforeEdit: number; edited: boolean }
@@ -21,11 +24,11 @@ export type SessionRecord = {
   errors: SessionError[]
   agents: AgentRow[]
   repos: RepoState[]
+  plan: PlanStep[]
   stats: TaskStats
   updatedAt: number
 }
 
-export type Todo = { id: string; text: string; done: boolean; by: 'person' | 'claude'; at: number }
 export type Candidate = { at: string; kind: string; tool: string; text: string; task: string; session: string }
 
 export const POST_LIMIT = 50
@@ -72,7 +75,7 @@ export function emptyStats(): TaskStats {
 }
 
 export function emptyRecord(id: string, cwd: string, now: number): SessionRecord {
-  return { id, cwd, task: '', posts: [], skills: [], fired: [], errors: [], agents: [], repos: [], stats: emptyStats(), updatedAt: now }
+  return { id, cwd, task: '', posts: [], skills: [], fired: [], errors: [], agents: [], repos: [], plan: [], stats: emptyStats(), updatedAt: now }
 }
 
 // P-3: 현재 요청은 첫 줄만, 가린 뒤에 남긴다. 요청이 바뀌면 P-8의 셈을 새로 시작한다.
@@ -193,24 +196,18 @@ export function normalizeRecord(v: unknown): SessionRecord | null {
   return { ...emptyRecord(r.id, r.cwd ?? '', r.updatedAt), ...r } as SessionRecord
 }
 
-// P-5: 할 일은 항목마다 키 하나 (여러 세션이 동시에 고쳐도 서로 덮지 않게)
-export function todoKey(id: string): string {
-  return 'todo:' + id
+// P-5: 계획은 통째로 바꾸거나, 단계 하나의 상태만 바꾼다. 단계 번호는 1부터 센다.
+export const PLAN_LIMIT = 20
+
+export function setPlan(rec: SessionRecord, steps: string[], now: number): SessionRecord {
+  const plan = steps.map(t => clean(t, 200)).filter(Boolean).slice(0, PLAN_LIMIT).map(text => ({ text, status: 'todo' as StepStatus }))
+  return { ...rec, plan, updatedAt: now }
 }
 
-export function newTodo(id: string, text: string, by: Todo['by'], now: number): Todo | null {
-  const t = clean(text, 200)
-  return t ? { id, text: t, done: false, by, at: now } : null
-}
-
-export function isTodo(v: unknown): v is Todo {
-  if (typeof v !== 'object' || v === null) return false
-  const t = v as Record<string, unknown>
-  return typeof t.id === 'string' && typeof t.text === 'string' && typeof t.done === 'boolean'
-}
-
-export function sortTodos(todos: Todo[]): Todo[] {
-  return [...todos].sort((a, b) => Number(a.done) - Number(b.done) || a.at - b.at)
+export function setStep(rec: SessionRecord, step: number, status: StepStatus, now: number): SessionRecord | null {
+  if (!Number.isInteger(step) || step < 1 || step > rec.plan.length) return null
+  const plan = rec.plan.map((s, i) => (i === step - 1 ? { ...s, status } : s))
+  return { ...rec, plan, updatedAt: now }
 }
 
 // P-5: push 대기는 저장하지 않고 저장소 상태에서 매번 계산한다 (DG-3)

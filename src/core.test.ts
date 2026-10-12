@@ -2,8 +2,8 @@ import { expect, test } from 'claude-code/testing'
 
 import {
   addCandidate, applyPost, applyPrompt, applySkillLoad, applyToolFailure, applyToolUse, derivedTodos, emptyRecord,
-  extractFiredIds, globalChecks, isViewerAlive, markSkillsStale, mask, newTodo, normalizeRecord, parseErrorsJson,
-  parseRulesHeader, pickSession, POST_LIMIT, removeCandidate, STALE_MS,
+  extractFiredIds, globalChecks, isViewerAlive, markSkillsStale, mask, normalizeRecord, parseErrorsJson,
+  parseRulesHeader, pickSession, POST_LIMIT, removeCandidate, setPlan, setStep, STALE_MS,
 } from './core'
 
 // 시험 이름에 설계서의 규칙 ID를 넣는다 (V-1)
@@ -89,9 +89,8 @@ test('P-9 fired ids come from hook markers in failure text', () => {
   expect(r.errors[0]?.text).toBe('[skill-gate] blocked')
 })
 
-test('P-5 push pending is derived from repos, and empty todos are refused', () => {
+test('P-5 push pending is derived from repos', () => {
   expect(derivedTodos([{ path: 'C:/dev/myblog', dirty: 0, unpushed: 2, checkedAt: 0, failed: false }])).toEqual(['push 대기: myblog 2개'])
-  expect(newTodo('i', '  ', 'person', 0)).toBe(null)
 })
 
 test('P-10 parseErrorsJson reads counts, repeats and masks recent items', () => {
@@ -121,4 +120,13 @@ test('P-11 removeCandidate drops only the matching item', () => {
   const a = { at: 't1', kind: 'tool_error', tool: 'Bash', text: 'x', task: '', session: '' }
   const b = { ...a, at: 't2' }
   expect(removeCandidate([a, b], a)).toEqual([b])
+})
+
+test('P-5 setPlan and setStep keep the plan in order, steps counted from 1', () => {
+  let r = setPlan(emptyRecord('a', 'x', 0), ['설계', '  ', '구현', '시험'], 1)
+  expect(r.plan.map(p => p.text)).toEqual(['설계', '구현', '시험'])
+  r = setStep(r, 2, 'doing', 2) ?? r
+  expect(r.plan[1]?.status).toBe('doing')
+  expect(setStep(r, 9, 'done', 3)).toBe(null)
+  expect(setStep(r, 0, 'done', 3)).toBe(null)
 })

@@ -1,12 +1,12 @@
 import type { Register } from 'claude-code'
 
-import type { Candidate, ErrorSummary, PostKind, SessionRecord, Todo } from '../src/core'
+import type { Candidate, ErrorSummary, PostKind, SessionRecord, StepStatus } from '../src/core'
 import {
   addCandidate, applyPost, applyPrompt, applySkillLoad, applyToolFailure, applyToolUse, countPorcelain, emptyRecord,
-  isTodo, isViewerAlive, liveSessions, markSkillsStale, newTodo, normalizeRecord, parseCount, parseErrorsJson,
-  removeCandidate, REPO_REFRESH_MS, setAgents, setRepos, todoKey,
+  isViewerAlive, liveSessions, markSkillsStale, normalizeRecord, parseCount, parseErrorsJson,
+  removeCandidate, REPO_REFRESH_MS, setAgents, setPlan, setRepos, setStep,
 } from '../src/core'
-import type { Actions, Tab, ViewData } from '../src/view'
+import type { Actions, Glossary, Tab, ViewData } from '../src/view'
 import { band, pane } from '../src/view'
 
 // 등록만 한다. 판정은 src/core, 그리기는 src/view (설계서 2장).
@@ -14,7 +14,7 @@ import { band, pane } from '../src/view'
 // $는 파일 최상위에 선언한 함수에만 넘길 수 있다 (엔진의 정적 검사).
 
 const PANE = 'work-panel'
-const PANE_ROWS = 40 // P-2: 사용자 요청 2026-10-13 "패널의 크기를 고정할 순 없어?", "높이 고정 40줄로 늘려줘"
+const PANE_ROWS = 60 // P-2: 사용자 요청 2026-10-13 "패널의 크기를 고정할 순 없어?", "더 높여줘"
 const PUBLISH_MIN_MS = 1000 // P-15
 const VIEWER_TICK_MS = 2000
 const ERRORS_REFRESH_MS = 10 * 60 * 1000 // P-10
@@ -31,9 +31,8 @@ let lastRepoCheck = 0
 let viewerTimer: { cancel: () => void } | null = null
 let tab: Tab = 1
 let pick = 0
-let draft = ''
-let view: Omit<ViewData, 'tab' | 'draft' | 'now'> = {
-  shown: null, others: 0, todos: [], errors: null, errorsFailed: false, candidates: [], marked: new Set(), globalRules: null,
+let view: Omit<ViewData, 'tab' | 'now'> = {
+  shown: null, others: 0, errors: null, errorsFailed: false, candidates: [], marked: new Set(), globalRules: null, glossary: {},
 }
 let lastHash = ''
 let lastErrorsRun = 0
@@ -91,17 +90,6 @@ async function refreshAgents($: any): Promise<void> {
   rec = setAgents(rec, live.map((x: any) => ({ id: String(x.id), name: String(x.type || x.description || 'agent'), status: String(x.status) })), await $.clock.now())
 }
 
-async function loadTodos($: any): Promise<Todo[]> {
-  const keys: string[] = await $.store.keys()
-  const out: Todo[] = []
-  for (const k of keys) {
-    if (!k.startsWith('todo:')) continue
-    const v = await $.store.get(k)
-    if (isTodo(v)) out.push(v)
-  }
-  return out
-}
-
 async function readJson($: any, path: string): Promise<unknown> {
   if (!(await $.fs.exists(path))) return null
   return JSON.parse(await $.fs.read(path))
@@ -155,10 +143,10 @@ async function viewerTick($: any): Promise<void> {
   } catch {
     candidates = []
   }
-  view = { ...view, shown, others: live.length, todos: await loadTodos($), candidates, marked: new Set(candidates.map(c => c.at + '|' + c.text)) }
+  view = { ...view, shown, others: live.length, candidates, marked: new Set(candidates.map(c => c.at + '|' + c.text)) }
   if (now - lastErrorsRun > ERRORS_REFRESH_MS) await refreshErrors($, false)
   // P-15 디자인 검토: 바뀐 것이 있을 때만 다시 그린다 (입력 중인 글자를 지우지 않게)
-  const hash = JSON.stringify([shown && { ...shown, updatedAt: 0 }, view.todos, view.candidates.length, view.errors?.generated, tab, pick])
+  const hash = JSON.stringify([shown && { ...shown, updatedAt: 0 }, view.candidates.length, view.errors?.generated, tab, pick])
   if (hash !== lastHash) {
     lastHash = hash
     $.ui.invalidate('ui.render')
@@ -168,7 +156,7 @@ async function viewerTick($: any): Promise<void> {
 async function startViewer($: any): Promise<void> {
   const saved = await $.store.get('viewer:tab')
   if (saved === 1 || saved === 2 || saved === 3 || saved === 4 || saved === 5) tab = saved
-  view = { ...view, globalRules: await countGlobalRules($) }
+  view = { ...view, globalRules: await countGlobalRules($), glossary: await loadGlossary($) }
   lastHash = ''
   await refreshErrors($, false)
   await viewerTick($)
@@ -181,17 +169,18 @@ async function setTab($: any, t: Tab): Promise<void> {
   $.ui.invalidate('ui.render')
 }
 
-async function addTodo($: any, text: string, by: Todo['by']): Promise<Todo | null> {
-  const todo = newTodo(crypto.randomUUID(), text, by, await $.clock.now())
-  if (todo) await $.store.set(todoKey(todo.id), todo)
-  return todo
-}
-
-async function finishTodo($: any, id: string): Promise<boolean> {
-  const v = await $.store.get(todoKey(id))
-  if (!isTodo(v)) return false
-  await $.store.set(todoKey(id), { ...v, done: true })
-  return true
+// P-6: 규칙 ID마다 한국어 한 문장. 원본이 바뀌어 원문이 다르면 scripts/extract_rules.py --check가 잡는다.
+async function loadGlossary($: any): Promise<Glossary> {
+  const out: Glossary = { 'skill-gate': '필요한 스킬을 읽기 전 첫 커밋, 위임, 코드 수정을 한 번 막는다' }
+  try {
+    const v = await readJson($, $.plugin.root + '/data/rules-ko.json')
+    if (v && typeof v === 'object') {
+      for (const [id, entry] of Object.entries(v as Record<string, { ko?: string }>)) if (entry.ko) out[id] = entry.ko
+    }
+  } catch {
+    // 설명이 없으면 ID만 보인다
+  }
+  return out
 }
 
 // 패널과 프롬프트 위 줄이 같은 동작을 쓴다
@@ -203,14 +192,6 @@ function makeActions($: any): Actions {
       lastHash = ''
       void viewerTick($)
     },
-    todoInput: v => {
-      draft = v
-    },
-    todoSubmit: v => {
-      draft = ''
-      void addTodo($, v, 'person').then(() => viewerTick($))
-    },
-    todoDone: id => void finishTodo($, id).then(() => viewerTick($)),
     mark: c => void markCandidate($, c),
     unmark: c => void unmarkCandidate($, c),
   }
@@ -257,11 +238,15 @@ export const register: Register = on => {
       name: 'todo',
       isDeferred: false,
       description:
-        '사용자와 함께 쓰는 할 일 목록(현황판 할 일 탭). op=add면 text를 추가하고, op=done이면 id 항목을 완료로 바꾼다. ' +
-        'op=list면 열린 항목과 id를 돌려준다. 사용자가 할 일을 추가하거나 끝내 달라고 할 때 쓴다.',
+        '작업 계획을 현황판 계획 탭에 적는다 (plan 모드처럼). 여러 단계 작업을 시작할 때 op=set, steps에 단계 문장들을 순서대로. ' +
+        '단계를 시작하면 op=start, 끝나면 op=done, step은 1부터 센 번호. op=list는 지금 계획을 돌려준다. 계획이 바뀌면 다시 set한다.',
       inputSchema: {
         type: 'object',
-        properties: { op: { type: 'string', enum: ['add', 'done', 'list'] }, text: { type: 'string' }, id: { type: 'string' } },
+        properties: {
+          op: { type: 'string', enum: ['set', 'start', 'done', 'list'] },
+          steps: { type: 'array', items: { type: 'string' } },
+          step: { type: 'number' },
+        },
         required: ['op'],
       },
     })
@@ -336,19 +321,30 @@ export const register: Register = on => {
   })
 
   on('tool.call', { tool: 'mcp__work-panel__todo' }, async ($, e) => {
-    const input = e as unknown as { op?: string; text?: string; id?: string }
-    if (input.op === 'add') {
-      const t = await addTodo($, String(input.text ?? ''), 'claude')
-      return { result: t ? `할 일 추가: ${t.text} (id ${t.id})` : '빈 할 일은 추가하지 않았다.' }
+    const input = e as unknown as { op?: string; steps?: unknown; step?: number }
+    const now = await $.clock.now()
+    if (!rec) return { result: '세션 기록이 아직 없다.' }
+    if (input.op === 'set') {
+      const steps = Array.isArray(input.steps) ? input.steps.map(String) : []
+      rec = setPlan(rec, steps, now)
+      await publish($)
+      return { result: `계획 ${rec.plan.length}단계를 적었다.` }
     }
-    if (input.op === 'done') {
-      return { result: (await finishTodo($, String(input.id ?? ''))) ? '완료로 바꿨다.' : '그 id의 할 일이 없다.' }
+    if (input.op === 'start' || input.op === 'done') {
+      const status: StepStatus = input.op === 'start' ? 'doing' : 'done'
+      const next = setStep(rec, Number(input.step), status, now)
+      if (!next) return { result: `${input.step}번 단계가 없다. 계획은 ${rec.plan.length}단계다.` }
+      rec = next
+      await publish($)
+      return { result: `${input.step}번 단계를 ${input.op === 'start' ? '진행 중' : '완료'}으로 바꿨다.` }
     }
-    const open = (await loadTodos($)).filter(t => !t.done)
-    return { result: open.length ? open.map(t => `${t.id}  ${t.text}`).join('\n') : '열린 할 일이 없다.' }
+    const lines = rec.plan.map((p, i) => `${i + 1}. [${p.status}] ${p.text}`)
+    return { result: lines.length ? lines.join(String.fromCharCode(10)) : '계획이 없다.' }
   })
 
   on('command.run', { command: 'panel' }, async $ => {
+    // 이미 열린 패널은 크기 요청이 적용되지 않으므로 닫았다가 다시 연다 (P-2)
+    await $.ui.close({ id: PANE })
     await $.ui.open({ id: PANE, title: '작업 현황', focus: true, rows: PANE_ROWS })
     await startViewer($)
     return {}
@@ -358,7 +354,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (!viewerTimer) return next(e)
     const ui = $.ui.resolve(e) as any
-    return band(ui, { ...view, tab, draft, now: await $.clock.now() }, makeActions($))
+    return band(ui, { ...view, tab, now: await $.clock.now() }, makeActions($))
   }).catch(($, e, next) => next(e))
 
   on('ui.close', async ($, e, next) => {
@@ -371,8 +367,8 @@ export const register: Register = on => {
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const ui = $.ui.resolve(e) as any
-    const height = Math.max(4, Math.min(PANE_ROWS, e.props.scroll.bodyRows))
-    return pane(ui, { ...view, tab, draft, now: await $.clock.now() }, makeActions($), height)
+    const minRows = Math.max(4, Math.min(PANE_ROWS, e.props.scroll.bodyRows))
+    return pane(ui, { ...view, tab, now: await $.clock.now() }, makeActions($), minRows)
   }).catch(($, e, next) => {
     const { Text } = $.ui.resolve(e) as any
     return <Text dimColor>현황판을 그리지 못했습니다: {String(next.error?.message ?? 'unknown')}</Text>
