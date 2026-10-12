@@ -20,6 +20,7 @@ Memory does not guarantee recall; loading a skill is an action, so it does. **Re
 | Workflow, background automation, long multi-step run | `work-rules-automation` |
 | hwpx / pptx / docx / xlsx editing or text extraction | `work-rules-docs` |
 | Korean human-facing deliverable (자소서, report, slides, comments), design | `work-rules-writing` |
+| writing or restructuring a README | `readme-writing` |
 | reusable kit / framework project | `work-rules-kit` |
 | delegating to agents, fan-out, **writing or changing any UI** | `agent-ops` (+ `deepflow`; code work also `buildflow`) |
 | **writing, relaxing or deleting a rule; deciding how much verification is warranted; a rule that looks like overhead** | `ai-characteristics` |

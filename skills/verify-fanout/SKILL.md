@@ -149,7 +149,7 @@ Measured: the `DEV_FORCE_TIER` reimplementation, the duplicated model ids, and t
 |---|---|
 | Who consumes this symbol; is it dead? | generated relation index |
 | What does this package expose? | barrel `index.ts` |
-| Where does responsibility X live? | package README structure map |
+| Where does responsibility X live? | package README structure map (`readme-writing` RD-6) |
 | What rules govern this area? | spec's ID table (the header count says whether it is current) |
 | **What decisions govern this exact file, and what did they cost?** | its `_shadow/` note (VF-22) |
 | Was this promised somewhere? | doc markers (`[개정]`, `[신규]`, `[v1 원문]`) |

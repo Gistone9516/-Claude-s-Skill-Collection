@@ -1,11 +1,11 @@
 {
   "manifestVersion": 1,
-  "updated": "2026-09-29",
+  "updated": "2026-10-12",
   "purpose": "Single source of truth for what this ~/.claude install is supposed to contain. scripts/check-manifest.ps1 validates the live filesystem against this file at SessionStart and reports drift.",
   "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
   "policy": {
-    "claudeMdMaxBytes": 9600,
-    "claudeMdMaxBytesReason": "CLAUDE.md is loaded into every turn. It reached 17848 bytes by accretion before the 2026-07-29 reorganization, which cut it to 8555 across 27 rules with no rule dropped - the detail moved into skills. 9000 is that measured floor plus a little headroom. It was briefly set to 7000, which could only have been met by deleting rules that must be true before a skill loads, so the number was raised deliberately and recorded here rather than adjusted silently later. The gate exists to catch drift back toward 17848, not to force deletion. Raised 9000 -> 9600 on 2026-09-29 for G-29 (a narrative's direction is asked, never invented), added on the user's explicit order ('전역 규칙에 박아') although G-04 routes self-learning away from this file; it must hold before work-rules-writing loads, because the failure happens while drafting. File was 8973 before, 9558 after; nothing else grew.",
+    "claudeMdMaxBytes": 9700,
+    "claudeMdMaxBytesReason": "CLAUDE.md is loaded into every turn. It reached 17848 bytes by accretion before the 2026-07-29 reorganization, which cut it to 8555 across 27 rules with no rule dropped - the detail moved into skills. 9000 is that measured floor plus a little headroom. It was briefly set to 7000, which could only have been met by deleting rules that must be true before a skill loads, so the number was raised deliberately and recorded here rather than adjusted silently later. The gate exists to catch drift back toward 17848, not to force deletion. Raised 9000 -> 9600 on 2026-09-29 for G-29 (a narrative's direction is asked, never invented), added on the user's explicit order ('전역 규칙에 박아') although G-04 routes self-learning away from this file; it must hold before work-rules-writing loads, because the failure happens while drafting. File was 8973 before, 9558 after; nothing else grew. Raised 9600 -> 9700 on 2026-10-12 for one routing row sending README work to the new readme-writing skill; the user chose a standalone skill over a work-rules-writing section knowing it needed this raise. 9558 -> 9615.",
     "skillWarnBytes": 20000,
     "ruleIdPattern": "^[A-Z]{1,3}-[0-9]{1,2}$",
     "onMissingRequired": "Tell the user, in Korean, which required assets are missing and that they should be restored from the repo. Do not silently continue as if the rule set were complete.",
@@ -95,6 +95,15 @@
       "tier": 2,
       "role": "Korean human-facing deliverables and design: writing from the features of user-chosen exemplars, by genre (WR-2, rebuilt 2026-10-11; exemplars in reference/), punctuation, verbatim rule, slide minimalism, measured length. Measured prose baselines moved to reference/ so they are not read as targets.",
       "ruleIds": "WR-1..WR-17"
+    },
+    {
+      "name": "readme-writing",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 2,
+      "role": "What goes in a README and how: portfolio repo, working repo, sub-folder AI index. Written from the koready exemplar the user chose on 2026-10-12 (reference/), with GitHub's rendered HTML measured through gh api markdown. work-rules-shell SH-23 keeps the timing floor and points here for content; verify-fanout's README structure map points at RD-6.",
+      "ruleIds": "RD-1..RD-9"
     },
     {
       "name": "work-rules-docs",

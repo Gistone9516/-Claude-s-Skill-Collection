@@ -29,6 +29,7 @@ The form, by genre ("글 종류마다 달라야지"):
 - **Study notes and TIL.** Write like `reference/exemplar-til-approved.md`, the TIL the user picked as best; its feature list is the guidance. How understanding is woven into theory: `reference/exemplar-study-note.md`. Depth follows how much a topic matters, not how long it was discussed. What matters and was worked out with the AI (a mechanism, a comparison, a correction) goes in at the depth it reached ("수준을 더 깊게 파서 적어놓자"); a topic that took long talk or testing but carries little weight gets its core in two sentences at most (user, 2026-10-11). Process trivia such as counts, paths and tool names is dropped.
 - **Prose** (blog post, 자소서, narrative report). Reset to the minimum above on 2026-10-11; there is no prose form yet. Write it plainly. When the user hands over a piece of prose they like, save it as `reference/exemplar-prose-<n>.md`, draw its features out with them as was done for the TIL, and write from those pieces' nuance ("중요한건 규칙이 아닌 늬앙스").
 - **Slides.** WR-6..WR-8.
+- **README.** `readme-writing`.
 
 Describe and judge a draft by these features, never by listing rule violations; the user is the judge ("규칙 위반 건을 명확히 집어서 이야기하면 안돼. 서술 형식에서 특징을 명확히 따와야지." and "너는 규칙 중심이야. 유도리가 부족해.").
 
