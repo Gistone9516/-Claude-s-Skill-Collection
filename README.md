@@ -19,7 +19,7 @@ scripts/
   validate_doc.py      한국어 분량 실측
 mods/work-panel/   작업 현황판 mod. 모든 세션이 상태를 올리고 CLI의 /panel이 그린다 (그 폴더의 README)
 hooks/             외부 caveman 스킬이 쓰는 런타임 9개. 규칙을 강제하는 훅이 아니라 그 스킬의 기능이라 `scripts/`와 섞지 않고 벤더 기본 경로에 그대로 둔다
-skills/            스킬 24개. 직접 만든 15개와 외부 9개
+skills/            스킬 24개. 직접 만든 16개와 외부 8개
 projects/<경로키>/memory/   폴더 단위 프로젝트 메모리
 ```
 

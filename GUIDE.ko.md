@@ -18,7 +18,7 @@
     brief-nudge.sh           처음 건드리는 파일에 브리핑을 제안
     manifest-nudge.sh        SKILL.md를 고치면 매니페스트도 함께 고치라고 알림
     validate_doc.py          한국어 분량 실측용
-  skills/                    스킬 24개(직접 만든 15개, 외부 9개)
+  skills/                    스킬 24개(직접 만든 16개, 외부 8개)
   projects/<경로키>/memory/  폴더별 프로젝트 메모리
 ```
 
@@ -184,7 +184,7 @@ SH-10(대소문자가 같은 변수를 덮어쓰는 것)은 이 표에 없습니
 
 ### 그 외
 
-`new-hwpx-master`는 hwpx 공문 양식에 내용을 채우는 절차, `discord-bridge`와 `learning-harness`는 각각의 앱을 현재 폴더에 물리는 실행 안내다. `skill-creator`는 외부 제작물이고 매니페스트에 external로 등록만 해 뒀다. `portfolio-log`는 하루 동안의 세션에서 이슈가 있었던 부분을 골라 비공개 공부 노트로 남기는 스킬이다. 원본은 프로젝트 폴더에 있고 `skills/portfolio-log`는 그곳을 가리키는 링크라서, 이 저장소는 추적하지 않고 매니페스트에 external로 위치만 적어 둔다.
+`new-hwpx-master`는 hwpx 공문 양식에 내용을 채우는 절차, `discord-bridge`와 `learning-harness`는 각각의 앱을 현재 폴더에 물리는 실행 안내다. `skill-creator`는 외부 제작물이고 매니페스트에 external로 등록만 해 뒀다. `portfolio-log`는 하루 동안의 세션에서 이슈가 있었던 부분을 골라 비공개 공부 노트로 남기는 스킬이다. 수집기 `scripts/plog.py`와 시험이 스킬 폴더 안에 함께 있고, 현황판 mod에서 고른 후보를 읽는다. 후보 형식을 mod와 함께 쓰므로 둘을 같은 커밋에서 고친다.
 
 `mods/work-panel`은 스킬이 아니라 mod다. 모든 세션이 자기 요청, 진행 메모, 작업 계획, 읽은 스킬, 발동한 규칙, 에러를 mod의 공용 저장소에 올리고, CLI에서 `/panel`을 연 세션이 옆 창의 상태를 패널에 그린다. VS Code 확장(2.1.296)은 mod 화면을 그리지 않아서(anthropics/claude-code#99045) 왼쪽 VS Code에서 일하고 오른쪽 CLI를 현황판으로 쓰는 구성을 위해 만들었다. Claude는 `panel_post`로 진행 메모를, `todo`로 작업 계획을 올리고, 현황판이 켜져 있으면 채팅에는 결정과 결론만 쓴다. 설계와 규칙(P-1~P-17)은 그 폴더의 `docs/SPEC.md`에 있다.
 

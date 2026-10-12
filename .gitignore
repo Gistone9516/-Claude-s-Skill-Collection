@@ -22,10 +22,8 @@
 # settings.json, which this repo does not track, so a clone also needs that one setting
 # (README "새 컴퓨터에서 쓰기"). Imported with its history by git subtree on 2026-10-13.
 !/mods/
-# portfolio-log is a junction into its own project folder, which is the source of
-# truth; manifest.json records that path as an external skill. Tracking the junction
-# would copy the project into this public repo. Decided 2026-10-11.
-/skills/portfolio-log/
+# Python bytecode a skill's tests leave beside its scripts (portfolio-log).
+__pycache__/
 
 # Global memory for the home-directory scope. Re-included level by level,
 # because git cannot re-include a file whose parent directory is excluded.
