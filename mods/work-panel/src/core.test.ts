@@ -1,10 +1,18 @@
 import { expect, test } from 'claude-code/testing'
 
 import {
-  addCandidate, applyPost, applyPrompt, applySkillLoad, applyToolFailure, applyToolUse, emptyRecord,
-  extractFiredIds, globalChecks, isViewerAlive, markSkillsStale, mask, normalizeRecord, parseErrorsJson,
-  parseRulesHeader, pickSession, POST_LIMIT, POST_TEXT_LIMIT, removeCandidate, sessionSections, setPlan, setStep, STALE_MS,
+  addCandidate, applyPost, applyPrompt, applySkillLoad, applySuggestion, applyToolFailure, applyToolUse, dismiss, emptyRecord,
+  extractFiredIds, globalChecks, isViewerAlive, markSkillsStale, mask, normalizeRecord, parseCandidates, pendingSuggestions,
+  parseRulesHeader, PENDING_LIMIT, pickSession, POST_LIMIT, POST_TEXT_LIMIT, removeCandidates, restore, sessionSections, setPlan, setStep, STALE_MS,
+  toCandidate, trash, TRASH_SIZE,
 } from './core'
+import type { SessionRecord } from './core'
+
+function suggested(id: string, n: number): SessionRecord {
+  let r = applyPrompt(emptyRecord(id, 'C:/w/proj', 0), '요청 ' + id, 1)
+  for (let i = 0; i < n; i++) r = applySuggestion(r, { title: `${id} 제목 ${i}`, problem: '문제' }, 10 + i) ?? r
+  return r
+}
 
 // 시험 이름에 설계서의 규칙 ID를 넣는다 (V-1)
 
@@ -84,38 +92,69 @@ test('P-8 G-10 counts agents launched before the first edit of the request', () 
 
 test('P-9 fired ids come from hook markers in failure text', () => {
   expect(extractFiredIds('[skill-gate] Read the work-rules-shell skill [G-27]')).toEqual(['skill-gate', 'G-27'])
-  const r = applyToolFailure(emptyRecord('a', 'x', 0), 'Bash', '[skill-gate] blocked\nsecond', 1)
+  const r = applyToolFailure(emptyRecord('a', 'x', 0), '[skill-gate] blocked\nsecond', 1)
   expect(r.fired[0]?.id).toBe('skill-gate')
-  expect(r.errors[0]?.text).toBe('[skill-gate] blocked')
+  expect(r.fired[0]?.text).toBe('[skill-gate] blocked')
+  const plain = emptyRecord('b', 'x', 0)
+  expect(applyToolFailure(plain, 'Exit code 1', 2)).toBe(plain)
 })
 
-test('P-10 parseErrorsJson reads counts, repeats and masks recent items', () => {
-  const s = parseErrorsJson(JSON.stringify({
-    generated: 'g', counts: { tool_error: 3 }, repeats: [{ n: 4, tool: 'Edit', text: 'x' }],
-    items: [{ ts: 't', kind: 'correction', text: 'token=abcdef1234', task: '', session: 's' }],
-  }))
-  expect(s?.counts.tool_error).toBe(3)
-  expect(s?.repeats[0]?.n).toBe(4)
-  expect(s?.recent[0]?.text.includes('abcdef1234')).toBe(false)
-  expect(parseErrorsJson('not json')).toBe(null)
+test('P-10 suggestion keeps index fields, masked', () => {
+  const base = applyPrompt(emptyRecord('abcdefgh-1234', 'C:/w/proj', 0), '패널 고쳐줘', 1)
+  const r = applySuggestion(base, { title: '탭 통합', intent: '패널 단순화', problem: '두 탭이 같은 정보 token=abcdef1234', outcome: '합침', why: '설계 결정' }, 5)
+  const s = r?.suggestions[0]
+  expect(s?.id).toBe('abcdefgh-5-0')
+  expect(s?.task).toBe('패널 고쳐줘')
+  expect(s?.cwd).toBe('C:/w/proj')
+  expect(s?.evidence).toBe('')
+  expect(s?.problem.includes('abcdef1234')).toBe(false)
+  expect(applySuggestion(base, { title: '문제 없음' }, 6)).toBe(null)
+  expect(toCandidate(s!).at).toBe(new Date(5).toISOString())
+})
+
+test('P-10 pending suggestions skip picked and dismissed, across all sessions, newest first', () => {
+  const a = suggested('a', 2)
+  const b = suggested('b', 1)
+  const all = pendingSuggestions([a, b], [], [], [])
+  expect(all.map(s => s.title)).toEqual(['a 제목 1', 'a 제목 0', 'b 제목 0'])
+  const picked = toCandidate(all[0]!)
+  const legacy = { at: 't', text: '예전 후보' } as never
+  const left = pendingSuggestions([a, b], [picked, legacy], [all[1]!.id], [all[2]!.id])
+  expect(left).toEqual([])
+  const many = pendingSuggestions([suggested('c', 15), suggested('d', 15)], [], [], [])
+  expect(many.length).toBe(PENDING_LIMIT)
+})
+
+test('P-11 trash shows the last ten deletions, newest first, and restore brings one back', () => {
+  const r = suggested('a', TRASH_SIZE + 2)
+  let gone: string[] = []
+  for (const s of r.suggestions) gone = dismiss(gone, s.id)
+  const t = trash([r], gone)
+  expect(t.length).toBe(TRASH_SIZE)
+  expect(t[0]?.title).toBe(`a 제목 ${TRASH_SIZE + 1}`)
+  gone = restore(gone, t[0]!.id)
+  expect(pendingSuggestions([r], [], gone, []).map(s => s.title)).toEqual([`a 제목 ${TRASH_SIZE + 1}`])
 })
 
 test('P-11 addCandidate does not add the same item twice', () => {
-  const c = { at: 't', kind: 'tool_error', tool: 'Bash', text: 'x', task: '', session: '' }
+  const c = toCandidate(suggested('a', 1).suggestions[0]!)
   expect(addCandidate(addCandidate([], c), c).length).toBe(1)
 })
 
 test('P-15 normalizeRecord reads a first-slice record without the new fields', () => {
-  const r = normalizeRecord({ id: 'a', cwd: 'x', task: 't', posts: [], updatedAt: 1 })
+  const r = normalizeRecord({ id: 'a', cwd: 'x', task: 't', posts: [], updatedAt: 1, errors: [{ tool: 'Bash' }] })
   expect(r?.skills).toEqual([])
+  expect(r?.suggestions).toEqual([])
+  expect('errors' in (r ?? {})).toBe(false)
   expect(r?.stats.agents).toBe(0)
   expect(normalizeRecord({ nope: 1 })).toBe(null)
 })
 
-test('P-11 removeCandidate drops only the matching item', () => {
-  const a = { at: 't1', kind: 'tool_error', tool: 'Bash', text: 'x', task: '', session: '' }
-  const b = { ...a, at: 't2' }
-  expect(removeCandidate([a, b], a)).toEqual([b])
+test('P-11 removeCandidates drops only the matching ids and keeps legacy lines', () => {
+  const [a, b] = suggested('a', 2).suggestions.map(toCandidate)
+  const legacy = parseCandidates([{ at: 't', text: '예전 후보' }, 'junk'])
+  expect(legacy.length).toBe(1)
+  expect(removeCandidates([a!, b!, ...legacy], [a!.id])).toEqual([b!, ...legacy])
 })
 
 test('P-5 setPlan and setStep keep the plan in order, steps counted from 1', () => {

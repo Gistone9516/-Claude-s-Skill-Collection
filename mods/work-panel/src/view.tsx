@@ -1,5 +1,5 @@
-import type { Candidate, ErrorSummary, GlobalCheck, Post, SessionRecord, StepStatus } from './core'
-import { clock, folderName, globalChecks, sessionSections } from './core'
+import type { Candidate, GlobalCheck, Post, SessionRecord, StepStatus, Suggestion } from './core'
+import { clock, folderName, globalChecks, PENDING_ALERT, sessionSections, TRASH_SIZE } from './core'
 
 // 화면 조각. 상태와 동작 함수를 받아 트리만 그린다. 상태를 바꾸지 않는다 (설계서 2장).
 // 디자인 검토 2026-10-13: 색 대신 흐림과 굵게, 행 버튼에는 숫자 단축키 없음,
@@ -21,10 +21,10 @@ export type ViewData = {
   tab: Tab
   shown: SessionRecord | null
   others: number
-  errors: ErrorSummary | null
-  errorsFailed: boolean
+  pending: Suggestion[]
+  trash: Suggestion[]
+  trashOpen: boolean
   candidates: Candidate[]
-  marked: Set<string>
   globalRules: number | null
   glossary: Glossary
   now: number
@@ -33,15 +33,15 @@ export type ViewData = {
 export type Actions = {
   setTab: (t: Tab) => void
   nextSession: () => void
-  mark: (c: Candidate) => void
-  unmark: (c: Candidate) => void
+  pick: (s: Suggestion) => void
+  unpick: (c: Candidate) => void
+  remove: (s: Suggestion) => void
+  restore: (s: Suggestion) => void
+  toggleTrash: () => void
 }
 
 type Ui = { Box: any; Text: any; Button: any }
 
-const ERROR_KIND: Record<string, string> = {
-  tool_error: '도구 에러', blocked: '차단', rejected: '사용자 거부', interrupted: '중단', correction: '지적 후보',
-}
 const STEP_MARK: Record<StepStatus, string> = { todo: '[ ]', doing: '[>]', done: '[v]' }
 
 // 스킬 이름마다 한 줄 설명 (GUIDE.ko.md의 스킬 표와 같은 말)
@@ -84,18 +84,29 @@ function Row(ui: Ui, label: string, body: any, opts: { bold?: boolean; dim?: boo
 }
 
 export function tabBar(ui: Ui, d: ViewData, a: Actions) {
-  const { Box, Button } = ui
+  const { Box, Text, Button } = ui
+  const count = (name: string, n: number) => (n ? `${name}(${n})` : name)
   const labels: Record<Tab, string> = {
     session: '세션',
     rules: '규칙',
-    problems: '문제',
-    candidates: d.candidates.length ? `후보(${d.candidates.length})` : '후보',
+    problems: count('문제', d.pending.length),
+    candidates: count('후보', d.candidates.length),
   }
+  // P-10: 제안이 5건 이상 쌓이면 문제 탭 이름만 경고색으로 강조한다 (색을 쓰는 유일한 곳, 설계서 5장)
+  const alert = d.pending.length >= PENDING_ALERT
   return (
     <Box flexDirection="row" columnGap={2}>
-      {TABS.map((t, i) => (
-        <Button key={'tab-' + t} label={labels[t]} hotkey={String(i + 1)} plain dimColor={d.tab !== t} onPress={() => a.setTab(t)} />
-      ))}
+      {TABS.map((t, i) =>
+        t === 'problems' && alert ? (
+          <Button key={'tab-' + t} label={labels[t]} hotkey={String(i + 1)} plain onPress={() => a.setTab(t)}>
+            <Text color="warning" bold>
+              {labels[t]}
+            </Text>
+          </Button>
+        ) : (
+          <Button key={'tab-' + t} label={labels[t]} hotkey={String(i + 1)} plain dimColor={d.tab !== t} onPress={() => a.setTab(t)} />
+        ),
+      )}
     </Box>
   )
 }
@@ -238,41 +249,70 @@ export function rulesTab(ui: Ui, d: ViewData) {
   )
 }
 
-function candidateKey(c: Candidate): string {
-  return c.at + '|' + c.text
+// 한국 시간 "10-13 14:20"
+function stamp(at: number): string {
+  return Number.isFinite(at) ? `${new Date(at + 9 * 3600 * 1000).toISOString().slice(5, 10)} ${clock(at)}` : ''
+}
+
+function meta(at: number, cwd: string, task: string): string {
+  return ['  ' + stamp(at), cwd ? folderName(cwd) : '', task].filter(Boolean).join(' · ')
+}
+
+// P-10: 고를지 판단하는 데 필요한 문제, 결과, 가치만 보인다. 의도와 근거는 색인용으로 파일에만 둔다.
+function suggestionBody(ui: Ui, s: { title?: string; problem?: string; outcome?: string; why?: string }, withWhy: boolean) {
+  const { Box, Text } = ui
+  return (
+    <Box flexDirection="column">
+      <Text bold wrap="wrap">{s.title}</Text>
+      {s.problem && Row(ui, '문제', s.problem, { full: true })}
+      {s.outcome && Row(ui, '결과', s.outcome, { full: true })}
+      {withWhy && s.why && Row(ui, '가치', s.why, { full: true })}
+    </Box>
+  )
 }
 
 export function problemsTab(ui: Ui, d: ViewData, a: Actions) {
+  if (d.trashOpen) return trashView(ui, d, a)
   const { Box, Text, Button } = ui
-  const e = d.errors
-  const row = (c: Candidate, label: string) => (
-    <Box key={'p-' + candidateKey(c)} flexDirection="row" columnGap={1}>
-      <Text wrap="truncate-end">{label}</Text>
-      {d.marked.has(candidateKey(c)) ? (
-        <Text dimColor>후보 등록됨</Text>
-      ) : (
-        <Button key={'mark-' + candidateKey(c)} label="기록 후보" onPress={() => a.mark(c)} />
-      )}
-    </Box>
-  )
-  const live: Candidate[] = (d.shown?.errors ?? []).slice(-5).reverse().map(x => ({
-    at: new Date(x.at).toISOString(), kind: 'tool_error', tool: x.tool, text: x.text, task: d.shown?.task ?? '', session: d.shown?.id.slice(0, 8) ?? '',
-  }))
   return (
     <Box flexDirection="column">
-      {!e && <Text dimColor>{d.errorsFailed ? '에러 기록을 읽지 못했습니다.' : '에러 기록을 아직 만들지 않았습니다.'}</Text>}
-      {e && (
+      {d.pending.length === 0 && (
         <Text dimColor wrap="wrap">
-          30일 {Object.keys(ERROR_KIND).map(k => `${ERROR_KIND[k]} ${e.counts[k] ?? 0}`).join(' · ')}
+          아직 제안이 없습니다. 포트폴리오에 적을 만한 작업이 끝나면 Claude가 여기에 올립니다.
         </Text>
       )}
-      {e && e.repeats.map(r => <Text wrap="truncate-end">{r.n}회 [{r.tool || '?'}] {r.text}</Text>)}
+      {d.pending.length > 0 && <Text dimColor>제안 {d.pending.length}건 · 후보로 고르면 포트폴리오 기록에 쓰임</Text>}
+      {d.pending.length > 0 && <Text> </Text>}
+      {d.pending.map(s => (
+        <Box key={'s-' + s.id} flexDirection="column" marginBottom={1}>
+          {suggestionBody(ui, s, true)}
+          <Text dimColor wrap="wrap">{meta(s.at, s.cwd, s.task)}</Text>
+          <Box flexDirection="row" columnGap={2}>
+            <Button key={'pick-' + s.id} label="후보" onPress={() => a.pick(s)} />
+            <Button key={'remove-' + s.id} label="삭제" onPress={() => a.remove(s)} />
+          </Box>
+        </Box>
+      ))}
+      <Button key="trash" label={d.trash.length ? `휴지통 ${d.trash.length}` : '휴지통'} plain dimColor onPress={a.toggleTrash} />
+    </Box>
+  )
+}
+
+// P-11: 휴지통은 삭제 목록의 끝 10건. 그보다 오래된 것은 복원할 수 없다고 먼저 말한다.
+function trashView(ui: Ui, d: ViewData, a: Actions) {
+  const { Box, Text, Button } = ui
+  return (
+    <Box flexDirection="column">
+      <Button key="trash-back" label="돌아가기" plain onPress={a.toggleTrash} />
+      <Text dimColor>삭제한 제안 최근 {TRASH_SIZE}건까지 · 이보다 오래된 것은 복원할 수 없음</Text>
       <Text> </Text>
-      <Text dimColor>이번 세션</Text>
-      {live.length === 0 && <Text dimColor>실패 없음</Text>}
-      {live.map(c => row(c, `${clock(Date.parse(c.at))} ${c.tool} ${c.text}`))}
-      {e && e.recent.length > 0 && <Text dimColor>최근 지적과 차단</Text>}
-      {e && e.recent.slice(-5).reverse().map(c => row(c, `${ERROR_KIND[c.kind] ?? c.kind} ${c.text}`))}
+      {d.trash.length === 0 && <Text dimColor>휴지통이 비어 있습니다.</Text>}
+      {d.trash.map(s => (
+        <Box key={'t-' + s.id} flexDirection="row" columnGap={1}>
+          <Text wrap="wrap">{s.title}</Text>
+          <Button key={'restore-' + s.id} label="복원" onPress={() => a.restore(s)} />
+        </Box>
+      ))}
     </Box>
   )
 }
@@ -281,19 +321,20 @@ export function candidatesTab(ui: Ui, d: ViewData, a: Actions) {
   const { Box, Text, Button } = ui
   return (
     <Box flexDirection="column">
-      {d.candidates.length === 0 && <Text dimColor>표시한 후보가 없습니다. 문제 탭에서 기록 후보를 누르세요.</Text>}
-      {d.candidates.length > 0 && <Text dimColor>후보 {d.candidates.length}건 · 그날 portfolio-log 다이제스트에 들어감</Text>}
-      {d.candidates
-        .slice(-12)
-        .reverse()
-        .map(c => (
-          <Box key={'c-' + candidateKey(c)} flexDirection="row" columnGap={1}>
-            <Text wrap="truncate-end">
-              {c.at.slice(5, 10)} {ERROR_KIND[c.kind] ?? c.kind} {c.text}
-            </Text>
-            <Button key={'unmark-' + candidateKey(c)} label="제거" onPress={() => a.unmark(c)} />
+      {d.candidates.length === 0 && <Text dimColor>고른 후보가 없습니다. 문제 탭에서 후보 버튼을 누르세요.</Text>}
+      {d.candidates.length > 0 && <Text dimColor>후보 {d.candidates.length}건 · 포트폴리오 스킬이 노트를 저장하면 지워짐</Text>}
+      {d.candidates.length > 0 && <Text> </Text>}
+      {[...d.candidates].reverse().map((c, i) => {
+        // id가 없는 예전 형식의 줄은 보이기만 한다
+        const legacy = c as Candidate & { text?: string }
+        return (
+          <Box key={'c-' + (c.id ?? 'legacy-' + i)} flexDirection="column" marginBottom={1}>
+            {suggestionBody(ui, { ...c, title: c.title ?? legacy.text ?? '' }, false)}
+            <Text dimColor wrap="wrap">{meta(Date.parse(c.at), c.cwd ?? '', c.task ?? '')}</Text>
+            {typeof c.id === 'string' && <Button key={'unpick-' + c.id} label="제거" onPress={() => a.unpick(c)} />}
           </Box>
-        ))}
+        )
+      })}
     </Box>
   )
 }

@@ -2,7 +2,7 @@
 
 규칙: P-1~P-17 (17건), 검증: V-1~V-6 (6건)
 
-Claude Code CLI 옆에 붙는 작업 현황판이다. 작업 중 상태(진행, 할 일, 규칙, 에러, 기록 후보)를 패널에 모아 두고, 채팅에는 결정이 필요한 것과 결론만 남긴다. 사용자 요청 2026-10-12: "패널에 띄워준다면 앞으로 내게 띄우는 메인 출력 컨텍스트를 최소화할 수 있겠지."
+Claude Code CLI 옆에 붙는 작업 현황판이다. 작업 중 상태(진행, 계획, 규칙, 포트폴리오 제안과 후보)를 패널에 모아 두고, 채팅에는 결정이 필요한 것과 결론만 남긴다. 사용자 요청 2026-10-12: "패널에 띄워준다면 앞으로 내게 띄우는 메인 출력 컨텍스트를 최소화할 수 있겠지."
 
 이 문서가 동작 규칙의 단일 출처다. 코드와 이 문서가 다르면 둘 중 하나를 고친 뒤 같은 커밋에 넣는다.
 
@@ -33,7 +33,7 @@ types/index.d.ts       PluginState 계약
 | ID | 규칙 | 출처 | 이유 | 시험 |
 |---|---|---|---|---|
 | P-1 | `/panel`로 연다. 세션 시작 때는 화면 폭이 144칸 이상일 때만 스스로 연다. | 엔진 규칙: 요청 없이 연 패널은 144칸부터 배치 (Mods reference, Limits) | 좁은 화면에서 요청 없이 대화를 가리면 안 된다 | `opens on command` |
-| P-2 | 탭은 세션, 규칙, 문제, 후보 넷이다. 숫자 1~4와 탭 버튼으로 바꾸고, `/panel`은 키보드 포커스를 가진 채 연다. 마지막에 본 탭을 이름으로 기억한다(`$.store`의 `viewer:tab`, 번호로 저장하던 예전 값은 무시하고 세션 탭을 연다). 탭 이름은 다른 곳의 말과 겹치지 않게 했다: "에러"에는 에러가 아닌 거부와 지적이 섞이고, "기록"은 portfolio-log의 "오늘 기록"과 겹친다. 계획은 따로 탭을 두지 않고 세션 탭에 넣는다(P-3). | 사용자 2026-10-12 (할 일, 과거 에러 추가 요청), 디자인 검토 2026-10-13, 사용자 2026-10-13: "세션과 계획을 통합해줘. 계획이 하단으로 가게. 굳이 나눌 필요는 없어보임" | 한 화면에 다 넣으면 읽히지 않는다. 포커스 없이 열면 숫자키가 듣지 않는다. 탭 순서가 바뀌면 번호로 저장한 값이 엉뚱한 탭을 연다 | `switches tabs` |
+| P-2 | 탭은 세션, 규칙, 문제, 후보 넷이다. 숫자 1~4와 탭 버튼으로 바꾸고, `/panel`은 키보드 포커스를 가진 채 연다. 마지막에 본 탭을 이름으로 기억한다(`$.store`의 `viewer:tab`, 번호로 저장하던 예전 값은 무시하고 세션 탭을 연다). 탭 이름은 다른 곳의 말과 겹치지 않게 했다: "기록"은 portfolio-log의 "오늘 기록"과 겹친다. 계획은 따로 탭을 두지 않고 세션 탭에 넣는다(P-3). | 사용자 2026-10-12 (할 일, 과거 에러 추가 요청), 디자인 검토 2026-10-13, 사용자 2026-10-13: "세션과 계획을 통합해줘. 계획이 하단으로 가게. 굳이 나눌 필요는 없어보임" | 한 화면에 다 넣으면 읽히지 않는다. 포커스 없이 열면 숫자키가 듣지 않는다. 탭 순서가 바뀌면 번호로 저장한 값이 엉뚱한 탭을 연다 | `switches tabs` |
 | P-3 | 세션 탭은 요청, 결정, 진행, 완료를 위에서 아래로 놓고, 그 밑에 비고(실행 중인 하위 에이전트, 변경이나 push 대기가 있는 저장소), 맨 아래에 계획(P-5)을 둔다. 이번 요청이 들어온 뒤에 올라온 메모만 보이고, 칸마다 최근 것이 위로 온다. 빈 칸도 제목은 남긴다. | 효율성 평가 2026-10-12, 사용자 2026-10-13: "요청 -> 결정 -> 진행 -> 완료 이걸 기본 골자로 가져가고, 그 하단에 비고", 같은 날 "계획이 하단으로 가게" | 지난 요청의 결정 메모가 이번 요청과 섞여 읽히지 않았다(측정 2026-10-13). 칸의 자리가 고정되어야 눈이 바로 찾아간다 | `session sections show only posts after the current request` |
 | P-4 | Claude는 `panel_post` 도구로 메모를 올린다. 진행은 계획 단계를 시작할 때 한 번(도구 호출마다가 아니다), 완료는 작업 단위가 끝날 때 결과(시험 수, 커밋)와 함께, 결정은 사용자 답을 기다릴 때만 쓴다. 도구 호출 몇 번으로 끝나는 작업은 패널을 쓰지 않는다. 메모는 여러 문장이어도 되고, 여러 줄이면 한 문단으로 이어 800자에서 자른다. 이 쓰는 법은 도구 설명에 둔다. | 사용자 2026-10-12 (메인 출력 최소화), 2026-10-13: "패널 수정 가이드라인도 명확하지 않아서 세션마다 다르게 작동할 수도 있음", "길게 적어도 무방할 듯" | 언제 올리는지가 정해지지 않으면 세션마다 다르게 쓴다. 도구 설명은 부르는 순간 항상 보이고, 스킬은 제때 읽히는 비율이 19~43%였다(측정 2026-10-12) | `post appears`, `a post keeps several sentences` |
 | P-5 | 세션 탭 맨 아래의 계획 칸은 Claude가 세 단계 이상인 작업을 시작할 때 `todo` 도구로 올리는 작업 계획이다(처음에 op=set 한 번, 단계마다 start와 done, 계획이 바뀔 때만 다시 set). 계획은 세션 칸에 함께 저장되고 사람은 보기만 한다. 단계는 자르지 않고 전부 보인다. 이번 요청 전에 세운 계획도 지우지 않고, 제목에 "(이전 요청)"을 붙여 칸 전체를 흐리게 보인다. push 대기는 비고의 저장소 줄이 보이므로 계획 칸에 따로 붙이지 않는다. | 사용자 2026-10-13: "내가 적는게 아님. 너가 작업함에 있어서 plan 모드처럼 다음 작업 할 일을 적어두는 것임" | 다음 단계가 보이면 진행 보고를 채팅에 쓰지 않아도 된다. 짧은 답을 주고받는 사이에 진행 중인 계획이 사라지면 안 되고, 끝난 계획이 이번 요청의 것처럼 읽혀도 안 된다 | `setPlan and setStep`, `session sections show only posts after the current request` |
@@ -41,12 +41,12 @@ types/index.d.ts       PluginState 계약
 | P-7 | 스킬 읽음은 `skill.prompt` 이벤트로 잡는다. Skill 호출, `/이름` 직접 입력, 하위 에이전트 사전 로드 모두 이 이벤트로 온다. 스킬마다 그때의 요청 첫 줄을 함께 남긴다. | Mods reference (`skill.prompt`) | 훅 원장(skill-gate)이 놓치던 직접 입력까지 잡는다 | `skill load parsed` |
 | P-8 | 규칙 탭은 측정 가능한 전역 규칙의 이번 작업 상태를 보인다: G-10(요청 뒤 첫 수정 전에 에이전트 둘 이상), G-22(이번 작업의 에이전트 수), G-11(push 대기). 측정할 수 없는 규칙은 접힌 목록에만 둔다. | 기능 검토 2026-10-12 | 목록보다 "지금 지켜지는가"가 정보다 | `global rule checks` |
 | P-9 | 발동한 규칙은 막힌 도구 호출의 사유와 훅 알림에서 `[G-27]`, `[skill-gate]` 같은 표시를 읽어 시각과 함께 쌓는다. | 기능 검토 2026-10-12 | 어떤 규칙이 실제로 일했는지 보여야 규칙을 고칠 수 있다 | `rule fired parsed` |
-| P-10 | 에러 탭은 `plog.py errors`가 쓴 `~/portfolio-journal/errors/errors.json`을 읽어 지난 30일 요약과 반복 에러 상위 5를 보이고, 이번 세션에서 실패한 도구 호출을 실시간으로 더한다. 세션 시작 때 `plog.py errors`를 백그라운드로 한 번 돌린다. | 사용자 2026-10-12: "과거 세션에서도 에러 사항을 찾아주라." | 반복 에러는 작동하지 않는 규칙이다 | `errors loaded` |
-| P-11 | 에러와 지적 항목마다 "기록 후보" 버튼이 있다. 누르면 `~/portfolio-journal/candidates.json`에 들어가고, 기록 탭에 쌓인다. `plog.py collect`가 그 파일을 읽어 다이제스트에 넣는다. | 기능 검토 2026-10-12 | 포트폴리오 기록 후보를 하루 끝에 다시 찾지 않게 한다. 소비자를 같은 커밋에 넣는다(DG-16) | `candidate written`, plog `test_candidates_in_digest` |
-| P-12 | 패널은 Claude의 동작을 바꾸지 않는다. 도구 호출을 막거나 프롬프트를 고치지 않고, 읽고 그리기만 한다. 예외는 P-4, P-5의 도구 두 개다. | 설계 2026-10-12 | 스킬 게이트는 이미 별도 훅이 맡고 있다. 막는 장치가 두 곳이 되면 어긋난다 | `validate shows no deny` (V-2) |
-| P-13 | `git`은 턴이 끝날 때 30초 간격 이상으로, `plog.py errors`는 현황판을 열 때와 10분마다 돈다. 현황판은 읽은 내용이 바뀌었을 때만 다시 그린다(입력 중인 글자를 지우지 않게). 실패해도 패널은 마지막 값을 보이고 "갱신 실패"만 표시한다. | 엔진 제한: 훅 10초, `$.process.run` 기본 30초 | 패널이 작업을 느리게 하거나 멈추게 하면 안 된다 | `refresh throttled` |
+| P-10 | 문제 탭은 Claude가 `portfolio_suggest` 도구로 올린 포트폴리오 제안을 모든 세션에서 모아, 아직 고르거나 삭제하지 않은 것만 최근 것부터 20건까지 보인다. 그보다 오래된 제안은 밀려나 다시 보이지 않는다(세션 칸에도 세션마다 최근 20건만 남는다). 남은 제안이 있으면 탭 이름에 개수를 붙이고, 5건 이상이면 탭 이름을 경고색(`warning`)으로 강조한다. 제안은 작업 단위가 끝났을 때 포트폴리오에 적을 만한 것(드러나지 않던 문제를 진단해 푼 것, 맞바꿈이 있던 설계 결정, 측정한 개선, 일하는 방식을 바꾼 실수)만 올리고, 단순 도구 에러, 오타, 반복 작업, 설치는 올리지 않는다. 제안마다 제목, 목적과 의도, 문제, 결과, 포트폴리오 가치, 근거를 Claude가 적고, 세션 id, 폴더, 요청 첫 줄, 시각은 자동으로 붙는다. 의도는 사용자가 말한 목적만 적는다. 이 쓰는 법은 도구 설명에 둔다. | 사용자 2026-10-13: "문제 패널에 너가 이런이런 내용을 적는게 어떠냐고 후보를 계속 추가해주는 것임. 나는 거기서 괜찮은 걸 후보로 고르는게 기능 목적에 더 맞을 듯", "단순 에러는 해당이 안되고, 말 그대로 포트폴리오에 적을만한 내용으로", "세션 정보나 목적과 의도, 문제 정보 등 간략히 기록", "문제는 최대 20개까지 쌓이도록 하고, 5개 이상부턴 패널의 '문제' 텍스트의 색을 강조하자" | 에러 목록은 열어 보지 않았고(측정 2026-10-13: 후보 0건), 포트폴리오감은 작업을 막 끝낸 세션이 가장 잘 안다. 색인 정보가 있으면 나중에 다이제스트를 다시 훑지 않아도 된다. 의도를 추정해 쓰면 사용자 이름으로 남는 거짓 기록이 된다(G-29) | `suggestion keeps index fields, masked`, `pending suggestions skip picked and dismissed` |
+| P-11 | 제안마다 "후보"와 "삭제" 버튼이 있다. 후보로 고르면 색인 정보와 함께 `~/portfolio-journal/candidates.json`에 들어가 후보 탭에 쌓이고, 후보 탭에서 제거하면 문제 탭으로 돌아간다. 삭제하면 문제 탭 맨 아래의 휴지통에 들어가고, 휴지통은 최근 10건까지 보이며 각각 복원할 수 있다. 그보다 오래된 삭제는 복원할 수 없고 다시 보이지도 않는다. 삭제 목록은 하나(`viewer:dismissed`, 최근 500건)이고 휴지통은 그 끝 10건을 보이는 것이다. `plog.py collect`가 후보 파일을 읽어 그날 다이제스트에 항목별로 넣는다(PL-18). portfolio-log가 노트를 저장하면 쓴 후보의 id를 `~/portfolio-journal/candidates-used.json`에 적고(PL-19), 현황판은 다음 갱신 때 그 후보를 `candidates.json`에서 지운다. 쓴 id는 문제 탭에도 다시 나오지 않는다. | 사용자 2026-10-13: "후보 패널에 추가된 내용은 추후 포트폴리오 스킬을 사용했을 때 읽게 하는거지", "포트폴리오 스킬을 쓴 이후에는 후보에 있는 내용은 삭제되게 끔 하자고", 노트 저장 뒤에 지우는 것과 `candidates.json`을 현황판만 쓰게 한 것은 설계 2026-10-13(중간에 멈춘 실행이 후보를 잃지 않게, 한 파일을 두 프로그램이 고치지 않게), "문제 패널에는 후보 // 삭제 버튼을 넣고, 패널 가장 하단에 휴지통 버튼을 넣어서 10개까진 스택으로 쌓자" | 기록할 것을 하루 끝에 다시 찾지 않게 한다. 잘못 누른 삭제는 되돌릴 수 있어야 한다. 휴지통을 따로 저장하면 삭제 목록과 두 벌이 되어 어긋난다(DG-3). 소비자를 같은 커밋에 넣는다(DG-16) | `addCandidate does not add the same item twice`, `trash shows the last ten deletions`, plog `test_candidates_in_digest` |
+| P-12 | 패널은 Claude의 동작을 바꾸지 않는다. 도구 호출을 막거나 프롬프트를 고치지 않고, 읽고 그리기만 한다. 예외는 P-4, P-5, P-10의 도구 세 개다. | 설계 2026-10-12 | 스킬 게이트는 이미 별도 훅이 맡고 있다. 막는 장치가 두 곳이 되면 어긋난다 | `validate shows no deny` (V-2) |
+| P-13 | `git`은 턴이 끝날 때 30초 간격 이상으로 돈다. 현황판은 읽은 내용이 바뀌었을 때만 다시 그린다(입력 중인 글자를 지우지 않게). 실패해도 패널은 마지막 값을 보이고 "갱신 실패"만 표시한다. | 엔진 제한: 훅 10초, `$.process.run` 기본 30초 | 패널이 작업을 느리게 하거나 멈추게 하면 안 된다 | `refresh throttled` |
 | P-15 | 모든 세션은 자기 상태를 `$.store`의 `session:<세션 id>` 칸에(저장소는 플러그인마다 따로라 앞에 이름을 붙이지 않는다) 1초에 한 번 이하로 올린다. 현황판은 몇 초마다 읽어, 자기 세션을 뺀 세션 중 가장 최근에 움직인 것을 기본으로 그리고, 패널에서 다른 세션을 고를 수 있다. 10분 넘게 움직이지 않은 세션은 목록에서 숨긴다. | 사용자 2026-10-12 (왼쪽 VS Code 작업, 오른쪽 CLI 현황판) | 현황판이 보여야 할 것은 옆 창에서 진행 중인 작업이다 | `publishes session state`, `viewer picks latest other session` |
-| P-16 | 할 일은 항목마다 키 하나(`todo:<id>`)로 공용 칸에 두고, 기록 후보는 `~/portfolio-journal/candidates.json`에 둔다. 진행 메모, 요청, 읽은 스킬, 세션 에러는 세션 칸에 따로 둔다. 공용 칸은 여러 세션이 동시에 고칠 수 있으므로 읽고 고치고 쓰는 방식을 Mods 문서의 "Save from more than one session" 절차대로 한다(구현 전에 그 절을 읽는다). | 사용자 2026-10-12 (두 환경을 함께 씀) | 할 일은 하나여야 하고, 진행 상황은 섞이면 안 된다 | `todos shared across sessions` |
+| P-16 | 칸마다 쓰는 쪽은 하나다. 진행 메모, 요청, 계획, 읽은 스킬, 제안은 그 세션이 자기 세션 칸에만 쓴다. 뺀 제안의 목록(`$.store`의 `viewer:dismissed`)과 `candidates.json`은 현황판 세션만 쓴다. | 사용자 2026-10-12 (두 환경을 함께 씀) | 여러 세션이 한 칸을 읽고 고치고 쓰면 나중에 쓴 쪽이 앞의 변경을 지운다. 쓰는 쪽을 하나로 두면 그 경합이 생길 수 없다(DG-3) | `pending suggestions skip picked and dismissed` |
 | P-17 | 현황판 세션은 몇 초마다 `viewer` 키에 살아 있다는 시각을 남긴다. `panel_post`의 응답은 현황판이 켜져 있는지(최근 15초 이내 표시가 있는지)를 함께 돌려준다. 켜져 있으면 Claude는 진행 보고를 패널에만 하고 채팅은 결정과 결론만 쓰며, 패널에 올린 것을 채팅에서 다시 정리하지 않는다. 꺼져 있으면 채팅에 보고한다. 응답은 켜짐과 꺼짐만 짧게 알린다. 규칙은 도구 설명에 있어 호출마다 되풀이하면 컨텍스트만 쓴다. | 사용자 2026-10-12: "현재 환경에 cli가 켜져있는지 확인 절차". 스킬이 아니라 도구 응답에 둔 이유: 스킬은 필요한 순간에 읽히는 비율이 19~43%였다(측정 2026-10-12) | 판단에 필요한 사실이 행동하는 바로 그 순간에 도착해야 한다 | `post reports viewer state` |
 | P-14 | 비밀값은 그리기 전에 가린다. 가림 규칙은 `plog.py`의 PL-7과 같은 목록을 쓴다. | portfolio-log PL-7, 측정 2026-10-12 (웹훅 주소 노출) | 패널은 화면 공유나 스크린샷에 그대로 찍힌다 | `masks secrets` |
 
@@ -54,16 +54,17 @@ types/index.d.ts       PluginState 계약
 
 ```ts
 // types/index.d.ts (PluginState['work-panel'])
-tab: 'session' | 'rules' | 'problems' | 'candidates'     // $.store 'viewer:tab'
-task: { text: string; at: string } | null                 // 현재 요청 첫 줄
-posts: { kind: 'progress' | 'done' | 'decision'; text: string; at: string }[]  // 최근 50
-skills: { name: string; rules: string | null; at: string; task: string; stale: boolean }[]
-fired: { id: string; text: string; at: string }[]          // 최근 50
-agents: { id: string; name: string; status: string }[]
-repos: { path: string; dirty: number; unpushed: number; checkedAt: string; failed: boolean }[]
-sessionErrors: { tool: string; text: string; at: string }[]
-// $.store (세션을 넘어 남는 것)
-'work-panel:todos': { id: string; text: string; done: boolean; by: 'person' | 'claude'; at: string }[]
+// $.store, 현황판 세션만 쓴다
+'viewer:tab': 'session' | 'rules' | 'problems' | 'candidates'
+'viewer:dismissed': string[]                              // 삭제한 제안 id, 최근 500. 휴지통은 끝 10건
+// $.store 'session:<id>', 그 세션만 쓴다 (src/core.ts SessionRecord)
+task, taskAt, posts(최근 50), skills, fired(최근 50), agents, repos, plan, planAt, stats,
+suggestions: Suggestion[]                                 // 최근 20
+Suggestion = { id, at, session, cwd, task, title, intent, problem, outcome, why, evidence }
+// ~/portfolio-journal/candidates.json, 현황판 세션만 쓴다. plog.py collect가 읽는다
+Candidate = Suggestion에서 at만 ISO 문자열
+// ~/portfolio-journal/candidates-used.json, plog.py candidates-used만 쓴다
+string[]                                                  // 노트에 쓴 후보 id
 ```
 
 도구:
@@ -71,6 +72,7 @@ sessionErrors: { tool: string; text: string; at: string }[]
 ```ts
 panel_post({ kind: 'progress' | 'done' | 'decision', text: string })  // P-4
 todo({ op: 'set', steps: string[] } | { op: 'start' | 'done', step: number } | { op: 'list' })  // P-5
+portfolio_suggest({ title, intent, problem, outcome, why, evidence? })  // P-10, 모두 한국어 문자열
 ```
 
 ## 5. 화면
@@ -104,7 +106,7 @@ todo({ op: 'set', steps: string[] } | { op: 'start' | 'done', step: number } | {
   [ ] 4. 시험과 커밋
 ```
 
-색은 쓰지 않거나 최소로 쓴다(`work-rules-writing` WR-13). 상태는 글자로 말한다.
+색은 쓰지 않거나 최소로 쓴다(`work-rules-writing` WR-13). 상태는 글자로 말한다. 예외는 P-10의 문제 탭 강조 하나다(사용자 요청 2026-10-13).
 
 ## 6. 검증
 

@@ -1,10 +1,11 @@
 import type { Register } from 'claude-code'
 
-import type { Candidate, ErrorSummary, PostKind, SessionRecord, StepStatus } from '../src/core'
+import type { Candidate, PostKind, SessionRecord, StepStatus, Suggestion } from '../src/core'
 import {
-  addCandidate, applyPost, applyPrompt, applySkillLoad, applyToolFailure, applyToolUse, countPorcelain, emptyRecord,
-  isViewerAlive, liveSessions, markSkillsStale, normalizeRecord, parseCount, parseErrorsJson,
-  removeCandidate, REPO_REFRESH_MS, setAgents, setPlan, setRepos, setStep,
+  addCandidate, applyPost, applyPrompt, applySkillLoad, applySuggestion, applyToolFailure, applyToolUse, countPorcelain,
+  dismiss, emptyRecord, isViewerAlive, liveSessions, markSkillsStale, normalizeRecord, parseCandidates, parseCount,
+  parseIdList, pendingSuggestions, removeCandidates, REPO_REFRESH_MS, restore, setAgents, setPlan, setRepos, setStep,
+  toCandidate, trash,
 } from '../src/core'
 import type { Actions, Glossary, Tab, ViewData } from '../src/view'
 import { band, isTab, pane } from '../src/view'
@@ -17,9 +18,6 @@ const PANE = 'work-panel'
 const PANE_ROWS = 60 // P-2: 사용자 요청 2026-10-13 "패널의 크기를 고정할 순 없어?", "더 높여줘"
 const PUBLISH_MIN_MS = 1000 // P-15
 const VIEWER_TICK_MS = 2000
-const ERRORS_REFRESH_MS = 10 * 60 * 1000 // P-10
-// 이 컴퓨터의 portfolio-log 수집기. 다른 곳으로 옮기면 여기를 고친다.
-const PLOG = 'C:/Users/USER/Desktop/2026-2 docs/포트폴리오 자동화/skills/portfolio-log/scripts/plog.py'
 
 // 작업 세션 쪽 상태
 let rec: SessionRecord | null = null
@@ -31,11 +29,13 @@ let lastRepoCheck = 0
 let viewerTimer: { cancel: () => void } | null = null
 let tab: Tab = 'session'
 let pick = 0
-let view: Omit<ViewData, 'tab' | 'now'> = {
-  shown: null, others: 0, errors: null, errorsFailed: false, candidates: [], marked: new Set(), globalRules: null, glossary: {},
+// P-16: 삭제 목록은 현황판 세션만 쓴다. 휴지통은 그 끝 10건이다 (P-11).
+let dismissed: string[] = []
+let trashOpen = false
+let view: Omit<ViewData, 'tab' | 'now' | 'trashOpen'> = {
+  shown: null, others: 0, pending: [], trash: [], candidates: [], globalRules: null, glossary: {},
 }
 let lastHash = ''
-let lastErrorsRun = 0
 
 async function home($: any): Promise<string> {
   return ((await $.env.get('USERPROFILE')) ?? (await $.env.get('HOME')) ?? '').split('\\').join('/')
@@ -95,24 +95,17 @@ async function readJson($: any, path: string): Promise<unknown> {
   return JSON.parse(await $.fs.read(path))
 }
 
-async function refreshErrors($: any, force: boolean): Promise<void> {
-  const now = await $.clock.now()
-  if (force || now - lastErrorsRun > ERRORS_REFRESH_MS) {
-    lastErrorsRun = now
-    try {
-      await $.process.run(['python', '-I', PLOG, 'errors', '--days', '30'], { timeoutMs: 120000 })
-    } catch {
-      // 수집기가 실패해도 지난 결과를 그대로 보인다 (P-13)
-    }
-  }
+// P-11: 읽기에 실패하면 null을 돌려준다. 그때 쓰면 있던 후보를 빈 목록으로 덮어쓰게 되므로 쓰지 않는다.
+async function readCandidates($: any): Promise<Candidate[] | null> {
   try {
-    const path = (await journalDir($)) + '/errors/errors.json'
-    const raw = (await $.fs.exists(path)) ? await $.fs.read(path) : null
-    const parsed: ErrorSummary | null = raw ? parseErrorsJson(raw) : null
-    view = { ...view, errors: parsed, errorsFailed: raw !== null && parsed === null }
+    return parseCandidates(await readJson($, (await journalDir($)) + '/candidates.json'))
   } catch {
-    view = { ...view, errorsFailed: true }
+    return null
   }
+}
+
+async function writeCandidates($: any, list: Candidate[]): Promise<void> {
+  await $.fs.write((await journalDir($)) + '/candidates.json', JSON.stringify(list, null, 1))
 }
 
 async function countGlobalRules($: any): Promise<number | null> {
@@ -136,17 +129,28 @@ async function viewerTick($: any): Promise<void> {
   }
   const live = liveSessions(records, rec ? rec.id : '', now)
   const shown = live[pick % Math.max(1, live.length)] ?? null
-  let candidates: Candidate[] = []
+  // P-11: 노트에 쓴 후보(PL-19)는 후보 파일에서 지운다. 후보 파일은 현황판만 쓴다 (P-16).
+  let used: string[] = []
   try {
-    const v = await readJson($, (await journalDir($)) + '/candidates.json')
-    candidates = Array.isArray(v) ? (v as Candidate[]) : []
+    used = parseIdList(await readJson($, (await journalDir($)) + '/candidates-used.json'))
   } catch {
-    candidates = []
+    used = []
   }
-  view = { ...view, shown, others: live.length, candidates, marked: new Set(candidates.map(c => c.at + '|' + c.text)) }
-  if (now - lastErrorsRun > ERRORS_REFRESH_MS) await refreshErrors($, false)
+  let candidates = (await readCandidates($)) ?? view.candidates
+  const kept = removeCandidates(candidates, used)
+  if (kept.length !== candidates.length) {
+    candidates = kept
+    await writeCandidates($, kept)
+  }
+  // P-10: 제안은 살아 있는 세션만이 아니라 모든 세션 칸에서 모은다
+  view = {
+    ...view, shown, others: live.length, candidates,
+    pending: pendingSuggestions(records, candidates, dismissed, used),
+    trash: trash(records, dismissed),
+  }
   // P-15 디자인 검토: 바뀐 것이 있을 때만 다시 그린다 (입력 중인 글자를 지우지 않게)
-  const hash = JSON.stringify([shown && { ...shown, updatedAt: 0 }, view.candidates.length, view.errors?.generated, tab, pick])
+  const ids = (xs: { id?: string }[]) => xs.map(x => x.id ?? '')
+  const hash = JSON.stringify([shown && { ...shown, updatedAt: 0 }, ids(view.pending), ids(view.trash), ids(candidates), tab, pick, trashOpen])
   if (hash !== lastHash) {
     lastHash = hash
     $.ui.invalidate('ui.render')
@@ -157,9 +161,9 @@ async function startViewer($: any): Promise<void> {
   const saved = await $.store.get('viewer:tab')
   // P-2: 번호로 저장하던 예전 값은 탭 이름이 아니므로 세션 탭으로 연다
   tab = isTab(saved) ? saved : 'session'
+  dismissed = parseIdList(await $.store.get('viewer:dismissed'))
   view = { ...view, globalRules: await countGlobalRules($), glossary: await loadGlossary($) }
   lastHash = ''
-  await refreshErrors($, false)
   await viewerTick($)
   if (!viewerTimer) viewerTimer = $.clock.every(VIEWER_TICK_MS, () => void viewerTick($))
 }
@@ -193,27 +197,36 @@ function makeActions($: any): Actions {
       lastHash = ''
       void viewerTick($)
     },
-    mark: c => void markCandidate($, c),
-    unmark: c => void unmarkCandidate($, c),
+    pick: s => void pickSuggestion($, s),
+    unpick: c => void unpickCandidate($, c),
+    remove: s => void setDismissed($, dismiss(dismissed, s.id)),
+    restore: s => void setDismissed($, restore(dismissed, s.id)),
+    toggleTrash: () => {
+      trashOpen = !trashOpen
+      void viewerTick($)
+    },
   }
 }
 
-async function unmarkCandidate($: any, c: Candidate): Promise<void> {
-  const path = (await journalDir($)) + '/candidates.json'
-  const v = await readJson($, path)
-  const list = removeCandidate(Array.isArray(v) ? (v as Candidate[]) : [], c)
-  await $.fs.write(path, JSON.stringify(list, null, 1))
-  view = { ...view, candidates: list, marked: new Set(list.map(x => x.at + '|' + x.text)) }
-  $.ui.invalidate('ui.render')
+// P-11: 후보 파일을 고친 뒤에는 바로 다시 모아 그린다
+async function pickSuggestion($: any, s: Suggestion): Promise<void> {
+  const list = await readCandidates($)
+  if (list === null) return
+  await writeCandidates($, addCandidate(list, toCandidate(s)))
+  await viewerTick($)
 }
 
-async function markCandidate($: any, c: Candidate): Promise<void> {
-  const path = (await journalDir($)) + '/candidates.json'
-  const v = await readJson($, path)
-  const list = addCandidate(Array.isArray(v) ? (v as Candidate[]) : [], c)
-  await $.fs.write(path, JSON.stringify(list, null, 1))
-  view = { ...view, candidates: list, marked: new Set(list.map(x => x.at + '|' + x.text)) }
-  $.ui.invalidate('ui.render')
+async function unpickCandidate($: any, c: Candidate): Promise<void> {
+  const list = await readCandidates($)
+  if (list === null || typeof c.id !== 'string') return
+  await writeCandidates($, removeCandidates(list, [c.id]))
+  await viewerTick($)
+}
+
+async function setDismissed($: any, list: string[]): Promise<void> {
+  dismissed = list
+  await $.store.set('viewer:dismissed', list)
+  await viewerTick($)
 }
 
 export const register: Register = on => {
@@ -257,6 +270,32 @@ export const register: Register = on => {
         required: ['op'],
       },
     })
+    const text = (d: string) => ({ type: 'string', description: d })
+    await $.tool.register({
+      name: 'portfolio_suggest',
+      isDeferred: false,
+      description:
+        // P-10: 언제, 무엇을 올리는지를 부르는 순간 보이는 이 설명에 둔다
+        "Suggest one item for the user's developer portfolio to the panel's 문제 tab; the user picks the good ones as " +
+        'candidates, and the portfolio-log skill reads them later. Call it when a unit of work closes and it holds something ' +
+        'worth writing in a portfolio: a non-obvious problem diagnosed and solved, a design decision with a real trade-off, ' +
+        'a measured improvement, or a mistake whose lesson changed how the work is done. Never a plain tool error, a typo, ' +
+        'a routine step or setup; skip when nothing qualifies, which is most of the time. All fields in Korean, short and ' +
+        'factual. intent is the goal as the user stated it, never a motive you infer. outcome says whether the cause was ' +
+        'measured or only reasoned. evidence names commits, files, tests or numbers when there are any.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          title: text('One line naming the item.'),
+          intent: text('The goal as the user stated it.'),
+          problem: text('The problem hit or the decision faced.'),
+          outcome: text('How it was resolved and what came of it; measured or reasoned.'),
+          why: text('Why it is worth a portfolio entry.'),
+          evidence: text('Commits, files, tests or numbers. Optional.'),
+        },
+        required: ['title', 'intent', 'problem', 'outcome', 'why'],
+      },
+    })
     await $.command.register({ name: 'panel', description: '작업 현황판을 엽니다' })
     const panes = await $.ui.panes()
     if (panes.some((p: { id: string }) => p.id === PANE)) await startViewer($)
@@ -295,7 +334,7 @@ export const register: Register = on => {
     rec = applyToolUse(rec, e.tool, await $.clock.now())
     const ran: any = await next(e)
     if (ran.deny !== undefined || ran.isError === true) {
-      rec = applyToolFailure(rec, e.tool, String(ran.deny ?? ran.text ?? ''), await $.clock.now())
+      rec = applyToolFailure(rec, String(ran.deny ?? ran.text ?? ''), await $.clock.now())
     }
     if (e.tool === 'Agent') await refreshAgents($)
     await publish($)
@@ -349,6 +388,18 @@ export const register: Register = on => {
     return { result: lines.length ? lines.join(String.fromCharCode(10)) : '계획이 없다.' }
   })
 
+  on('tool.call', { tool: 'mcp__work-panel__portfolio_suggest' }, async ($, e) => {
+    const input = e as unknown as Record<string, unknown>
+    if (!rec) return { result: '세션 기록이 아직 없다.' }
+    const next = applySuggestion(rec, input, await $.clock.now())
+    if (!next) return { result: 'title과 problem이 비어 있어 올리지 않았다.' }
+    rec = next
+    // 세션이 곧 끝나도 남도록 1초 간격을 기다리지 않고 바로 올린다
+    lastPublish = 0
+    await publish($)
+    return { result: '문제 탭에 올렸다.' }
+  })
+
   on('command.run', { command: 'panel' }, async $ => {
     // 이미 열린 패널은 크기 요청이 적용되지 않으므로 닫았다가 다시 연다 (P-2)
     await $.ui.close({ id: PANE })
@@ -361,7 +412,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (!viewerTimer) return next(e)
     const ui = $.ui.resolve(e) as any
-    return band(ui, { ...view, tab, now: await $.clock.now() }, makeActions($))
+    return band(ui, { ...view, tab, trashOpen, now: await $.clock.now() }, makeActions($))
   }).catch(($, e, next) => next(e))
 
   on('ui.close', async ($, e, next) => {
@@ -375,7 +426,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const ui = $.ui.resolve(e) as any
     const minRows = Math.max(4, Math.min(PANE_ROWS, e.props.scroll.bodyRows))
-    return pane(ui, { ...view, tab, now: await $.clock.now() }, makeActions($), minRows)
+    return pane(ui, { ...view, tab, trashOpen, now: await $.clock.now() }, makeActions($), minRows)
   }).catch(($, e, next) => {
     const { Text } = $.ui.resolve(e) as any
     return <Text dimColor>현황판을 그리지 못했습니다: {String(next.error?.message ?? 'unknown')}</Text>
