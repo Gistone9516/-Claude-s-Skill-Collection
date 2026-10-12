@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import {
-  addCandidate, applyPost, applyPrompt, applySkillLoad, applyToolFailure, applyToolUse, derivedTodos, emptyRecord,
+  addCandidate, applyPost, applyPrompt, applySkillLoad, applyToolFailure, applyToolUse, emptyRecord,
   extractFiredIds, globalChecks, isViewerAlive, markSkillsStale, mask, normalizeRecord, parseErrorsJson,
   parseRulesHeader, pickSession, POST_LIMIT, POST_TEXT_LIMIT, removeCandidate, sessionSections, setPlan, setStep, STALE_MS,
 } from './core'
@@ -89,10 +89,6 @@ test('P-9 fired ids come from hook markers in failure text', () => {
   expect(r.errors[0]?.text).toBe('[skill-gate] blocked')
 })
 
-test('P-5 push pending is derived from repos', () => {
-  expect(derivedTodos([{ path: 'C:/dev/myblog', dirty: 0, unpushed: 2, checkedAt: 0, failed: false }])).toEqual(['push 대기: myblog 2개'])
-})
-
 test('P-10 parseErrorsJson reads counts, repeats and masks recent items', () => {
   const s = parseErrorsJson(JSON.stringify({
     generated: 'g', counts: { tool_error: 3 }, repeats: [{ n: 4, tool: 'Edit', text: 'x' }],
@@ -142,9 +138,10 @@ test('P-3 session sections show only posts after the current request, newest fir
   expect(sec.decisions).toEqual([])
   expect(sec.progress.map(p => p.text)).toEqual(['둘째 진행', '첫 진행'])
   expect(sec.done.map(p => p.text)).toEqual(['끝남'])
-  expect(sec.planShown).toBe(false)
+  expect(sec.planStale).toBe(true)
   sec = sessionSections(setPlan(r, ['이번 계획'], 14))
-  expect(sec.planShown).toBe(true)
+  expect(sec.planStale).toBe(false)
+  expect(sessionSections(applyPrompt(emptyRecord('b', 'x', 0), '계획 없음', 1)).planStale).toBe(false)
 })
 
 test('P-4 a post keeps several sentences across lines, capped and masked', () => {

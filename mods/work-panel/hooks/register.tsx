@@ -7,7 +7,7 @@ import {
   removeCandidate, REPO_REFRESH_MS, setAgents, setPlan, setRepos, setStep,
 } from '../src/core'
 import type { Actions, Glossary, Tab, ViewData } from '../src/view'
-import { band, pane } from '../src/view'
+import { band, isTab, pane } from '../src/view'
 
 // 등록만 한다. 판정은 src/core, 그리기는 src/view (설계서 2장).
 // 모든 세션은 자기 상태를 $.store에 올리고(P-15), /panel을 연 세션은 다른 세션을 그린다.
@@ -29,7 +29,7 @@ let lastRepoCheck = 0
 
 // 현황판 쪽 상태 (모듈 변수는 다시 로드되면 사라지므로 탭은 $.store에도 둔다)
 let viewerTimer: { cancel: () => void } | null = null
-let tab: Tab = 1
+let tab: Tab = 'session'
 let pick = 0
 let view: Omit<ViewData, 'tab' | 'now'> = {
   shown: null, others: 0, errors: null, errorsFailed: false, candidates: [], marked: new Set(), globalRules: null, glossary: {},
@@ -155,7 +155,8 @@ async function viewerTick($: any): Promise<void> {
 
 async function startViewer($: any): Promise<void> {
   const saved = await $.store.get('viewer:tab')
-  if (saved === 1 || saved === 2 || saved === 3 || saved === 4 || saved === 5) tab = saved
+  // P-2: 번호로 저장하던 예전 값은 탭 이름이 아니므로 세션 탭으로 연다
+  tab = isTab(saved) ? saved : 'session'
   view = { ...view, globalRules: await countGlobalRules($), glossary: await loadGlossary($) }
   lastHash = ''
   await refreshErrors($, false)
@@ -243,7 +244,7 @@ export const register: Register = on => {
       name: 'todo',
       isDeferred: false,
       description:
-        'Write the work plan to the panel plan tab, like plan mode. Only for work of three or more steps. ' +
+        'Write the work plan to the plan section at the bottom of the panel session tab, like plan mode. Only for work of three or more steps. ' +
         'op=set once at the start, steps in order, one Korean sentence each. op=start when a step begins and op=done ' +
         'when it ends, step counted from 1. Set again only when the plan changes. op=list returns the current plan.',
       inputSchema: {

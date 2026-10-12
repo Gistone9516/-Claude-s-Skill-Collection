@@ -219,11 +219,6 @@ export function setStep(rec: SessionRecord, step: number, status: StepStatus, no
   return { ...rec, plan, updatedAt: now }
 }
 
-// P-5: push 대기는 저장하지 않고 저장소 상태에서 매번 계산한다 (DG-3)
-export function derivedTodos(repos: RepoState[]): string[] {
-  return repos.filter(r => r.unpushed > 0).map(r => `push 대기: ${folderName(r.path)} ${r.unpushed}개`)
-}
-
 // P-10: plog.py errors가 쓴 errors.json
 export type ErrorSummary = {
   generated: string
@@ -269,7 +264,8 @@ export function folderName(cwd: string): string {
 }
 
 // P-3: 세션 탭의 뼈대. 이번 요청 뒤에 올라온 메모만 종류별로, 최근 것이 위로 온다.
-export type SessionSections = { decisions: Post[]; progress: Post[]; done: Post[]; planShown: boolean }
+// P-5: 계획은 늘 보이고, 이번 요청 전에 세운 것이면 planStale로 흐리게 표시한다.
+export type SessionSections = { decisions: Post[]; progress: Post[]; done: Post[]; planStale: boolean }
 
 export function sessionSections(rec: SessionRecord): SessionSections {
   const mine = rec.posts.filter(p => p.at >= rec.taskAt).reverse()
@@ -277,6 +273,6 @@ export function sessionSections(rec: SessionRecord): SessionSections {
     decisions: mine.filter(p => p.kind === 'decision'),
     progress: mine.filter(p => p.kind === 'progress'),
     done: mine.filter(p => p.kind === 'done'),
-    planShown: rec.plan.length > 0 && rec.planAt >= rec.taskAt,
+    planStale: rec.plan.length > 0 && rec.planAt < rec.taskAt,
   }
 }

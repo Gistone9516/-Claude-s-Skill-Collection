@@ -1,12 +1,18 @@
 import type { Candidate, ErrorSummary, GlobalCheck, Post, SessionRecord, StepStatus } from './core'
-import { clock, derivedTodos, folderName, globalChecks, sessionSections } from './core'
+import { clock, folderName, globalChecks, sessionSections } from './core'
 
 // 화면 조각. 상태와 동작 함수를 받아 트리만 그린다. 상태를 바꾸지 않는다 (설계서 2장).
 // 디자인 검토 2026-10-13: 색 대신 흐림과 굵게, 행 버튼에는 숫자 단축키 없음,
-// 탭 이름은 다른 곳의 말과 겹치지 않게 세션 / 계획 / 규칙 / 문제 / 후보.
+// 탭 이름은 다른 곳의 말과 겹치지 않게 세션 / 규칙 / 문제 / 후보. 계획은 세션 탭 맨 아래 (P-3).
 // 사용자 2026-10-13: 한눈에 보려는 것이라 중요한 줄은 자르지 않고 전부 보인다.
 
-export type Tab = 1 | 2 | 3 | 4 | 5
+// P-2: 탭은 이름으로 저장한다. 순서가 바뀌어도 저장한 값이 엉뚱한 탭을 열지 않게, 숫자키는 이 순서에서 나온다.
+export const TABS = ['session', 'rules', 'problems', 'candidates'] as const
+export type Tab = (typeof TABS)[number]
+
+export function isTab(v: unknown): v is Tab {
+  return (TABS as readonly unknown[]).includes(v)
+}
 
 // P-6: 규칙 ID마다 한국어 한 문장 (data/rules-ko.json), 스킬마다 한 줄 설명
 export type Glossary = Record<string, string>
@@ -79,17 +85,16 @@ function Row(ui: Ui, label: string, body: any, opts: { bold?: boolean; dim?: boo
 
 export function tabBar(ui: Ui, d: ViewData, a: Actions) {
   const { Box, Button } = ui
-  const names: [Tab, string][] = [
-    [1, '세션'],
-    [2, '계획'],
-    [3, '규칙'],
-    [4, '문제'],
-    [5, d.candidates.length ? `후보(${d.candidates.length})` : '후보'],
-  ]
+  const labels: Record<Tab, string> = {
+    session: '세션',
+    rules: '규칙',
+    problems: '문제',
+    candidates: d.candidates.length ? `후보(${d.candidates.length})` : '후보',
+  }
   return (
     <Box flexDirection="row" columnGap={2}>
-      {names.map(([n, label]) => (
-        <Button key={'tab-' + n} label={label} hotkey={String(n)} plain dimColor={d.tab !== n} onPress={() => a.setTab(n)} />
+      {TABS.map((t, i) => (
+        <Button key={'tab-' + t} label={labels[t]} hotkey={String(i + 1)} plain dimColor={d.tab !== t} onPress={() => a.setTab(t)} />
       ))}
     </Box>
   )
@@ -136,8 +141,6 @@ export function sessionTab(ui: Ui, d: ViewData, a: Actions) {
   }
   const age = Math.max(0, Math.round((d.now - s.updatedAt) / 60000))
   const sec = sessionSections(s)
-  const doing = s.plan.find(p => p.status === 'doing')
-  const doneSteps = s.plan.filter(p => p.status === 'done').length
   const pending = s.repos.filter(r => r.failed || r.dirty > 0 || r.unpushed > 0)
   return (
     <Box flexDirection="column">
@@ -154,35 +157,35 @@ export function sessionTab(ui: Ui, d: ViewData, a: Actions) {
       {Section(ui, '결정', sec.decisions, { bold: true })}
       {Section(ui, '진행', sec.progress)}
       {Section(ui, '완료', sec.done, { dim: true })}
-      <Text bold>비고</Text>
-      {sec.planShown &&
-        Row(ui, '계획', `${doneSteps}/${s.plan.length} 단계${doing ? `, 지금 ${doing.text}` : ''}`, { full: true })}
-      {Row(ui, '에이전트', s.agents.length === 0 ? '실행 중 없음' : s.agents.map(x => `${x.name} ${x.status}`).join(', '), { full: true, dim: s.agents.length === 0 })}
-      {s.repos.length === 0 && Row(ui, '저장소', '확인 전', { dim: true })}
-      {s.repos.length > 0 && pending.length === 0 && Row(ui, '저장소', '모두 깨끗함', { dim: true })}
-      {pending.map(r =>
-        Row(ui, '저장소', r.failed ? `${folderName(r.path)} 갱신 실패` : `${folderName(r.path)} 변경 ${r.dirty}, push 대기 ${r.unpushed}`, { full: true }),
-      )}
+      <Box flexDirection="column" marginBottom={1}>
+        <Text bold>비고</Text>
+        {Row(ui, '에이전트', s.agents.length === 0 ? '실행 중 없음' : s.agents.map(x => `${x.name} ${x.status}`).join(', '), { full: true, dim: s.agents.length === 0 })}
+        {s.repos.length === 0 && Row(ui, '저장소', '확인 전', { dim: true })}
+        {s.repos.length > 0 && pending.length === 0 && Row(ui, '저장소', '모두 깨끗함', { dim: true })}
+        {pending.map(r =>
+          Row(ui, '저장소', r.failed ? `${folderName(r.path)} 갱신 실패` : `${folderName(r.path)} 변경 ${r.dirty}, push 대기 ${r.unpushed}`, { full: true }),
+        )}
+      </Box>
+      {planSection(ui, s, sec.planStale)}
     </Box>
   )
 }
 
-// P-5: Claude가 적는 작업 계획. 사람은 보기만 한다.
-export function planTab(ui: Ui, d: ViewData) {
+// P-5: Claude가 적는 작업 계획. 사람은 보기만 한다. 칸 중 맨 아래라 단계를 자르지 않는다.
+// 이전 요청의 계획은 칸 전체를 흐리게 해 이번 요청의 칸들보다 앞에 읽히지 않게 한다.
+function planSection(ui: Ui, s: SessionRecord, stale: boolean) {
   const { Box, Text } = ui
-  const plan = d.shown?.plan ?? []
-  const auto = d.shown ? derivedTodos(d.shown.repos) : []
+  const done = s.plan.filter(p => p.status === 'done').length
   return (
     <Box flexDirection="column">
-      {plan.length === 0 && <Text dimColor>작업 계획이 없습니다. 여러 단계 작업을 시작하면 Claude가 여기에 단계를 적습니다.</Text>}
-      {plan.map((p, i) => (
-        <Text bold={p.status === 'doing'} dimColor={p.status === 'done'} wrap="wrap">
-          {STEP_MARK[p.status]} {i + 1}. {p.text}
+      <Text bold={!stale} dimColor={stale}>
+        계획{stale ? ' (이전 요청)' : ''}{s.plan.length > 0 ? ` ${done}/${s.plan.length}` : ''}
+      </Text>
+      {s.plan.length === 0 && <Text dimColor>  없음 · 여러 단계 작업을 시작하면 Claude가 단계를 적습니다</Text>}
+      {s.plan.map((p, i) => (
+        <Text key={'step-' + i} bold={!stale && p.status === 'doing'} dimColor={stale || p.status === 'done'} wrap="wrap">
+          {'  '}{STEP_MARK[p.status]} {i + 1}. {p.text}
         </Text>
-      ))}
-      {auto.length > 0 && <Text> </Text>}
-      {auto.map(line => (
-        <Text dimColor>{line} (자동)</Text>
       ))}
     </Box>
   )
@@ -300,7 +303,7 @@ export function candidatesTab(ui: Ui, d: ViewData, a: Actions) {
 export function pane(ui: Ui, d: ViewData, a: Actions, minRows: number) {
   const { Box, Text } = ui
   const body =
-    d.tab === 1 ? sessionTab(ui, d, a) : d.tab === 2 ? planTab(ui, d) : d.tab === 3 ? rulesTab(ui, d) : d.tab === 4 ? problemsTab(ui, d, a) : candidatesTab(ui, d, a)
+    d.tab === 'session' ? sessionTab(ui, d, a) : d.tab === 'rules' ? rulesTab(ui, d) : d.tab === 'problems' ? problemsTab(ui, d, a) : candidatesTab(ui, d, a)
   return (
     <Box flexDirection="column" minHeight={minRows}>
       {tabBar(ui, d, a)}
