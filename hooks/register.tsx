@@ -14,7 +14,7 @@ import { band, pane } from '../src/view'
 // $는 파일 최상위에 선언한 함수에만 넘길 수 있다 (엔진의 정적 검사).
 
 const PANE = 'work-panel'
-const PANE_ROWS = 20 // P-2: 사용자 요청 2026-10-13 "패널의 크기를 고정할 순 없어?"
+const PANE_ROWS = 40 // P-2: 사용자 요청 2026-10-13 "패널의 크기를 고정할 순 없어?", "높이 고정 40줄로 늘려줘"
 const PUBLISH_MIN_MS = 1000 // P-15
 const VIEWER_TICK_MS = 2000
 const ERRORS_REFRESH_MS = 10 * 60 * 1000 // P-10
