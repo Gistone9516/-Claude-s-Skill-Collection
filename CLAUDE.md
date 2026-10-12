@@ -10,7 +10,7 @@ Loaded every turn, so it holds only what must be true *before* a skill is read; 
 
 ## §1 Skill routing — highest leverage, because it decides what else loads
 
-Memory does not guarantee recall; loading a skill is an action, so it does. **Read the SKILL.md in full before starting work of that type** — once per session, again after compaction. A system summary is not a substitute: the prohibitions exist only in the body. Load it once the work type is settled, not on the first word that matches a trigger. (2026-07-20)
+**Read the SKILL.md in full before starting work of that type** — once per session, again after compaction; a summary is not a substitute, the prohibitions live only in the body. Load it once the work type is settled. `scripts/skill-gate.sh` enforces this once per segment at commits, agent launches, code edits and document files, because as text it was followed 19-43% of the time (measured 2026-10-12).
 
 | Trigger | Skill |
 |---|---|

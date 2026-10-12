@@ -14,7 +14,8 @@ scripts/
   guard.ps1            결과를 보는 훅. 쓰여진 파일과 만들어진 커밋을 검사
   pattern-guard.sh     명령문을 보는 훅. 파괴적 구문 9종을 실행 전에 경고
   brief-nudge.sh       상기시키는 훅. 처음 건드리는 파일에 브리핑을 제안
-  manifest-nudge.sh    상기시키는 훅. SKILL.md를 고치면 매니페스트도 함께 고치라고 알림
+  manifest-nudge.sh    상기시키는 훅. SKILL.md의 규칙 수나 크기가 매니페스트와 어긋날 때만 알림
+  skill-gate.sh        불러오는 훅. 커밋, 에이전트 실행, 코드 수정, 문서 파일 작업 앞에서 해당 스킬을 아직 안 읽었으면 한 번 막음
   validate_doc.py      한국어 분량 실측
 hooks/             외부 caveman 스킬이 쓰는 런타임 9개. 규칙을 강제하는 훅이 아니라 그 스킬의 기능이라 `scripts/`와 섞지 않고 벤더 기본 경로에 그대로 둔다
 skills/            스킬 24개. 직접 만든 15개와 외부 9개
@@ -28,7 +29,7 @@ projects/<경로키>/memory/   폴더 단위 프로젝트 메모리
 | 층 | 무엇이 | 왜 |
 |---|---|---|
 | 훅 (`scripts/`) | 기계적으로 탐지 가능한 규칙 13종 | 가장 가깝다. 어길 수가 없다 |
-| 스킬 | 그 작업을 할 때만 필요한 상세 수칙 | 작업 직전에 읽으므로 가깝다 |
+| 스킬 | 그 작업을 할 때만 필요한 상세 수칙 | 작업 직전에 읽으므로 가깝다. 제때 읽히지 않는 경우가 많아 `skill-gate.sh`가 그 순간에 불러온다 |
 | CLAUDE.md | 스킬을 읽기 전에 이미 참이어야 하는 것만 | 항상 있지만 그만큼 희석된다 |
 
 세 층으로 나눈 근거는 실측이다. 스킬을 전문 정독하고도 같은 규칙(cp949 stdout)을 한 세션에서 두 번 어긴 일이 있었다. 파일 위치가 아니라 거리가 문제였다. 그래서 기계적으로 잡히는 것은 훅으로 내렸고, 나머지 중 CLAUDE.md에 요약본으로 중복돼 있던 11개는 지웠다. 스킬에 더 자세히 들어 있는데 요약본이 옆에 있으면 정확도만 떨어진다.
@@ -45,7 +46,7 @@ AI가 읽는 파일은 전부 영어로 쓴다. 사람이 읽는 파일(이 READ
 git clone https://github.com/Gistone9516/-Claude-s-Skill-Collection.git ~/.claude
 ```
 
-그다음 훅을 등록한다. `settings.hooks.example.json`의 `hooks` 블록을 통째로 `~/.claude/settings.json`에 옮기고, 안에 있는 `<CLAUDE_HOME>` 열한 군데를 자기 경로로 바꾸면 끝이다.
+그다음 훅을 등록한다. `settings.hooks.example.json`의 `hooks` 블록을 통째로 `~/.claude/settings.json`에 옮기고, 안에 있는 `<CLAUDE_HOME>` 열네 군데를 자기 경로로 바꾸면 끝이다.
 
 ```
 <CLAUDE_HOME>  ->  C:/Users/<계정>/.claude
@@ -55,14 +56,14 @@ git clone https://github.com/Gistone9516/-Claude-s-Skill-Collection.git ~/.claud
 
 `settings.json` 자체는 저장소에 넣지 않는다. 모델과 권한 설정처럼 컴퓨터마다 다른 값이 함께 들어 있어서, 옮겨 가면 맞을 이유가 없는 파일이기 때문이다. 옮겨야 하는 것은 훅 배선뿐이고 그것만 예제 파일로 떼어 뒀다.
 
-등록되는 훅은 다섯 이벤트에 걸쳐 아홉 묶음, 명령 열한 개다.
+등록되는 훅은 다섯 이벤트에 걸쳐 열두 묶음, 명령 열네 개다.
 
 | 이벤트 | 등록되는 것 |
 |---|---|
-| SessionStart | check-manifest.ps1, caveman-activate.js |
+| SessionStart | check-manifest.ps1, caveman-activate.js, skill-gate.sh reset(압축과 clear 직후) |
 | UserPromptSubmit | caveman-mode-tracker.js |
-| PreToolUse | pattern-guard.sh(셸 명령), brief-nudge.sh check(파일 편집) |
-| PostToolUse | guard.ps1(파일 편집), brief-nudge.sh record, manifest-nudge.sh, guard.ps1(git 명령, Bash와 PowerShell 각각) |
+| PreToolUse | pattern-guard.sh(셸 명령), brief-nudge.sh check(파일 편집), skill-gate.sh check(셸, 에이전트, 파일 편집) |
+| PostToolUse | guard.ps1(파일 편집), brief-nudge.sh record, manifest-nudge.sh, guard.ps1(git 명령, Bash와 PowerShell 각각), skill-gate.sh record(Skill, Read) |
 | PostToolUseFailure | guard.ps1(셸 실패) |
 
 `hooks/`에 있는 둘은 성격이 다르다. 규칙을 강제하는 것이 아니라 외부 `caveman` 스킬이 모드 상태를 유지하고 `/caveman-stats`를 만들어 내는 데 쓰는 런타임이다. 위 표의 나머지와 달리 없어도 규칙은 그대로 산다.

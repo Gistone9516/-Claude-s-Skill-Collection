@@ -20,6 +20,17 @@
             "statusMessage": "Loading caveman mode..."
           }
         ]
+      },
+      {
+        "matcher": "compact|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"<CLAUDE_HOME>/scripts/skill-gate.sh\" reset",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -52,6 +63,17 @@
           {
             "type": "command",
             "command": "bash \"<CLAUDE_HOME>/scripts/brief-nudge.sh\" check",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell|Agent|Task|Workflow|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"<CLAUDE_HOME>/scripts/skill-gate.sh\" check",
             "shell": "bash",
             "timeout": 10
           }
@@ -104,6 +126,17 @@
             "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_HOME>/scripts/guard.ps1\" -Event PostToolUse",
             "if": "PowerShell(git *)",
             "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Skill|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"<CLAUDE_HOME>/scripts/skill-gate.sh\" record",
+            "shell": "bash",
+            "timeout": 10
           }
         ]
       }

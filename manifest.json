@@ -295,6 +295,11 @@
       "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored, and since 2026-10-12 it fires once per folder rather than once per file (VF-8's file group), because per-file firing turned it into noise during a multi-skill edit."
     },
     {
+      "path": "scripts/skill-gate.sh",
+      "required": true,
+      "role": "Loads the matching skill at the moment it is needed (CLAUDE.md section 1): PreToolUse denies the first git commit, agent launch, code edit or document-file action of a segment until work-rules-shell, agent-ops, work-rules-diagnosis or work-rules-docs has been read, and only once per segment so a broken ledger cannot stall work. PostToolUse on Skill and Read records loads; SessionStart compact and clear empties the ledger. Subagent calls (agent_id present) are never gated. Added 2026-10-12 after measuring 79 sessions: the needed skill had been read in time for 19% of agent launches, 40% of code edits and 43% of commits. Tested on both branches, 21 cases, median 133 ms per call."
+    },
+    {
       "path": "scripts/validate_doc.py",
       "required": false,
       "role": "Korean document length measurement, used by work-rules-writing WR-12."
@@ -437,7 +442,7 @@
   "restore": {
     "newMachine": [
       "git clone <repo> into ~/.claude (or clone elsewhere and copy CLAUDE.md, manifest.json, GUIDE.ko.md, settings.hooks.example.json, skills/, scripts/ in).",
-      "Copy the hooks block of settings.hooks.example.json into ~/.claude/settings.json and replace the eleven <CLAUDE_HOME> placeholders with C:/Users/<account>/.claude. All nine hook groups, not just SessionStart - registering only the validator leaves the other checks silently absent.",
+      "Copy the hooks block of settings.hooks.example.json into ~/.claude/settings.json and replace the fourteen <CLAUDE_HOME> placeholders with C:/Users/<account>/.claude. All twelve hook groups, not just SessionStart - registering only the validator leaves the other checks silently absent.",
       "Add the statusLine key by hand if the caveman badge is wanted; it is the one piece of wiring the example file cannot carry, because the example holds only the hooks tree. The command is in settingsKeys below.",
       "Start a session. The validator reports every missing or unregistered asset.",
       "Set the externalApps env overrides, or move the apps to the declared paths, if those skills are needed.",
