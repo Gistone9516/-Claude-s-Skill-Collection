@@ -238,15 +238,28 @@ export function candidatesTab(ui: Ui, d: ViewData) {
   )
 }
 
-export function pane(ui: Ui, d: ViewData, a: Actions) {
+// P-2: 높이를 고정해 탭을 바꿔도 패널 크기가 변하지 않게 한다. 넘치면 패널 안에서 스크롤된다.
+export function pane(ui: Ui, d: ViewData, a: Actions, height: number) {
   const { Box, Text } = ui
   const body =
     d.tab === 1 ? sessionTab(ui, d, a) : d.tab === 2 ? todoTab(ui, d, a) : d.tab === 3 ? rulesTab(ui, d) : d.tab === 4 ? problemsTab(ui, d, a) : candidatesTab(ui, d)
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" height={height}>
       {tabBar(ui, d, a)}
       <Text> </Text>
       {body}
+    </Box>
+  )
+}
+
+// P-2: CLI 입력창에 포커스가 있어도 탭을 바꾸게, 프롬프트 위 줄에 같은 탭 버튼을 둔다.
+// 이 줄의 숫자 버튼은 빈 입력창에 숫자 하나를 치고 잠깐 기다리면 눌린다 (Mods reference, Button 규칙).
+export function band(ui: Ui, d: ViewData, a: Actions) {
+  const { Box, Text } = ui
+  return (
+    <Box flexDirection="row" columnGap={2}>
+      <Text dimColor>현황판</Text>
+      {tabBar(ui, d, a)}
     </Box>
   )
 }

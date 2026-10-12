@@ -7,13 +7,14 @@ import {
   REPO_REFRESH_MS, setAgents, setRepos, todoKey,
 } from '../src/core'
 import type { Actions, Tab, ViewData } from '../src/view'
-import { pane } from '../src/view'
+import { band, pane } from '../src/view'
 
 // 등록만 한다. 판정은 src/core, 그리기는 src/view (설계서 2장).
 // 모든 세션은 자기 상태를 $.store에 올리고(P-15), /panel을 연 세션은 다른 세션을 그린다.
 // $는 파일 최상위에 선언한 함수에만 넘길 수 있다 (엔진의 정적 검사).
 
 const PANE = 'work-panel'
+const PANE_ROWS = 20 // P-2: 사용자 요청 2026-10-13 "패널의 크기를 고정할 순 없어?"
 const PUBLISH_MIN_MS = 1000 // P-15
 const VIEWER_TICK_MS = 2000
 const ERRORS_REFRESH_MS = 10 * 60 * 1000 // P-10
@@ -193,6 +194,27 @@ async function finishTodo($: any, id: string): Promise<boolean> {
   return true
 }
 
+// 패널과 프롬프트 위 줄이 같은 동작을 쓴다
+function makeActions($: any): Actions {
+  return {
+    setTab: t => void setTab($, t),
+    nextSession: () => {
+      pick += 1
+      lastHash = ''
+      void viewerTick($)
+    },
+    todoInput: v => {
+      draft = v
+    },
+    todoSubmit: v => {
+      draft = ''
+      void addTodo($, v, 'person').then(() => viewerTick($))
+    },
+    todoDone: id => void finishTodo($, id).then(() => viewerTick($)),
+    mark: c => void markCandidate($, c),
+  }
+}
+
 async function markCandidate($: any, c: Candidate): Promise<void> {
   const path = (await journalDir($)) + '/candidates.json'
   const v = await readJson($, path)
@@ -317,10 +339,17 @@ export const register: Register = on => {
   })
 
   on('command.run', { command: 'panel' }, async $ => {
-    await $.ui.open({ id: PANE, title: '작업 현황', focus: true })
+    await $.ui.open({ id: PANE, title: '작업 현황', focus: true, rows: PANE_ROWS })
     await startViewer($)
     return {}
   })
+
+  // P-2: 현황판을 연 세션에서만 프롬프트 위 줄에 탭 버튼을 그린다
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    if (!viewerTimer) return next(e)
+    const ui = $.ui.resolve(e) as any
+    return band(ui, { ...view, tab, draft, now: await $.clock.now() }, makeActions($))
+  }).catch(($, e, next) => next(e))
 
   on('ui.close', async ($, e, next) => {
     if (e.id === PANE && viewerTimer) {
@@ -332,24 +361,8 @@ export const register: Register = on => {
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const ui = $.ui.resolve(e) as any
-    const actions: Actions = {
-      setTab: t => void setTab($, t),
-      nextSession: () => {
-        pick += 1
-        lastHash = ''
-        void viewerTick($)
-      },
-      todoInput: v => {
-        draft = v
-      },
-      todoSubmit: v => {
-        draft = ''
-        void addTodo($, v, 'person').then(() => viewerTick($))
-      },
-      todoDone: id => void finishTodo($, id).then(() => viewerTick($)),
-      mark: c => void markCandidate($, c),
-    }
-    return pane(ui, { ...view, tab, draft, now: await $.clock.now() }, actions)
+    const height = Math.max(4, Math.min(PANE_ROWS, e.props.scroll.bodyRows))
+    return pane(ui, { ...view, tab, draft, now: await $.clock.now() }, makeActions($), height)
   }).catch(($, e, next) => {
     const { Text } = $.ui.resolve(e) as any
     return <Text dimColor>현황판을 그리지 못했습니다: {String(next.error?.message ?? 'unknown')}</Text>
