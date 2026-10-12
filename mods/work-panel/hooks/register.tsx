@@ -336,7 +336,7 @@ export const register: Register = on => {
       if (!next) return { result: `${input.step}번 단계가 없다. 계획은 ${rec.plan.length}단계다.` }
       rec = next
       await publish($)
-      return { result: `${input.step}번 단계를 ${input.op === 'start' ? '진행 중으로' : '완료로'}바꿨다.` }
+      return { result: `${input.step}번 단계를 ${input.op === 'start' ? '진행 중으로' : '완료로'} 바꿨다.` }
     }
     const lines = rec.plan.map((p, i) => `${i + 1}. [${p.status}] ${p.text}`)
     return { result: lines.length ? lines.join(String.fromCharCode(10)) : '계획이 없다.' }
