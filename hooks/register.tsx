@@ -4,7 +4,7 @@ import type { Candidate, ErrorSummary, PostKind, SessionRecord, Todo } from '../
 import {
   addCandidate, applyPost, applyPrompt, applySkillLoad, applyToolFailure, applyToolUse, countPorcelain, emptyRecord,
   isTodo, isViewerAlive, liveSessions, markSkillsStale, newTodo, normalizeRecord, parseCount, parseErrorsJson,
-  REPO_REFRESH_MS, setAgents, setRepos, todoKey,
+  removeCandidate, REPO_REFRESH_MS, setAgents, setRepos, todoKey,
 } from '../src/core'
 import type { Actions, Tab, ViewData } from '../src/view'
 import { band, pane } from '../src/view'
@@ -212,7 +212,17 @@ function makeActions($: any): Actions {
     },
     todoDone: id => void finishTodo($, id).then(() => viewerTick($)),
     mark: c => void markCandidate($, c),
+    unmark: c => void unmarkCandidate($, c),
   }
+}
+
+async function unmarkCandidate($: any, c: Candidate): Promise<void> {
+  const path = (await journalDir($)) + '/candidates.json'
+  const v = await readJson($, path)
+  const list = removeCandidate(Array.isArray(v) ? (v as Candidate[]) : [], c)
+  await $.fs.write(path, JSON.stringify(list, null, 1))
+  view = { ...view, candidates: list, marked: new Set(list.map(x => x.at + '|' + x.text)) }
+  $.ui.invalidate('ui.render')
 }
 
 async function markCandidate($: any, c: Candidate): Promise<void> {

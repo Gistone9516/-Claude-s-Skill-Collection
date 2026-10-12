@@ -28,6 +28,7 @@ export type Actions = {
   todoSubmit: (v: string) => void
   todoDone: (id: string) => void
   mark: (c: Candidate) => void
+  unmark: (c: Candidate) => void
 }
 
 type Ui = { Box: any; Text: any; Button: any; Input: any }
@@ -37,14 +38,21 @@ const ERROR_KIND: Record<string, string> = {
   tool_error: '도구 에러', blocked: '차단', rejected: '사용자 거부', interrupted: '중단', correction: '지적 후보',
 }
 
-function Row(ui: Ui, label: string, body: any, opts: { bold?: boolean; dim?: boolean } = {}) {
+// 라벨 칸은 가장 긴 라벨 "에이전트"(한글 4자, 8칸)가 한 줄에 들어가는 폭으로 고정하고,
+// 라벨과 내용 사이를 세로 막대로 나눈다 (사용자 요청 2026-10-13)
+const LABEL_COLUMNS = 9
+
+function Row(ui: Ui, label: string, body: any, opts: { bold?: boolean; dim?: boolean; wrap?: boolean } = {}) {
   const { Box, Text } = ui
   return (
     <Box flexDirection="row">
-      <Box width={6}>
-        <Text dimColor>{label}</Text>
+      <Box width={LABEL_COLUMNS} flexShrink={0}>
+        <Text dimColor={!opts.bold} bold={opts.bold} wrap="truncate-end">
+          {label}
+        </Text>
       </Box>
-      <Text bold={opts.bold} dimColor={opts.dim} wrap="truncate-end">
+      <Text dimColor>│ </Text>
+      <Text bold={opts.bold} dimColor={opts.dim} wrap={opts.wrap ? 'wrap' : 'truncate-end'}>
         {body}
       </Text>
     </Box>
@@ -93,16 +101,7 @@ export function sessionTab(ui: Ui, d: ViewData, a: Actions) {
         {d.others > 1 && <Button key="next-session" label={`다른 세션 ${d.others - 1}개`} plain onPress={a.nextSession} />}
       </Box>
       {Row(ui, '요청', s.task || '없음')}
-      {decision && (
-        <Box flexDirection="row">
-          <Box width={6}>
-            <Text bold>결정</Text>
-          </Box>
-          <Text bold wrap="wrap">
-            {clock(decision.at)} {decision.text}
-          </Text>
-        </Box>
-      )}
+      {decision && Row(ui, '결정', `${clock(decision.at)} ${decision.text}`, { bold: true, wrap: true })}
       {posts.length === 0 && !decision && Row(ui, '진행', '진행 메모 없음', { dim: true })}
       {posts.map(p => Row(ui, KIND[p.kind], `${clock(p.at)} ${p.text}`, { dim: p.kind === 'done' }))}
       {Row(ui, '에이전트', s.agents.length === 0 ? '없음' : s.agents.map(x => `${x.name} ${x.status}`).join(', '))}
@@ -220,8 +219,8 @@ export function problemsTab(ui: Ui, d: ViewData, a: Actions) {
   )
 }
 
-export function candidatesTab(ui: Ui, d: ViewData) {
-  const { Box, Text } = ui
+export function candidatesTab(ui: Ui, d: ViewData, a: Actions) {
+  const { Box, Text, Button } = ui
   return (
     <Box flexDirection="column">
       {d.candidates.length === 0 && <Text dimColor>표시한 후보가 없습니다. 문제 탭에서 기록 후보를 누르세요.</Text>}
@@ -230,9 +229,12 @@ export function candidatesTab(ui: Ui, d: ViewData) {
         .slice(-12)
         .reverse()
         .map(c => (
-          <Text wrap="truncate-end">
-            {c.at.slice(5, 10)} {ERROR_KIND[c.kind] ?? c.kind} {c.text}
-          </Text>
+          <Box key={'c-' + candidateKey(c)} flexDirection="row" columnGap={1}>
+            <Text wrap="truncate-end">
+              {c.at.slice(5, 10)} {ERROR_KIND[c.kind] ?? c.kind} {c.text}
+            </Text>
+            <Button key={'unmark-' + candidateKey(c)} label="제거" onPress={() => a.unmark(c)} />
+          </Box>
         ))}
     </Box>
   )
@@ -242,7 +244,7 @@ export function candidatesTab(ui: Ui, d: ViewData) {
 export function pane(ui: Ui, d: ViewData, a: Actions, height: number) {
   const { Box, Text } = ui
   const body =
-    d.tab === 1 ? sessionTab(ui, d, a) : d.tab === 2 ? todoTab(ui, d, a) : d.tab === 3 ? rulesTab(ui, d) : d.tab === 4 ? problemsTab(ui, d, a) : candidatesTab(ui, d)
+    d.tab === 1 ? sessionTab(ui, d, a) : d.tab === 2 ? todoTab(ui, d, a) : d.tab === 3 ? rulesTab(ui, d) : d.tab === 4 ? problemsTab(ui, d, a) : candidatesTab(ui, d, a)
   return (
     <Box flexDirection="column" height={height}>
       {tabBar(ui, d, a)}

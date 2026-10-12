@@ -3,7 +3,7 @@ import { expect, test } from 'claude-code/testing'
 import {
   addCandidate, applyPost, applyPrompt, applySkillLoad, applyToolFailure, applyToolUse, derivedTodos, emptyRecord,
   extractFiredIds, globalChecks, isViewerAlive, markSkillsStale, mask, newTodo, normalizeRecord, parseErrorsJson,
-  parseRulesHeader, pickSession, POST_LIMIT, STALE_MS,
+  parseRulesHeader, pickSession, POST_LIMIT, removeCandidate, STALE_MS,
 } from './core'
 
 // 시험 이름에 설계서의 규칙 ID를 넣는다 (V-1)
@@ -115,4 +115,10 @@ test('P-15 normalizeRecord reads a first-slice record without the new fields', (
   expect(r?.skills).toEqual([])
   expect(r?.stats.agents).toBe(0)
   expect(normalizeRecord({ nope: 1 })).toBe(null)
+})
+
+test('P-11 removeCandidate drops only the matching item', () => {
+  const a = { at: 't1', kind: 'tool_error', tool: 'Bash', text: 'x', task: '', session: '' }
+  const b = { ...a, at: 't2' }
+  expect(removeCandidate([a, b], a)).toEqual([b])
 })

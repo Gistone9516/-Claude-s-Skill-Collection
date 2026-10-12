@@ -247,6 +247,11 @@ export function addCandidate(list: Candidate[], c: Candidate): Candidate[] {
   return list.some(x => x.at === c.at && x.text === c.text) ? list : [...list, c]
 }
 
+// P-11: 후보 탭에서 사람이 지운 항목을 뺀다
+export function removeCandidate(list: Candidate[], c: Candidate): Candidate[] {
+  return list.filter(x => !(x.at === c.at && x.text === c.text))
+}
+
 export function clock(at: number, tzOffsetHours = 9): string {
   const d = new Date(at + tzOffsetHours * 3600 * 1000)
   return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
