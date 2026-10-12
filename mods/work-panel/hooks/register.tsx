@@ -225,12 +225,12 @@ export const register: Register = on => {
       name: 'panel_post',
       isDeferred: false,
       description:
-        '작업 현황판에 진행 메모를 올린다. kind는 progress(진행), done(완료), decision(사용자 결정 필요). ' +
+        '작업 현황판에 진행 메모를 올린다. kind는 progress(진행), done(완료), decision(사용자 결정 필요). 메모는 세 문장까지 쓸 수 있다. ' +
         '응답에 현황판이 켜져 있는지가 온다. 켜져 있으면 진행 보고는 여기에만 하고 채팅에는 결정이 필요한 것과 결론만 쓴다. ' +
         '꺼져 있으면 채팅에 평소처럼 보고한다.',
       inputSchema: {
         type: 'object',
-        properties: { kind: { type: 'string', enum: ['progress', 'done', 'decision'] }, text: { type: 'string', description: '한 줄 메모' } },
+        properties: { kind: { type: 'string', enum: ['progress', 'done', 'decision'] }, text: { type: 'string', description: '세 문장까지의 메모. 무엇을 했고 무엇이 남았는지' } },
         required: ['kind', 'text'],
       },
     })

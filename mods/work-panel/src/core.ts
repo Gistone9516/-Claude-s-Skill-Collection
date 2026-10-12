@@ -18,6 +18,8 @@ export type SessionRecord = {
   id: string
   cwd: string
   task: string
+  // P-3: 이번 요청이 들어온 시각. 이보다 앞선 메모는 세션 탭에 보이지 않는다
+  taskAt: number
   posts: Post[]
   skills: SkillLoad[]
   fired: Fired[]
@@ -25,6 +27,7 @@ export type SessionRecord = {
   agents: AgentRow[]
   repos: RepoState[]
   plan: PlanStep[]
+  planAt: number
   stats: TaskStats
   updatedAt: number
 }
@@ -35,6 +38,7 @@ export const POST_LIMIT = 50
 export const FIRED_LIMIT = 50
 export const ERROR_LIMIT = 30
 export const TASK_LIMIT = 120
+export const POST_TEXT_LIMIT = 400 // P-4: 메모는 세 문장까지 (사용자 2026-10-13)
 export const STALE_MS = 10 * 60 * 1000 // P-15
 export const VIEWER_ALIVE_MS = 15 * 1000 // P-17
 export const REPO_REFRESH_MS = 30 * 1000 // P-13
@@ -75,19 +79,24 @@ export function emptyStats(): TaskStats {
 }
 
 export function emptyRecord(id: string, cwd: string, now: number): SessionRecord {
-  return { id, cwd, task: '', posts: [], skills: [], fired: [], errors: [], agents: [], repos: [], plan: [], stats: emptyStats(), updatedAt: now }
+  return { id, cwd, task: '', taskAt: 0, posts: [], skills: [], fired: [], errors: [], agents: [], repos: [], plan: [], planAt: 0, stats: emptyStats(), updatedAt: now }
 }
 
 // P-3: 현재 요청은 첫 줄만, 가린 뒤에 남긴다. 요청이 바뀌면 P-8의 셈을 새로 시작한다.
 export function applyPrompt(rec: SessionRecord, text: string, now: number): SessionRecord {
   const task = clean(text, TASK_LIMIT)
   if (!task) return rec
-  return { ...rec, task, stats: emptyStats(), updatedAt: now }
+  return { ...rec, task, taskAt: now, stats: emptyStats(), updatedAt: now }
 }
 
-// P-4
+// P-4: 메모는 여러 줄이어도 한 문단으로 이어 붙인다
+export function postText(text: string): string {
+  const joined = text.split('\n').map(s => s.trim()).filter(Boolean).join(' ')
+  return mask(joined.length > POST_TEXT_LIMIT ? joined.slice(0, POST_TEXT_LIMIT) + '…' : joined)
+}
+
 export function applyPost(rec: SessionRecord, kind: PostKind, text: string, now: number): SessionRecord {
-  const post: Post = { kind, text: clean(text, 300), at: now }
+  const post: Post = { kind, text: postText(text), at: now }
   return { ...rec, posts: [...rec.posts, post].slice(-POST_LIMIT), updatedAt: now }
 }
 
@@ -201,7 +210,7 @@ export const PLAN_LIMIT = 20
 
 export function setPlan(rec: SessionRecord, steps: string[], now: number): SessionRecord {
   const plan = steps.map(t => clean(t, 200)).filter(Boolean).slice(0, PLAN_LIMIT).map(text => ({ text, status: 'todo' as StepStatus }))
-  return { ...rec, plan, updatedAt: now }
+  return { ...rec, plan, planAt: now, updatedAt: now }
 }
 
 export function setStep(rec: SessionRecord, step: number, status: StepStatus, now: number): SessionRecord | null {
@@ -257,4 +266,17 @@ export function clock(at: number, tzOffsetHours = 9): string {
 export function folderName(cwd: string): string {
   const parts = cwd.split(/[\\/]+/).filter(Boolean)
   return parts[parts.length - 1] ?? cwd
+}
+
+// P-3: 세션 탭의 뼈대. 이번 요청 뒤에 올라온 메모만 종류별로, 최근 것이 위로 온다.
+export type SessionSections = { decisions: Post[]; progress: Post[]; done: Post[]; planShown: boolean }
+
+export function sessionSections(rec: SessionRecord): SessionSections {
+  const mine = rec.posts.filter(p => p.at >= rec.taskAt).reverse()
+  return {
+    decisions: mine.filter(p => p.kind === 'decision'),
+    progress: mine.filter(p => p.kind === 'progress'),
+    done: mine.filter(p => p.kind === 'done'),
+    planShown: rec.plan.length > 0 && rec.planAt >= rec.taskAt,
+  }
 }

@@ -3,7 +3,7 @@ import { expect, test } from 'claude-code/testing'
 import {
   addCandidate, applyPost, applyPrompt, applySkillLoad, applyToolFailure, applyToolUse, derivedTodos, emptyRecord,
   extractFiredIds, globalChecks, isViewerAlive, markSkillsStale, mask, normalizeRecord, parseErrorsJson,
-  parseRulesHeader, pickSession, POST_LIMIT, removeCandidate, setPlan, setStep, STALE_MS,
+  parseRulesHeader, pickSession, POST_LIMIT, POST_TEXT_LIMIT, removeCandidate, sessionSections, setPlan, setStep, STALE_MS,
 } from './core'
 
 // 시험 이름에 설계서의 규칙 ID를 넣는다 (V-1)
@@ -129,4 +129,27 @@ test('P-5 setPlan and setStep keep the plan in order, steps counted from 1', () 
   expect(r.plan[1]?.status).toBe('doing')
   expect(setStep(r, 9, 'done', 3)).toBe(null)
   expect(setStep(r, 0, 'done', 3)).toBe(null)
+})
+
+test('P-3 session sections show only posts after the current request, newest first', () => {
+  let r = applyPrompt(emptyRecord('a', 'x', 0), '지난 요청', 1)
+  r = applyPost(r, 'decision', '지난 결정', 2)
+  r = setPlan(r, ['지난 계획'], 3)
+  r = applyPrompt(r, '이번 요청', 10)
+  r = applyPost(applyPost(r, 'progress', '첫 진행', 11), 'progress', '둘째 진행', 12)
+  r = applyPost(r, 'done', '끝남', 13)
+  let sec = sessionSections(r)
+  expect(sec.decisions).toEqual([])
+  expect(sec.progress.map(p => p.text)).toEqual(['둘째 진행', '첫 진행'])
+  expect(sec.done.map(p => p.text)).toEqual(['끝남'])
+  expect(sec.planShown).toBe(false)
+  sec = sessionSections(setPlan(r, ['이번 계획'], 14))
+  expect(sec.planShown).toBe(true)
+})
+
+test('P-4 a post keeps up to three sentences across lines, capped and masked', () => {
+  const r = applyPost(emptyRecord('a', 'x', 0), 'progress', '첫 문장.' + String.fromCharCode(10) + ' 둘째 문장 sk-ant-abcdefghijklmnopqrstuv.', 1)
+  expect(r.posts[0]?.text).toBe('첫 문장. 둘째 문장 [MASKED].')
+  const long = applyPost(emptyRecord('a', 'x', 0), 'done', 'ㄱ'.repeat(POST_TEXT_LIMIT + 5), 1)
+  expect(long.posts[0]?.text.length).toBe(POST_TEXT_LIMIT + 1)
 })

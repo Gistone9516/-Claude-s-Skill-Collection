@@ -1,5 +1,5 @@
-import type { Candidate, ErrorSummary, GlobalCheck, PostKind, SessionRecord, StepStatus } from './core'
-import { clock, derivedTodos, folderName, globalChecks } from './core'
+import type { Candidate, ErrorSummary, GlobalCheck, Post, SessionRecord, StepStatus } from './core'
+import { clock, derivedTodos, folderName, globalChecks, sessionSections } from './core'
 
 // 화면 조각. 상태와 동작 함수를 받아 트리만 그린다. 상태를 바꾸지 않는다 (설계서 2장).
 // 디자인 검토 2026-10-13: 색 대신 흐림과 굵게, 행 버튼에는 숫자 단축키 없음,
@@ -33,7 +33,6 @@ export type Actions = {
 
 type Ui = { Box: any; Text: any; Button: any }
 
-const KIND: Record<PostKind, string> = { progress: '진행', done: '완료', decision: '결정' }
 const ERROR_KIND: Record<string, string> = {
   tool_error: '도구 에러', blocked: '차단', rejected: '사용자 거부', interrupted: '중단', correction: '지적 후보',
 }
@@ -96,7 +95,33 @@ export function tabBar(ui: Ui, d: ViewData, a: Actions) {
   )
 }
 
-// 출력 우선순위: 요청과 결정 > 최근 진행 3개 > 계획 요약 > 에이전트, 저장소 > 지난 메모(한 줄로 자름)
+// P-3 (사용자 2026-10-13): 요청, 결정, 진행, 완료를 뼈대로 위에서 아래로 읽고, 그 밑에 비고.
+// 이번 요청 뒤의 메모만 보인다. 빈 칸도 제목은 남겨 칸의 자리가 바뀌지 않게 한다.
+const SECTION_LIMIT = 6
+
+function Section(ui: Ui, title: string, posts: Post[], opts: { bold?: boolean; dim?: boolean } = {}) {
+  const { Box, Text } = ui
+  const shown = posts.slice(0, SECTION_LIMIT)
+  const hidden = posts.length - shown.length
+  return (
+    <Box flexDirection="column" marginBottom={1}>
+      <Text bold>{title}{posts.length > 1 ? ` ${posts.length}` : ''}</Text>
+      {posts.length === 0 && <Text dimColor>  없음</Text>}
+      {shown.map(p => (
+        <Box key={'post-' + p.at + p.kind} flexDirection="row">
+          <Box width={8} flexShrink={0}>
+            <Text dimColor>  {clock(p.at)}</Text>
+          </Box>
+          <Text bold={opts.bold} dimColor={opts.dim} wrap="wrap">
+            {p.text}
+          </Text>
+        </Box>
+      ))}
+      {hidden > 0 && <Text dimColor>  이전 {hidden}건 더 있음</Text>}
+    </Box>
+  )
+}
+
 export function sessionTab(ui: Ui, d: ViewData, a: Actions) {
   const { Box, Text, Button } = ui
   const s = d.shown
@@ -110,33 +135,34 @@ export function sessionTab(ui: Ui, d: ViewData, a: Actions) {
     )
   }
   const age = Math.max(0, Math.round((d.now - s.updatedAt) / 60000))
-  const decision = [...s.posts].reverse().find(p => p.kind === 'decision')
-  const rest = s.posts.filter(p => p !== decision).reverse()
-  const recent = rest.slice(0, 3)
-  const older = rest.slice(3, 8)
+  const sec = sessionSections(s)
   const doing = s.plan.find(p => p.status === 'doing')
   const doneSteps = s.plan.filter(p => p.status === 'done').length
+  const pending = s.repos.filter(r => r.failed || r.dirty > 0 || r.unpushed > 0)
   return (
     <Box flexDirection="column">
-      <Box flexDirection="row" columnGap={2}>
+      <Box flexDirection="row" columnGap={2} marginBottom={1}>
         <Text dimColor wrap="truncate-start">
-          {folderName(s.cwd)} · {s.id.slice(0, 8)} · {age === 0 ? '방금' : `${age}분 전`}
+          {folderName(s.cwd)}, {age === 0 ? '방금 갱신' : `${age}분 전 갱신`}
         </Text>
         {d.others > 1 && <Button key="next-session" label={`다른 세션 ${d.others - 1}개`} plain onPress={a.nextSession} />}
       </Box>
-      {Row(ui, '요청', s.task || '없음', { full: true })}
-      {decision && Row(ui, '결정', `${clock(decision.at)} ${decision.text}`, { bold: true, full: true })}
-      {recent.length === 0 && !decision && Row(ui, '진행', '진행 메모 없음', { dim: true })}
-      {recent.map(p => Row(ui, KIND[p.kind], `${clock(p.at)} ${p.text}`, { full: true, dim: p.kind === 'done' }))}
-      {s.plan.length > 0 &&
-        Row(ui, '계획', `${doneSteps}/${s.plan.length}${doing ? ` 진행 중: ${doing.text}` : ''}`, { full: true })}
-      {Row(ui, '에이전트', s.agents.length === 0 ? '없음' : s.agents.map(x => `${x.name} ${x.status}`).join(', '), { full: true })}
+      <Box flexDirection="column" marginBottom={1}>
+        <Text bold>요청</Text>
+        <Text wrap="wrap">  {s.task || '없음'}</Text>
+      </Box>
+      {Section(ui, '결정', sec.decisions, { bold: true })}
+      {Section(ui, '진행', sec.progress)}
+      {Section(ui, '완료', sec.done, { dim: true })}
+      <Text bold>비고</Text>
+      {sec.planShown &&
+        Row(ui, '계획', `${doneSteps}/${s.plan.length} 단계${doing ? `, 지금 ${doing.text}` : ''}`, { full: true })}
+      {Row(ui, '에이전트', s.agents.length === 0 ? '실행 중 없음' : s.agents.map(x => `${x.name} ${x.status}`).join(', '), { full: true, dim: s.agents.length === 0 })}
       {s.repos.length === 0 && Row(ui, '저장소', '확인 전', { dim: true })}
-      {s.repos.map(r =>
-        Row(ui, '저장소', r.failed ? `${folderName(r.path)} 갱신 실패` : `${folderName(r.path)}  변경 ${r.dirty} · push 대기 ${r.unpushed}`, { full: true }),
+      {s.repos.length > 0 && pending.length === 0 && Row(ui, '저장소', '모두 깨끗함', { dim: true })}
+      {pending.map(r =>
+        Row(ui, '저장소', r.failed ? `${folderName(r.path)} 갱신 실패` : `${folderName(r.path)} 변경 ${r.dirty}, push 대기 ${r.unpushed}`, { full: true }),
       )}
-      {older.length > 0 && <Text> </Text>}
-      {older.map(p => Row(ui, KIND[p.kind], `${clock(p.at)} ${p.text}`, { dim: true }))}
     </Box>
   )
 }
