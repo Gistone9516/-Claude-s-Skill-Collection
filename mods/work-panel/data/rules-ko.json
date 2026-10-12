@@ -1,0 +1,890 @@
+{
+ "G-01": {
+  "ko": "AI용 글은 영어, 사람용 글은 한국어로 쓴다",
+  "en": "Language split"
+ },
+ "G-02": {
+  "ko": "사용자에게는 한국어로 말한다",
+  "en": "User is Korean"
+ },
+ "G-03": {
+  "ko": "opus는 현재 세션 모델을 뜻한다",
+  "en": "\"opus\" is a role name"
+ },
+ "G-04": {
+  "ko": "반복 실수는 알맞은 곳에 한두 줄로 기록한다",
+  "en": "Self-learning routing"
+ },
+ "G-05": {
+  "ko": "절대적 출처는 없고 증거 등급만 있다",
+  "en": "No canonical source exists, only evidence grades"
+ },
+ "G-06": {
+  "ko": "사용자의 말도 출처로 확인한다",
+  "en": "The user's statement is not canonical either"
+ },
+ "G-07": {
+  "ko": "라벨만으로는 출처가 되지 않는다",
+  "en": "A label is not a source"
+ },
+ "G-08": {
+  "ko": "파일을 읽고 나서 말한다",
+  "en": "Read the file before asserting anything about it"
+ },
+ "G-09": {
+  "ko": "기억을 사실처럼 말하지 않는다",
+  "en": "Never pass internal recall off as fact"
+ },
+ "G-10": {
+  "ko": "작업 전에 현장과 주변 두 에이전트로 브리핑한다",
+  "en": "Self-brief first, as a pair"
+ },
+ "G-11": {
+  "ko": "브리핑 뒤 사용자에게 계획을 알린다",
+  "en": "Then brief the user"
+ },
+ "G-22": {
+  "ko": "팬아웃은 사전 승인을 받는다",
+  "en": "Fan-out needs prior approval"
+ },
+ "G-12": {
+  "ko": "분석 요청에는 분석만 내놓는다",
+  "en": "Analysis requests produce analysis only"
+ },
+ "G-13": {
+  "ko": "단순한 명령은 단순하게 처리한다",
+  "en": "Keep simple commands simple"
+ },
+ "G-29": {
+  "ko": "서사의 방향은 사용자에게 먼저 묻는다",
+  "en": "A narrative's direction is the user's, never mine"
+ },
+ "G-28": {
+  "ko": "문서는 닫힌 뒤에 건드린다",
+  "en": "A document must be closed before I touch it"
+ },
+ "G-25": {
+  "ko": "시각 결과는 Playwright 스크린샷으로 보인다",
+  "en": "Show visual results with Playwright screenshots, never file attachments"
+ },
+ "G-26": {
+  "ko": "기억은 범위별로 나눠 저장하고 위치를 알린다",
+  "en": "Route memory by scope, and say where it went"
+ },
+ "G-27": {
+  "ko": "manifest.json이 필수 구성을 정한다",
+  "en": "manifest.json declares what this install must contain"
+ },
+ "AI-1": {
+  "ko": "모델은 틀린 말도 자신 있게 한다",
+  "en": "It asserts false things with full confidence"
+ },
+ "AI-2": {
+  "ko": "모델은 기억을 사실처럼 내놓는다",
+  "en": "It presents recall as fact"
+ },
+ "AI-3": {
+  "ko": "세션은 일부만 보므로 전체로는 틀리기 쉽다",
+  "en": "A session sees a part, never the whole, so its defects are locally reasonable and globally wrong"
+ },
+ "AI-4": {
+  "ko": "같은 모델끼리의 합의는 약한 신호다",
+  "en": "Same model, same blind spots — consensus is a weak signal"
+ },
+ "AI-5": {
+  "ko": "모델은 합의하려 해서 타당한 비판을 낮춘다",
+  "en": "It wants to converge, so it downgrades valid critique"
+ },
+ "AI-6": {
+  "ko": "필요한 입력이 없으면 대역을 지어낸다",
+  "en": "It fabricates a stand-in when a required input is missing"
+ },
+ "AI-7": {
+  "ko": "근거 없는 규칙은 개선되어 사라진다",
+  "en": "A rule without rationale gets improved away"
+ },
+ "AI-8": {
+  "ko": "성공 신호는 스스로 보고한 것일 뿐이다",
+  "en": "Success signals are self-reported, not verified"
+ },
+ "AI-9": {
+  "ko": "서브에이전트는 절대 경로도 cwd 기준으로 쓴다",
+  "en": "Subagents write relative to cwd even when handed an absolute path"
+ },
+ "AI-10": {
+  "ko": "전달 과정에서 발견 내용이 압축되어 사라진다",
+  "en": "Relay compresses away the finding"
+ },
+ "AI-11": {
+  "ko": "응답이 길수록 지시 준수가 떨어진다",
+  "en": "Instruction adherence degrades as one response grows"
+ },
+ "AI-12": {
+  "ko": "출력 상한에 닿으면 실행 전체를 잃는다",
+  "en": "Output is hard-capped, and hitting the cap loses the whole run"
+ },
+ "AI-13": {
+  "ko": "중요해 보이는 파일만 보고 나머지는 훑는다",
+  "en": "It gravitates to the files that look important and skims the rest"
+ },
+ "AI-14": {
+  "ko": "대체로 맞는 패널은 검사받지 않게 된다",
+  "en": "A panel that is usually right stops being checked"
+ },
+ "AI-15": {
+  "ko": "모든 절을 비슷한 길이로 사족까지 채운다",
+  "en": "It fills every section to a similar length and pads with 사족 to reach it"
+ },
+ "AI-16": {
+  "ko": "시킨 수정 대신 우회책을 쓰고 수정이라 보고한다",
+  "en": "It substitutes a workaround for the commanded fix, and reports it as the fix"
+ },
+ "AI-17": {
+  "ko": "실패를 덧붙여 기록하다 규칙 준수가 실패가 된다",
+  "en": "It records every failure by appending, until following the rules is itself the failure"
+ },
+ "VF-1": {
+  "ko": "절대적 출처는 없고 등급만 있다",
+  "en": "There is no canonical source, only grades"
+ },
+ "VF-2": {
+  "ko": "문서도 절대적 출처가 아니다",
+  "en": "A document is not canonical"
+ },
+ "VF-3": {
+  "ko": "라벨만으로는 출처가 되지 않는다",
+  "en": "A label is not a source"
+ },
+ "VF-4": {
+  "ko": "세션은 틀린 말도 자신 있게 한다",
+  "en": "A session asserts false things with full confidence"
+ },
+ "VF-5": {
+  "ko": "세션의 결함은 국소적으론 맞고 전체론 틀리다",
+  "en": "The signature of a session's defects is: locally reasonable, globally wrong"
+ },
+ "VF-6": {
+  "ko": "새 결함은 에이전트가 알려진 것은 스크립트가 맡는다",
+  "en": "Agents discover new defect shapes; scripts remember known ones"
+ },
+ "VF-23": {
+  "ko": "게이트는 묶어서 처리하고 단건은 이유가 있어야 한다",
+  "en": "Gates batch by default; a single-item gate has to earn itself (user directive 2026-09-07"
+ },
+ "VF-7": {
+  "ko": "브리핑은 상시 예외로 둔다",
+  "en": "Standing exception (user directive 2026-07-29)"
+ },
+ "VF-8": {
+  "ko": "트리거는 판단이 아니라 셀 수 있게 정한다",
+  "en": "The triggers are countable, not a judgement (user directive 2026-07-30)"
+ },
+ "VF-21": {
+  "ko": "브리핑은 관점별 에이전트 한 쌍으로 한다",
+  "en": "The brief is a pair, one agent per lens (user directive 2026-07-30"
+ },
+ "VF-9": {
+  "ko": "어느 관점이든 주의할 것 없음이라 답할 수 있다",
+  "en": "Either lens must be able to answer \"주의할 것 없음\""
+ },
+ "VF-10": {
+  "ko": "명령형으로 쓴다",
+  "en": "Shape is imperative"
+ },
+ "VF-11": {
+  "ko": "규범 문장마다 ID를 붙인다",
+  "en": "Every normative statement carries an ID"
+ },
+ "VF-12": {
+  "ko": "ID마다 출처 근거 시험을 단다",
+  "en": "Every ID carries source, rationale, test"
+ },
+ "VF-13": {
+  "ko": "머리말에 ID 범위와 개수를 적는다",
+  "en": "The header states ID ranges and counts"
+ },
+ "VF-14": {
+  "ko": "규범 절과 서술 절을 나눈다",
+  "en": "Normative and narrative sections are separated"
+ },
+ "VF-15": {
+  "ko": "틀린 문서는 주석 대신 고친다",
+  "en": "Correct a wrong document; do not annotate it (user directive 2026-07-29)"
+ },
+ "VF-16": {
+  "ko": "반복 작업은 새 문서 대신 제자리에서 고친다",
+  "en": "Do not create a new document for repeated work — revise in place"
+ },
+ "VF-24": {
+  "ko": "고유명사가 흔들리면 기호 대장 표 하나를 둔다",
+  "en": "A document set whose proper nouns keep drifting gets a symbol registry: one table, no enforcement script (user directive 2026-09-23)"
+ },
+ "VF-22": {
+  "ko": "결정은 _shadow 아래 같은 경로 노트에 남긴다",
+  "en": "A decision gets a note at _shadow/<same relative path>.md (user directive 2026-07-30)"
+ },
+ "VF-18": {
+  "ko": "색인이 답하는 질문에 패키지를 다시 읽지 않는다",
+  "en": "Never re-read a package to answer a question the index answers"
+ },
+ "VF-19": {
+  "ko": "줄 구간이 아니라 단위 전체를 읽는다",
+  "en": "Read whole units, never line windows"
+ },
+ "VF-20": {
+  "ko": "grep 결과 없음은 부재의 증거가 아니다",
+  "en": "grep returning nothing is not proof of absence"
+ },
+ "DG-1": {
+  "ko": "행동 규칙에는 ID 출처 근거 시험을 단다",
+  "en": "Behavior rules carry ID, source, rationale, test"
+ },
+ "DG-2": {
+  "ko": "고치기 전에 먼저 분류한다",
+  "en": "Classify before fixing"
+ },
+ "DG-3": {
+  "ko": "검사보다 불가능하게 만드는 쪽을 택한다",
+  "en": "Prefer impossible over checked"
+ },
+ "DG-4": {
+  "ko": "큰 변경은 명세를 먼저 둔다",
+  "en": "Spec precedes substantial change"
+ },
+ "DG-5": {
+  "ko": "크기는 규칙이 아니라 신호다",
+  "en": "Size is a signal, not a rule"
+ },
+ "DG-6": {
+  "ko": "땜질을 겹겹이 쌓지 않는다",
+  "en": "No stacked patchwork"
+ },
+ "DG-7": {
+  "ko": "한 축의 확증 편향을 피한다",
+  "en": "No single-axis confirmation bias"
+ },
+ "DG-12": {
+  "ko": "준비가 얕으면 결과도 얕다",
+  "en": "Shallow preparation yields shallow results"
+ },
+ "DG-17": {
+  "ko": "쓰이지 않는 코드는 git 이력으로 먼저 분류한다",
+  "en": "Removing inert code: classify by git history first"
+ },
+ "DG-18": {
+  "ko": "부작용만으로 검증된 기능을 지우지 않는다",
+  "en": "Removing working code: never remove a verified feature on a side effect alone"
+ },
+ "SH-1": {
+  "ko": "복잡한 인라인 셸을 쓰지 않는다",
+  "en": "No complex inline shell"
+ },
+ "SH-2": {
+  "ko": "Write에 넘긴 이스케이프는 제어 문자가 된다",
+  "en": "Escapes handed to the Write tool become real control characters (measured 2026-07-21)"
+ },
+ "SH-33": {
+  "ko": "겹 백슬래시는 하나로 줄어든다",
+  "en": "A doubled backslash collapses to one before the shell or Python sees it, and a quoted heredoc does not prevent it (measured 2026-09-02)"
+ },
+ "SH-3": {
+  "ko": "수정 스크립트의 앵커 덧붙임 중복을 조심한다",
+  "en": "Anchor-append duplication in edit scripts (measured 2026-07-29, twice)"
+ },
+ "SH-4": {
+  "ko": "파일을 Get-Content로 읽어 되쓰지 않는다",
+  "en": "Never round-trip a file through Get-Content -Raw | Set-Content (measured 2026-07-22)"
+ },
+ "SH-5": {
+  "ko": "Remove-Item은 260자 넘는 경로를 못 지운다",
+  "en": "Remove-Item -Recurse cannot delete paths of 260+ characters and fails silently under -ErrorAction SilentlyContinue (measured 2026-07-27)"
+ },
+ "SH-6": {
+  "ko": "260자 넘는 경로는 예외를 낸다",
+  "en": "A 260+ character path throws PathTooLongException, and a generic catch misreports it as a file lock"
+ },
+ "SH-7": {
+  "ko": "병렬 에이전트 중에는 git stash를 쓰지 않는다",
+  "en": "No git stash / checkout / restore while parallel agents are running"
+ },
+ "SH-9": {
+  "ko": "-Force 없이는 숨김 시스템 파일이 안 보인다",
+  "en": "Get-Item and Get-ChildItem without -Force cannot see Hidden+System files (measured 2026-07-28)"
+ },
+ "SH-10": {
+  "ko": "PowerShell 변수명은 대소문자를 구분하지 않는다",
+  "en": "PowerShell variable names are case-insensitive, so $l clobbers $L (measured 2026-07-27)"
+ },
+ "SH-11": {
+  "ko": "Measure-Object -Line은 빈 줄을 뺀다",
+  "en": "Measure-Object -Line does not count blank lines (measured 2026-07-20)"
+ },
+ "SH-12": {
+  "ko": "한국어 콘솔은 cp949다",
+  "en": "The Korean console is cp949"
+ },
+ "SH-32": {
+  "ko": "PowerShell 도구는 관리자 권한으로 돈다",
+  "en": "The PowerShell tool runs elevated, so token-scoped state is invisible to the user, and checking it from that same shell is not verification (measured 2026-08-15)"
+ },
+ "SH-34": {
+  "ko": "tsc -b는 소스 옆에 .js를 만든다",
+  "en": "tsc -b emits .js beside the sources and the bundler imports those instead of the .ts (measured 2026-09-05)"
+ },
+ "SH-13": {
+  "ko": "중첩 따옴표 인라인은 파서를 깨뜨린다",
+  "en": "Nested quotes inline break the parser"
+ },
+ "SH-14": {
+  "ko": "here-string 본문의 큰따옴표는 문자열을 쪼갠다",
+  "en": "A PowerShell here-string still splits if its body contains double quotes (measured 2026-07-20)"
+ },
+ "SH-15": {
+  "ko": "LF 줄바꿈 .bat은 cmd가 읽지 못한다",
+  "en": "A .bat with LF line endings is not understood by cmd (measured 2026-07-21)"
+ },
+ "SH-16": {
+  "ko": "git diff에 나타나지 않는다",
+  "en": "This does not show up in git diff"
+ },
+ "SH-29": {
+  "ko": "BOM 없는 .ps1은 cp949로 읽혀 한글이 깨진다",
+  "en": "A .ps1 without a BOM is read by PowerShell 5.1 as cp949, so Korean inside the script is mojibaked (measured 2026-08-01)"
+ },
+ "SH-17": {
+  "ko": "비ASCII 경로에서 깨지는 건 WSL 경로다",
+  "en": "It is the /mnt/c/... WSL form that breaks on non-ASCII paths, not the Bash tool (re-measured 2026-07-30)"
+ },
+ "SH-18": {
+  "ko": "Bash 도구와 wsl bash는 별개 셸이다",
+  "en": "The Bash tool and PowerShell wsl bash are separate shell contexts"
+ },
+ "SH-19": {
+  "ko": "wsl은 호출 사이에 재시작해 /tmp가 비워진다",
+  "en": "wsl restarts silently between tool calls and empties /tmp"
+ },
+ "SH-20": {
+  "ko": "Node의 # import는 한글 경로에서 실패한다",
+  "en": "Node's # subpath imports fail on paths containing Korean and spaces (measured 2026-07-21)"
+ },
+ "SH-30": {
+  "ko": "PowerShell의 npm 호출 연산자는 인자를 깬다",
+  "en": "Calling npm or npx with the call operator from PowerShell mangles the arguments (measured 2026-08-02)"
+ },
+ "SH-31": {
+  "ko": "~/.ssh에 Write로 만든 파일은 거부된다",
+  "en": "A file the Write tool creates in ~/.ssh inherits the folder ACL, and OpenSSH refuses it (measured 2026-08-15)"
+ },
+ "SH-21": {
+  "ko": "autocrlf=true는 줄바꿈을 바꿔 쓴다",
+  "en": "Windows autocrlf=true rewrites line endings on stash, pop and checkout"
+ },
+ "SH-27": {
+  "ko": "prettier --write 전에 설정을 확인한다",
+  "en": "Check for a prettier config before running prettier --write (measured 2026-07-30)"
+ },
+ "SH-28": {
+  "ko": "막힌 git 동사는 읽기 명령과 파일 작업으로 대신한다",
+  "en": "When a destructive git verb is blocked by permission, reach the same end with a read-only git command plus a file operation (measured 2026-07-30)"
+ },
+ "SH-22": {
+  "ko": "git add -- 는 무시 경로가 있으면 다 거부한다",
+  "en": "git add -- <paths> refuses the whole set if one path is ignored (measured 2026-07-21)"
+ },
+ "SH-23": {
+  "ko": "커밋 전에 루트 README.md를 고친다",
+  "en": "Update the root README.md before committing"
+ },
+ "SH-26": {
+  "ko": "git은 git -C 저장소 형태로 쓴다",
+  "en": "Write git commands as git -C <repo> ..., never cd <repo> && git"
+ },
+ "SH-24": {
+  "ko": "하드코딩된 절대 경로를 찾아낸다",
+  "en": "Hunt hardcoded absolute paths"
+ },
+ "SH-25": {
+  "ko": "프로젝트 메모리는 ~/.claude 아래에 있다",
+  "en": "Project memory and session records live under ~/.claude/projects/<path key>/"
+ },
+ "AO-1": {
+  "ko": "메커니즘은 도구 설명이 정책은 이 파일이 기준이다",
+  "en": "The tool descriptions are canonical for mechanics; this file is canonical for policy"
+ },
+ "AO-2": {
+  "ko": "opus는 병목이자 가장 값진 심판이다",
+  "en": "opus is the bottleneck and the highest-value judge, not the budget constraint"
+ },
+ "AO-3": {
+  "ko": "추론 깊이를 위험도에 맞춘다",
+  "en": "Match reasoning depth to stakes"
+ },
+ "AO-4": {
+  "ko": "단계가 하는 일별로 모델을 나눈다",
+  "en": "Split the decision by what the stage does, not by a blanket default"
+ },
+ "AO-5": {
+  "ko": "핵심 판단은 agent()에 맡기지 않는다",
+  "en": "Load-bearing judgement is never an agent()"
+ },
+ "AO-6": {
+  "ko": "구조를 보고 고른다",
+  "en": "Choose by structure"
+ },
+ "AO-7": {
+  "ko": "놀고 있는 모델을 피한다",
+  "en": "The idle model"
+ },
+ "AO-8": {
+  "ko": "Workflow는 사용자가 명시적으로 동의해야 돈다",
+  "en": "A Workflow runs only on the user's explicit opt-in"
+ },
+ "AO-9": {
+  "ko": "무인 연속 실행은 비용 분산과 다른 도구다",
+  "en": "Unattended continuation is a different tool from cost offload"
+ },
+ "AO-10": {
+  "ko": "맥락이 핵심이면 새로 띄우지 않고 이어 쓴다",
+  "en": "Continue an existing agent instead of respawning when its context is the point"
+ },
+ "AO-11": {
+  "ko": "끝난 Workflow의 기록이 결과의 기준이다",
+  "en": "A finished Workflow's journal is the ground truth for what it returned"
+ },
+ "AO-12": {
+  "ko": "팬아웃 전에 개수와 내역을 보고한다",
+  "en": "Report the count with its breakdown before fanning out (G-22)"
+ },
+ "AO-13": {
+  "ko": "종합과 비용 두 한도가 걸린다",
+  "en": "Two caps bind: synthesis, and cost"
+ },
+ "AO-14": {
+  "ko": "쓰기는 순차로 읽기는 병렬로 한다",
+  "en": "Writes are serial; parallel is for reading"
+ },
+ "AO-15": {
+  "ko": "띄우는 에이전트의 기본값을 정해 둔다",
+  "en": "Defaults for a spawned agent"
+ },
+ "AO-16": {
+  "ko": "사실 조사 가능성 과제는 근거를 필수로 댄다",
+  "en": "Evidence-grounding is mandatory for factual, research and feasibility tasks"
+ },
+ "AO-17": {
+  "ko": "출력이 큰 작업은 나눠서 한다",
+  "en": "High-output tasks are split, never single-shot"
+ },
+ "AO-19": {
+  "ko": "두 방향의 실패를 모두 막는다",
+  "en": "Guard both failure directions"
+ },
+ "AO-20": {
+  "ko": "정찰 수정 검증 순서로 한다",
+  "en": "Scout, edit, verify"
+ },
+ "AO-21": {
+  "ko": "코드 쓰는 에이전트는 과제 전체를 먼저 읽는다",
+  "en": "An agent that writes code reads its whole assignment first"
+ },
+ "AO-22": {
+  "ko": "통합과 계약은 opus가 맡는다",
+  "en": "opus owns integration and contracts"
+ },
+ "AO-24": {
+  "ko": "UI 작업은 범위별 설계 에이전트 한 쌍을 붙인다",
+  "en": "UI work carries a design pair, one agent per scope (user directive 2026-09-02)"
+ },
+ "AO-23": {
+  "ko": "범위가 커지면 분할 자체가 산출물이 된다",
+  "en": "As scope grows, the partition becomes the deliverable"
+ },
+ "AU-1": {
+  "ko": "한 번에 한 호출만 하고 형식을 확인한다",
+  "en": "One call at a time, format verified"
+ },
+ "AU-2": {
+  "ko": "응답이 잘리면 호출이 깨져 세션이 조용히 멈춘다",
+  "en": "Response truncation produces a malformed call, the leading cause of a long session stopping silently"
+ },
+ "AU-3": {
+  "ko": "자동화 스크립트는 단계별 try/except로 감싼다",
+  "en": "Wrap every automation script in per-stage try/except"
+ },
+ "AU-4": {
+  "ko": "멱등하고 재개 가능하게 만든다",
+  "en": "Make it idempotent and resumable"
+ },
+ "AU-17": {
+  "ko": "JavaScript이고 TypeScript가 아니다",
+  "en": "It is JavaScript, not TypeScript"
+ },
+ "AU-18": {
+  "ko": "Date.now와 Math.random은 예외를 던진다",
+  "en": "Date.now(), Math.random() and argless new Date() throw,"
+ },
+ "AU-19": {
+  "ko": "팬아웃은 추측 말고 선언된 예산으로 정한다",
+  "en": "Scale the fan-out from the declared budget, not from a guess"
+ },
+ "AU-5": {
+  "ko": "20분마다 상태를 점검한다",
+  "en": "Health-check every 20 minutes (user directive 2026-06-22)"
+ },
+ "AU-6": {
+  "ko": "병렬 에이전트 중에는 git stash를 쓰지 않는다",
+  "en": "No git stash / checkout / restore while parallel agents run"
+ },
+ "AU-7": {
+  "ko": "서브에이전트는 절대 경로도 cwd 기준으로 쓴다",
+  "en": "Subagents write files relative to cwd even when given an absolute path (measured 2026-06-24, AI-9),"
+ },
+ "AU-8": {
+  "ko": "워크플로의 성공 신호를 그대로 믿지 않는다",
+  "en": "Do not trust a workflow's own success signal (AI-8)"
+ },
+ "AU-9": {
+  "ko": "절대 경로를 줄 때 대체 경로도 알려 준다",
+  "en": "When handing an agent an absolute path, also state the fallback"
+ },
+ "AU-11": {
+  "ko": "받았으면 빈손으로 끝내지 않는다",
+  "en": "On receiving it, never end empty (user directive)"
+ },
+ "AU-12": {
+  "ko": "세션을 연 코드가 종료와 정리도 맡는다",
+  "en": "The code that opens a session owns its close and cleanup"
+ },
+ "AU-13": {
+  "ko": "기본 도구로는 디스크에서 일을 한다",
+  "en": "With the default tool set it performs the work on disk"
+ },
+ "AU-14": {
+  "ko": "stdin JSON의 system 키는 무시된다",
+  "en": "The system key in a stdin JSON payload is ignored"
+ },
+ "AU-15": {
+  "ko": "신호 문자열로 도달 가능성을 확인한다",
+  "en": "Check reachability with a sentinel"
+ },
+ "AU-21": {
+  "ko": "훅은 곧 바뀔 상태를 검사하지 않는다",
+  "en": "A hook must not inspect state that the observed command is about to change; pick the event by what the check reads"
+ },
+ "AU-25": {
+  "ko": "손으로 만든 JSON 훅 응답은 이스케이프한다",
+  "en": "Escape anything interpolated into a hand-built JSON hook response"
+ },
+ "AU-26": {
+  "ko": "스크립트 훅은 에이전트를 띄울 수 없다",
+  "en": "A script hook cannot spawn an agent"
+ },
+ "AU-24": {
+  "ko": "훅 메시지는 명령 한 문장과 규칙 ID만 쓴다",
+  "en": "A hook message is one imperative sentence plus the rule ID, never the rationale"
+ },
+ "AU-22": {
+  "ko": "가드 훅은 오탐이 없는 것을 고른다",
+  "en": "The selection criterion for a guard hook is zero false positives"
+ },
+ "AU-23": {
+  "ko": "훅은 등록 전에 비용을 따진다",
+  "en": "Cost the hook before registering it"
+ },
+ "WR-1": {
+  "ko": "AI용 글은 영어, 사람용 글은 한국어로 쓴다",
+  "en": "Language split"
+ },
+ "WR-2": {
+  "ko": "규칙이 아니라 사용자가 고른 글의 특징으로 쓴다",
+  "en": "Write from the features of writing the user chose, not from rules (user directives 2026-10-11)"
+ },
+ "WR-3": {
+  "ko": "문장부호를 아낀다",
+  "en": "Punctuation restraint (user directive 2026-06-12)"
+ },
+ "WR-4": {
+  "ko": "코드 주석은 더 엄격하게 같은 규칙을 따른다",
+  "en": "Code comments follow the same rule, more strictly (user directive 2026-06-13)"
+ },
+ "WR-5": {
+  "ko": "사람이 준 글은 그대로 쓰고 바꾸지 않는다",
+  "en": "Text supplied by a person is verbatim — never reworded, summarized or paraphrased"
+ },
+ "WR-6": {
+  "ko": "슬라이드는 최소한으로 만든다",
+  "en": "Presentation slides are minimalist"
+ },
+ "WR-7": {
+  "ko": "개조식 음슴체로 쓴다",
+  "en": "Style is 개조식 음슴체"
+ },
+ "WR-8": {
+  "ko": "카드 패턴을 쓴다",
+  "en": "The card pattern"
+ },
+ "WR-9": {
+  "ko": "기존 스타일을 먼저 분석하고 이어받는다",
+  "en": "Analyze the existing style first, then inherit it"
+ },
+ "WR-10": {
+  "ko": "원본과 데이터 무결성을 지킨다",
+  "en": "Preserve originals and data integrity"
+ },
+ "WR-11": {
+  "ko": "시각 결과는 Playwright 스크린샷으로 보인다",
+  "en": "Show visual results with Playwright screenshots, not file attachments"
+ },
+ "WR-12": {
+  "ko": "길이는 눈대중 말고 스크립트로 잰다",
+  "en": "Never estimate length by eye — measure it with a script first (user directive 2026-07-23)"
+ },
+ "WR-13": {
+  "ko": "덜어내고 차분하게 쓴다",
+  "en": "Subtract, and stay calm"
+ },
+ "WR-15": {
+  "ko": "검증 상태는 결과물에 넣지 않는다",
+  "en": "Verification status stays out of the deliverable (user directive 2026-08-09)"
+ },
+ "WR-16": {
+  "ko": "서술형 결과물은 독자의 결정을 위해 쓴다",
+  "en": "A narrative deliverable is written for the reader's decision, not as my audit trail (user directive 2026-09-09)"
+ },
+ "WR-17": {
+  "ko": "산문 기준 수치는 참고 파일에 둔다",
+  "en": "Measured prose baselines live in reference/korean-prose-baselines.md"
+ },
+ "WR-14": {
+  "ko": "교훈은 정해진 방식으로 이 파일에 넣는다",
+  "en": "How a lesson enters this file (user directive 2026-10-11)"
+ },
+ "RD-1": {
+  "ko": "독자가 형식을 정한다",
+  "en": "The reader decides the form (user 2026-10-12)"
+ },
+ "RD-2": {
+  "ko": "체크리스트 말고 모범 사례의 특징으로 쓴다",
+  "en": "Write from the exemplar's features, not from a checklist"
+ },
+ "RD-3": {
+  "ko": "포트폴리오는 첫 화면 문제 나머지 순으로 쓴다",
+  "en": "Portfolio repo: first screen, then problems, then the rest"
+ },
+ "RD-4": {
+  "ko": "작업 저장소는 SH-23 다섯 항목을 순서대로 둔다",
+  "en": "Working repo: the SH-23 five, in reading order"
+ },
+ "RD-5": {
+  "ko": "깊이는 접고 핵심은 접지 않는다",
+  "en": "Fold depth, never the point"
+ },
+ "RD-6": {
+  "ko": "AI 색인은 구조도와 하위 README에 둔다",
+  "en": "The AI index lives in the structure map and in sub-folder READMEs"
+ },
+ "RD-7": {
+  "ko": "독자가 누를 수 있는 근거를 둔다",
+  "en": "Evidence a reader can click"
+ },
+ "RD-8": {
+  "ko": "GitHub가 렌더링하는 범위 안에서 쓴다",
+  "en": "What GitHub renders (measured 2026-10-12 through gh api markdown, mode gfm)"
+ },
+ "RD-9": {
+  "ko": "보고하고 이 파일이 바뀌는 방식을 따른다",
+  "en": "Report, and how this file changes"
+ },
+ "DC-1": {
+  "ko": "추출 결과는 항상 UTF-8 파일로 쓴다",
+  "en": "Always write extraction output to a UTF-8 file"
+ },
+ "DC-2": {
+  "ko": "건드린 절의 linesegarray를 모두 지운다",
+  "en": "Remove every linesegarray in the section you touched"
+ },
+ "DC-3": {
+  "ko": "삽입 이미지를 바꿀 때 hashkey를 지운다",
+  "en": "Delete the hashkey when replacing an embedded image"
+ },
+ "DC-4": {
+  "ko": "텍스트 패치에 CJK 정규식 문자 클래스를 쓰지 않는다",
+  "en": "No CJK regex character classes in a text patch"
+ },
+ "DC-5": {
+  "ko": "다시 묶을 때 규정을 따른다",
+  "en": "Repackaging"
+ },
+ "DC-6": {
+  "ko": "전달 전에 검증한다",
+  "en": "Verify before delivery"
+ },
+ "DC-7": {
+  "ko": "복구하시겠습니까는 오류가 아닌 경고다",
+  "en": "\"복구하시겠습니까?\" is a warning, not an error"
+ },
+ "DC-8": {
+  "ko": "Content_Types의 빈 Default를 의심한다",
+  "en": "The usual cause is <Default xmlns=\"\" .../> in [Content_Types].xml"
+ },
+ "DC-9": {
+  "ko": "진단 기준은 .NET Package.Open이다",
+  "en": "The diagnostic oracle is .NET System.IO.Packaging.Package.Open"
+ },
+ "DC-10": {
+  "ko": "python-pptx 왕복은 내장 글꼴을 잃는다",
+  "en": "A python-pptx round-trip drops embedded fonts (.fntdata) and breaks the deck"
+ },
+ "DC-11": {
+  "ko": "슬라이드는 sldIdLst와 rId를 둘 다 지운다",
+  "en": "Removing a slide means removing both the sldIdLst entry in presentation.xml and its rId in presentation.xml.rels"
+ },
+ "DC-12": {
+  "ko": "진단할 때는 변수를 하나씩 바꾼다",
+  "en": "Change one variable at a time when diagnosing"
+ },
+ "DC-15": {
+  "ko": "한글 COM만이 문서가 열리는지 증명한다",
+  "en": "Hangul COM works here and is the only oracle that proves a document opens (measured 2026-08-01)"
+ },
+ "DC-16": {
+  "ko": "treatAsChar 표는 쪽을 넘기면 앞 쪽이 빈다",
+  "en": "A table with treatAsChar=\"1\" cannot split across pages, so growing it past one page blanks the page before it (measured 2026-08-22)"
+ },
+ "DC-17": {
+  "ko": "cellSz 높이는 적게 잡고 크게 잡지 않는다",
+  "en": "Under-estimate cellSz height, never over-estimate"
+ },
+ "KT-1": {
+  "ko": "킷 코드는 범용으로 두고 인스턴스 값을 넣지 않는다",
+  "en": "Kit code stays generic — zero instance literals"
+ },
+ "KT-2": {
+  "ko": "인스턴스마다 코드를 포크하거나 복제하지 않는다",
+  "en": "Never fork or clone the code per instance"
+ },
+ "KT-3": {
+  "ko": "한 인스턴스 작업 중 그 값을 킷에 넣지 않는다",
+  "en": "While working on one instance, do not push that instance's specifics into the kit"
+ },
+ "KT-4": {
+  "ko": "인스턴스 값이 킷에 새면 실패하는 테스트를 둔다",
+  "en": "Guard it with a test that fails when an instance literal leaks into kit code"
+ },
+ "DF-1": {
+  "ko": "관점들은 같은 모델이라 독립적이지 않다",
+  "en": "Lenses are the same model and are therefore not epistemically independent"
+ },
+ "DF-3": {
+  "ko": "opus는 자기 평가에 후하다",
+  "en": "opus self-grading bias (AI-5)"
+ },
+ "DF-4": {
+  "ko": "사용자의 명시적 설계 의도를 뭉개지 않는다",
+  "en": "Never flatten the user's explicit design intent (user directive, 2026-06-28)"
+ },
+ "DF-6": {
+  "ko": "범위로 정한 절만 개선한다",
+  "en": "Improve only the scoped sections"
+ },
+ "DF-7": {
+  "ko": "매 라운드 기준본을 다시 뽑는다",
+  "en": "Re-extract the canonical each round"
+ },
+ "DF-8": {
+  "ko": "비판은 판결이 아니라 단서다",
+  "en": "A critique is a lead, not a verdict"
+ },
+ "BF-1": {
+  "ko": "예측보다 정확함이 낫다",
+  "en": "Correct beats predict"
+ },
+ "BF-2": {
+  "ko": "정렬 확인을 세 번 한다",
+  "en": "Three alignment checks"
+ },
+ "BF-3": {
+  "ko": "무한 반복을 막는다",
+  "en": "Anti-infinite"
+ },
+ "BF-4": {
+  "ko": "양이 검증은 아니다",
+  "en": "Volume is not verification"
+ },
+ "BF-5": {
+  "ko": "opus",
+  "en": "opus"
+ },
+ "BF-6": {
+  "ko": "전권 위임 실행은 막힘 없이 자율로 간다",
+  "en": "Non-blocking autonomy for full-delegation runs"
+ },
+ "BF-7": {
+  "ko": "코드는 항상 소프트웨어 공학 원칙으로 짠다",
+  "en": "Code is built with software-engineering discipline, always (user directive 2026-10-11"
+ },
+ "HX-3": {
+  "ko": "styleIDRef를 적용한다",
+  "en": "Apply styleIDRef. Changing only paraPrIDRef is fake"
+ },
+ "HX-4": {
+  "ko": "구분자로 묶지 말고 단계로 쪼갠다",
+  "en": "Do not bundle information with separators — decompose into levels"
+ },
+ "HX-5": {
+  "ko": "시작 전 header.xml에서 단계 체계를 읽는다",
+  "en": "Read the template's level system out of header.xml before starting"
+ },
+ "HX-6": {
+  "ko": "깊이별 단계 표를 만들어 그대로 적용한다",
+  "en": "Build a depth-to-level mapping table and apply it literally"
+ },
+ "HX-7": {
+  "ko": "linesegarray를 지운다",
+  "en": "Delete linesegarray — the single most important rule"
+ },
+ "HX-8": {
+  "ko": "절대 금지 사항을 지킨다",
+  "en": "Absolute prohibitions"
+ },
+ "HX-9": {
+  "ko": "절은 역순으로 처리한다",
+  "en": "Process sections in reverse order (Ⅳ → Ⅲ → Ⅱ → Ⅰ)"
+ },
+ "HX-10": {
+  "ko": "본문 작성 관례를 따른다",
+  "en": "Writing conventions for the body"
+ },
+ "HX-11": {
+  "ko": "체크리스트를 확인한다",
+  "en": "Checklist"
+ },
+ "HX-12": {
+  "ko": "이 파일이 바뀌는 방식을 따른다",
+  "en": "How this file changes"
+ },
+ "HX-1": {
+  "ko": "문단마다 부모 구조를 파악하고 쓴다",
+  "en": "Do not simply walk the text; establish each paragraph's parent structure"
+ },
+ "HX-2": {
+  "ko": "글머리 기호를 본문 텍스트에 넣지 않는다",
+  "en": "Never put a bullet marker (◦, ·, -, ①, 1., 가.) into <hp:t> text"
+ },
+ "HX-13": {
+  "ko": "셀은 cellAddr로 찾고 예시 회색 서식을 바꾼다",
+  "en": "Address cells by cellAddr, and replace the template's grey example styles"
+ },
+ "HX-14": {
+  "ko": "그림 삽입은 세 곳을 함께 고친다",
+  "en": "Embedding a picture takes three coordinated changes, and the units are not obvious"
+ },
+ "HX-15": {
+  "ko": "쪽 맞춤은 산수이고 글자 축소로는 안 된다",
+  "en": "Page fit is arithmetic; shrinking a font inside a narrow column does not help"
+ },
+ "HX-16": {
+  "ko": "새 개요 수준은 자기 스타일을 따로 만든다",
+  "en": "A new outline level needs its own named style, never a paraPr override on a shared one (measured 2026-08-02)"
+ }
+}

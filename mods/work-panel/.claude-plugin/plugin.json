@@ -1,0 +1,6 @@
+{
+  "name": "work-panel",
+  "version": "0.1.0",
+  "description": "작업 현황판: 다른 세션의 요청과 진행 메모를 CLI 패널에 보인다",
+  "author": { "name": "Gistone9516" }
+}
