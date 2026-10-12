@@ -17,6 +17,7 @@ scripts/
   manifest-nudge.sh    상기시키는 훅. SKILL.md의 규칙 수나 크기가 매니페스트와 어긋날 때만 알림
   skill-gate.sh        불러오는 훅. 커밋, 에이전트 실행, 코드 수정, 문서 파일 작업 앞에서 해당 스킬을 아직 안 읽었으면 한 번 막음
   validate_doc.py      한국어 분량 실측
+mods/work-panel/   작업 현황판 mod. 모든 세션이 상태를 올리고 CLI의 /panel이 그린다 (그 폴더의 README)
 hooks/             외부 caveman 스킬이 쓰는 런타임 9개. 규칙을 강제하는 훅이 아니라 그 스킬의 기능이라 `scripts/`와 섞지 않고 벤더 기본 경로에 그대로 둔다
 skills/            스킬 24개. 직접 만든 15개와 외부 9개
 projects/<경로키>/memory/   폴더 단위 프로젝트 메모리
@@ -67,6 +68,8 @@ git clone https://github.com/Gistone9516/-Claude-s-Skill-Collection.git ~/.claud
 | PostToolUseFailure | guard.ps1(셸 실패) |
 
 `hooks/`에 있는 둘은 성격이 다르다. 규칙을 강제하는 것이 아니라 외부 `caveman` 스킬이 모드 상태를 유지하고 `/caveman-stats`를 만들어 내는 데 쓰는 런타임이다. 위 표의 나머지와 달리 없어도 규칙은 그대로 산다.
+
+작업 현황판 mod(`mods/work-panel`)를 쓰려면 `settings.json`의 `env`에 `"CLAUDE_CODE_PLUGIN_DIRS": "C:/Users/<계정>/.claude/mods/work-panel"`을 넣는다. CLI와 VS Code가 같은 경로로 불러와야 서로의 상태를 본다. mod는 엔진 2.1.287 이상에서 돈다.
 
 상태 표시줄 배지(`statusLine`)는 이 예제 파일이 나르지 못한다. 검사기가 `hooks` 트리만 비교하기 때문에 갈라져도 잡히지 않으니, 배지를 쓰려면 `manifest.json`의 `settingsKeys`에 적힌 명령을 직접 넣는다. 안 넣어도 나머지는 전부 동작한다.
 

@@ -295,6 +295,11 @@
       "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored, and since 2026-10-12 it fires once per folder rather than once per file (VF-8's file group), because per-file firing turned it into noise during a multi-skill edit."
     },
     {
+      "path": "mods/work-panel/.claude-plugin/plugin.json",
+      "required": false,
+      "role": "The work-panel mod: a status board. Every session publishes its request, progress notes, work plan, loaded skills, fired rules and errors to the mod's shared $.store; a CLI session that runs /panel draws the latest other session in a Pane, because the VS Code extension (2.1.296) draws no mod UI (anthropics/claude-code#99045). Loads through env.CLAUDE_CODE_PLUGIN_DIRS in settings.json, which is not tracked, so a clone also needs that setting (settingsKeys). Needs engine 2.1.287+. Spec and rules P-1..P-17 in mods/work-panel/docs/SPEC.md; imported with its history by git subtree 2026-10-13."
+    },
+    {
       "path": "scripts/skill-gate.sh",
       "required": true,
       "role": "Loads the matching skill at the moment it is needed (CLAUDE.md section 1): PreToolUse denies the first git commit, agent launch, code edit or document-file action of a segment until work-rules-shell, agent-ops, work-rules-diagnosis or work-rules-docs has been read, and only once per segment so a broken ledger cannot stall work. PostToolUse on Skill and Read records loads; SessionStart compact and clear empties the ledger. Subagent calls (agent_id present) are never gated. Added 2026-10-12 after measuring 79 sessions: the needed skill had been read in time for 19% of agent launches, 40% of code edits and 43% of commits. Tested on both branches, 21 cases, median 133 ms per call."
@@ -432,6 +437,11 @@
       "key": "statusLine",
       "expected": "\"C:/Program Files/Git/bin/bash.exe\" \"<CLAUDE_HOME>/hooks/caveman-statusline.sh\"",
       "role": "Caveman mode badge. The .sh variant, not the .ps1 the vendor installs on Windows: measured 2026-09-23 through cmd.exe, five runs each after a warm-up, bash 262 ms against powershell 436 ms with a mode active and 152 ms against 463 ms with none, identical badge output. Git Bash is named by absolute path on purpose - bash.exe on PATH here is WSL's (C:\\Windows\\system32\\bash.exe), which cannot take a C:/ path as an argument (work-rules-shell SH-17). Not under hooks, so check-manifest.ps1 cannot see this key drift; the note on files[] hooks/caveman-statusline.ps1 carries that warning."
+    },
+    {
+      "key": "env.CLAUDE_CODE_PLUGIN_DIRS",
+      "expected": "C:/Users/<account>/.claude/mods/work-panel",
+      "role": "Loads the work-panel mod in every CLI and VS Code session. The mod's shared store file is named from the folder it was loaded from, so both environments must use this same path to see each other. Not validated by check-manifest.ps1."
     },
     {
       "key": "hooks.PostToolUse[PowerShell]",

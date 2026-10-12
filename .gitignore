@@ -17,6 +17,11 @@
 # clone would get the wiring and not the files. State files the hooks write
 # (.caveman-active, .caveman-sessions/) sit at the repo root and stay ignored.
 !/hooks/
+# Claude Code mods. work-panel is the status board every session publishes to and the CLI
+# draws (mods/work-panel/README.md). It loads through env.CLAUDE_CODE_PLUGIN_DIRS in
+# settings.json, which this repo does not track, so a clone also needs that one setting
+# (README "새 컴퓨터에서 쓰기"). Imported with its history by git subtree on 2026-10-13.
+!/mods/
 # portfolio-log is a junction into its own project folder, which is the source of
 # truth; manifest.json records that path as an external skill. Tracking the junction
 # would copy the project into this public repo. Decided 2026-10-11.
