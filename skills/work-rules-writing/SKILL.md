@@ -24,6 +24,7 @@ The minimum that always holds, because it is about truth rather than style:
 - Keep the source's certainty: "여러 글에서 중단됐다고 한다" never becomes "중단됐다".
 - Never invent a motive, lesson or point of view (CLAUDE.md G-29). What the user said or accepted in the session is theirs to write.
 - Do not use all the material; keep what the piece is about.
+- Before handing it over, check every sentence that states a motive, reason, lesson or view against who said it in the session or source, and cut or ask about the rest. Measured 2026-10-12: a README written an hour after this rule still carried two invented reasons, and only this check caught them.
 
 The form, by genre ("글 종류마다 달라야지"):
 - **Study notes and TIL.** Write like `reference/exemplar-til-approved.md`, the TIL the user picked as best; its feature list is the guidance. How understanding is woven into theory: `reference/exemplar-study-note.md`. Depth follows how much a topic matters, not how long it was discussed. What matters and was worked out with the AI (a mechanism, a comparison, a correction) goes in at the depth it reached ("수준을 더 깊게 파서 적어놓자"); a topic that took long talk or testing but carries little weight gets its core in two sentences at most (user, 2026-10-11). Process trivia such as counts, paths and tool names is dropped.

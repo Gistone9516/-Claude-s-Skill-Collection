@@ -70,7 +70,7 @@ It runs unconditionally because a judged threshold is skipped exactly when the s
 3. **Resuming after a compaction.** A summary carries conclusions, not the constraints that produced them.
 4. **When the user states a past decision from recall** (CLAUDE.md G-06). Check the documents and the code before agreeing.
 
-Skip it, and say so, for a file created this turn, for a change that closes inside one file already read whole, and for a file group already briefed in this task. Scope is every task, not only code ("어떤 작업에서나 선행하여 정확도를 올릴 것", 2026-07-29).
+Skip it, and say so, for a file created this turn, for a change that closes inside one file already read whole, and for a file group already briefed in this task. **Scale it to the target (user 2026-10-12):** when the target is a small set a script can census (counts, rule ids, cross-references), run the script instead of the pair and say so; the pair is for what a script cannot see, such as a rule restated in other words or a premise that is wrong. Measured 2026-10-12: half of one pair's findings were a single grep. Scope is every task, not only code ("어떤 작업에서나 선행하여 정확도를 올릴 것", 2026-07-29).
 
 **VF-21 The brief is a pair, one agent per lens (user directive 2026-07-30:** "최소 2대를 운영해야 에이전트를 사용하는 의미가 있다"**).** Two agents on the same prompt return one answer twice (AI-4); the second pays only when its framing differs. The two lenses map onto VF-5:
 

@@ -287,12 +287,12 @@
     {
       "path": "scripts/manifest-nudge.sh",
       "required": true,
-      "role": "Fires after a SKILL.md write to say that this manifest declares that skill's ruleIds, byte budget and role and does not update itself. Registered on PostToolUse (Write|Edit), synchronous so its additionalContext reaches the model. A reminder, not a gate - it never denies (work-rules-automation AU-22). Written 2026-08-03 after ai-characteristics, work-rules-shell and new-hwpx-master each gained a rule and corrected their own header while this file still declared the previous range; the drift is one-directional and silent because the body header looks authoritative, and only the SessionStart validator caught it a session later."
+      "role": "Runs after a SKILL.md write and speaks only on actual drift: the header range disagreeing with this manifest's ruleIds, the body's highest rule id disagreeing with the header, or the file past its byte budget (since 2026-10-12; the unconditional reminder fired on ~20 edits in one session with no drift). Registered on PostToolUse (Write|Edit), synchronous so its additionalContext reaches the model. A reminder, not a gate - it never denies (work-rules-automation AU-22). Written 2026-08-03 after ai-characteristics, work-rules-shell and new-hwpx-master each gained a rule and corrected their own header while this file still declared the previous range; the drift is one-directional and silent because the body header looks authoritative, and only the SessionStart validator caught it a session later."
     },
     {
       "path": "scripts/brief-nudge.sh",
       "required": true,
-      "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored."
+      "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored, and since 2026-10-12 it fires once per folder rather than once per file (VF-8's file group), because per-file firing turned it into noise during a multi-skill edit."
     },
     {
       "path": "scripts/validate_doc.py",

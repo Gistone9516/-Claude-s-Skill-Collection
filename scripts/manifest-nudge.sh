@@ -1,31 +1,90 @@
 #!/usr/bin/env bash
-# Fires after a SKILL.md write. manifest.json declares each skill's ruleIds range, byte
-# budget and role, and it does not update itself.
+# Fires after a SKILL.md write, and speaks only when that skill has actually drifted:
+#   - its header range (Rules: X-1..X-N) disagrees with manifest.json ruleIds
+#   - the highest X-n in its body disagrees with the header
+#   - its size is past its byte budget (manifest warnBytes, else 20000)
 #
-# Why this exists (measured 2026-08-03): ai-characteristics, work-rules-shell and
-# new-hwpx-master each had a rule added. All three had their OWN header corrected
-# (AI-1..AI-15, SH-1..SH-30, HX-1..HX-16) while manifest.json still declared the previous
-# range. The drift is one-directional and silent: the body header looks authoritative, so
-# nothing in the editing moment points at the second file. Only the SessionStart validator
-# caught it, one session later.
+# Why it exists (measured 2026-08-03): three skills had their own header corrected while
+# manifest.json still declared the previous range, and only the SessionStart validator
+# caught it a session later. Why it checks instead of always reminding (measured
+# 2026-10-12): the unconditional version fired on every one of ~20 SKILL.md edits in one
+# session, none of which changed a rule count, and a reminder that always fires is a
+# reminder that gets skipped (work-rules-automation AU-22).
 #
-# Reminder, not a gate. It never denies — a hook that blocks an edit over bookkeeping
-# would be worse than the drift (work-rules-automation AU-22: a check that cries wolf is
-# worth less than no check).
-#
-# Bash built-ins only, no forks — same constraint as pattern-guard.sh, measured there at
-# 190 ms per call against 550 ms with one grep per pattern.
+# Reminder, not a gate: it never denies. Messages are one sentence plus the rule ID (AU-24).
+# No backslashes in this file on purpose (work-rules-shell SH-33); quotes come from $q.
+
+export LC_ALL=C
+q='"'
 
 IFS= read -r -d '' payload
+# Accept "file_path":"..." and "file_path": "..." alike.
+rest=${payload#*${q}file_path${q}:}
+[ "$rest" = "$payload" ] && exit 0
+rest=${rest# }
+rest=${rest#${q}}
+path=${rest%%${q}*}
 
-# file_path 값만 뽑는다. jq를 부르지 않는 이유는 위 주석의 포크 비용이다.
-rest=${payload#*\"file_path\":\"}
-path=${rest%%\"*}
-
-# 경로 구분자가 Windows에서는 이스케이프된 역슬래시로 온다. 양쪽 다 견디게 느슨히 맞춘다.
 case "$path" in
   *skills*SKILL.md | *skills*SKILL.MD) ;;
   *) exit 0 ;;
 esac
 
-printf '%s' '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"You just edited a SKILL.md. ~/.claude/manifest.json separately declares that skill'"'"'s ruleIds range, byte budget and role, and it does not update itself. If you added, removed or renumbered a rule: update BOTH the skill'"'"'s own header (Rules: X-1..X-N (N)) AND the matching ruleIds in manifest.json, in this same change. If the file grew past its declared warnBytes, answer work-rules-diagnosis DG-5'"'"'s responsibility question and record the answer in warnBytesReason rather than raising the number silently. Measured 2026-08-03: three skills had their own headers updated while the manifest still declared the old ranges, and only the SessionStart validator caught it a session later."}}'
+# skills/<name>/SKILL.md -> <name>; separators may be / or escaped backslashes.
+name=${path##*skills}
+name=${name%SKILL.*}
+name=${name//[^a-z0-9-]/}
+[ -n "$name" ] || exit 0
+
+file="$HOME/.claude/skills/$name/SKILL.md"
+manifest="$HOME/.claude/manifest.json"
+[ -f "$file" ] && [ -f "$manifest" ] || exit 0
+
+content=$(<"$file")
+re='Rules: ([A-Z]+)-1[.][.][A-Z]+-([0-9]+)'
+[[ $content =~ $re ]] || exit 0
+prefix=${BASH_REMATCH[1]}
+top=$((10#${BASH_REMATCH[2]}))
+
+m=$(<"$manifest")
+seg=${m#*${q}name${q}: ${q}${name}${q}}
+[ "$seg" = "$m" ] && exit 0
+seg=${seg%%${q}name${q}:*}
+
+msgs=()
+
+re='"ruleIds": "[A-Z]+-1[.][.][A-Z]+-([0-9]+)"'
+if [[ $seg =~ $re ]]; then
+  mtop=$((10#${BASH_REMATCH[1]}))
+  if [ "$mtop" -ne "$top" ]; then
+    msgs+=("[G-27] $name header declares $prefix-1..$prefix-$top but manifest.json ruleIds ends at $prefix-$mtop; update both in this change.")
+  fi
+fi
+
+max=0
+s=$content
+re="$prefix-([0-9]+)"
+while [[ $s =~ $re ]]; do
+  n=$((10#${BASH_REMATCH[1]}))
+  [ "$n" -gt "$max" ] && max=$n
+  s=${s#*"${BASH_REMATCH[0]}"}
+done
+if [ "$max" -ne "$top" ]; then
+  msgs+=("[VF-13] $name body cites up to $prefix-$max but its header declares $prefix-$top.")
+fi
+
+warn=20000
+re='"warnBytes": ([0-9]+)'
+[[ $seg =~ $re ]] && warn=${BASH_REMATCH[1]}
+size=${#content}
+if [ "$size" -gt "$warn" ]; then
+  msgs+=("[DG-5] $name is $size bytes, past its $warn budget; answer DG-5 in manifest warnBytesReason rather than raising it silently.")
+fi
+
+[ ${#msgs[@]} -eq 0 ] && exit 0
+out=""
+for x in "${msgs[@]}"; do
+  [ -n "$out" ] && out="$out  ///  "
+  out="$out$x"
+done
+printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"%s"}}' "$out"

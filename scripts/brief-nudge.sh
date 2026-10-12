@@ -73,12 +73,24 @@ esac
 esc="${path//\\/\\\\}"
 esc="${esc//\"/\\\"}"
 
-msg="[G-10] First touch of ${esc} this session - run the verify-fanout brief before editing it (VF-21 sets its shape), or say why you are skipping it."
+msg="[G-10] First touch of this folder this session (${esc}) - run the verify-fanout brief before editing, or say why you are skipping it."
 
 # If this file has a decision note, name it. The note answers what the brief cannot: what earlier
 # decisions cost, and what breaks if this edit reverses one (VF-22). Repo root is inferred by
 # walking up to the directory holding _shadow, so this works from any depth.
 dir="${path%[/\\]*}"
+
+# Once per folder, not once per file (VF-8 counts "first contact with a new file group").
+# Measured 2026-10-12: per-file firing nudged every SKILL.md of a reorganization that the
+# task-start brief had already covered, so the reminder became noise (AU-22).
+group="$dir"
+dirs_ledger="$ledger_dir/$session.dirs"
+if [ -f "$dirs_ledger" ] && grep -qxF -- "$group" "$dirs_ledger" 2>/dev/null; then
+  exit 0
+fi
+mkdir -p "$ledger_dir" 2>/dev/null
+echo "$group" >> "$dirs_ledger" 2>/dev/null
+
 while [ -n "$dir" ]; do
   if [ -d "$dir/_shadow" ]; then
     rel="${path#"$dir"}"
