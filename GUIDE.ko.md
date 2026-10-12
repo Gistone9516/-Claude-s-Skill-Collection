@@ -100,7 +100,7 @@ SH-10(대소문자가 같은 변수를 덮어쓰는 것)은 이 표에 없습니
 
 상태 표시줄 배지는 `.sh` 쪽을 걸었다. 벤더가 Windows에 기본으로 거는 것은 `.ps1`인데, 같은 배지를 내면서 더 싸다. cmd 경유로 워밍업 후 다섯 번씩 재서 모드가 켜져 있을 때 262 대 436밀리초, 꺼져 있을 때 152 대 463밀리초였다. Git Bash는 절대경로로 지정했다. 이 컴퓨터에서 PATH의 `bash.exe`는 WSL 것이라 `C:/` 경로를 인자로 못 받는다(SH-17).
 
-**규칙에는 고정 ID가 붙어 있다.** 전역은 G-01부터, 스킬은 접두어별로 SH(셸), DG(진단), VF(검증), AU(자동화), WR(글쓰기), RD(README), DC(문서), KT(킷), AO(위임), DF(deepflow), BF(buildflow), HX(hwpx)를 쓴다. 순서를 바꿔도 상호 참조가 깨지지 않고, 어느 규칙을 어겼는지 이름으로 지목할 수 있다.
+**규칙에는 고정 ID가 붙어 있다.** 전역은 G-01부터, 스킬은 접두어별로 AI(AI 특성), SH(셸), DG(진단), VF(검증), AU(자동화), WR(글쓰기), RD(README), DC(문서), KT(킷), AO(위임), DF(deepflow), BF(buildflow), HX(hwpx), PL(portfolio-log), CM(caveman)을 쓴다. 순서를 바꿔도 상호 참조가 깨지지 않고, 어느 규칙을 어겼는지 이름으로 지목할 수 있다.
 
 ## 3. 스킬 목록
 
@@ -212,7 +212,7 @@ powershell -NoProfile -File "C:\Users\USER\.claude\scripts\check-manifest.ps1" -
 ### 새 컴퓨터에 옮길 때
 
 1. 저장소를 `~/.claude`로 clone 한다. 안 되면 CLAUDE.md, manifest.json, GUIDE.ko.md, settings.hooks.example.json, skills/, scripts/ 만 복사해도 된다.
-2. `settings.hooks.example.json`의 `hooks` 블록을 `settings.json`에 옮기고, `<CLAUDE_HOME>` 아홉 군데를 `C:/Users/<계정>/.claude` 형태로 바꾼다. 네 이벤트에 걸쳐 일곱 묶음이고 SessionStart는 그중 하나다. 하나만 등록하면 나머지 검사가 조용히 빠진다.
+2. `settings.hooks.example.json`의 `hooks` 블록을 `settings.json`에 옮기고, `<CLAUDE_HOME>` 열한 군데를 `C:/Users/<계정>/.claude` 형태로 바꾼다. 다섯 이벤트에 걸쳐 아홉 묶음이고 SessionStart는 그중 하나다. 하나만 등록하면 나머지 검사가 조용히 빠진다.
 3. 세션을 하나 띄운다. 빠진 것이 있으면 검사기가 전부 알려 준다.
 4. discord-bridge나 learning-harness를 쓸 거면 매니페스트의 `externalApps` 경로를 맞추거나 환경변수로 덮는다.
 

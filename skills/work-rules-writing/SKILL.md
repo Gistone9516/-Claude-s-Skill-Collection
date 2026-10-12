@@ -10,11 +10,11 @@ The output of everything here is Korean; this file is instruction, so it is Engl
 
 ## 1. Which language, and where it applies
 
-**WR-1 Language split.** AI-facing text is English: `CLAUDE.md`, memory files, skill bodies, subagent / Workflow / Agent prompts, system prompts and prompt templates in code. Human-facing text is Korean: conversation, reports, docs, SRS / ADR / README, slides, 자소서, UI copy, code comments, commit messages.
+**WR-1 Language split** is CLAUDE.md G-01 and G-02. What they leave out:
 
-- **A prompt being English does not make its output English.** An AI-facing prompt that produces a human deliverable must say so explicitly inside itself. Measured: a v2 operator prompt is English while the report validator enforces Korean section headings (`## 추세`, `## 결론`), so an English report is rejected at save time; the prompt therefore states its output language in its first section.
-- **Text that is both.** Prompt text shown to the user for editing — a slash command that pre-fills the input box — is UI copy, so it stays Korean.
-- Korean style terms (음슴체, 개조식) are never translated. Translating them loses the distinction they name.
+- Korean also covers SRS, ADR and README, and system prompts in code count as AI-facing.
+- An English prompt producing a Korean deliverable says so inside itself. Measured: an English operator prompt produced English reports that a validator expecting Korean headings rejected at save time.
+- Prompt text shown to the user for editing, such as a slash command that pre-fills the input box, is UI copy and stays Korean.
 
 ## 2. Prose
 
@@ -33,7 +33,7 @@ The form, by genre ("글 종류마다 달라야지"):
 
 Describe and judge a draft by these features, never by listing rule violations; the user is the judge ("규칙 위반 건을 명확히 집어서 이야기하면 안돼. 서술 형식에서 특징을 명확히 따와야지." and "너는 규칙 중심이야. 유도리가 부족해.").
 
-Why. In blind rounds on 2026-10-11, every rule set read stiff, and each revision drawn from critique shifted the stiffness rather than removing it. What the user wanted was shown by the TIL they picked, and its features were drawn out with them. Prose built from rules kept failing the same way, so it starts over from exemplars: "규칙 중심으로 가니, 문제가 너무 많아짐." Never add "use all the notes", a fixed per-paragraph formula, "add natural connectives", "professional and polished", "always end with a lesson", or numeric style targets (`reference/korean-prose-baselines.md` is evidence, not a target).
+Why: in blind rounds on 2026-10-11 every rule set read stiff, and each critique-driven revision moved the stiffness rather than removing it ("규칙 중심으로 가니, 문제가 너무 많아짐"). Never add "use all the notes", a fixed per-paragraph formula, "add natural connectives", "professional and polished", "always end with a lesson", or numeric style targets (`reference/korean-prose-baselines.md` is evidence, not a target).
 
 **WR-3 Punctuation restraint (user directive 2026-06-12).** The em dash, middle dot, colon and semicolon appeared 0 times in 10,682자 of measured human Korean prose (`reference/korean-prose-baselines.md`), so they read as machine-written. Join clauses with particles (및, 와, 과) and commas; use parentheses for a real aside. A middle dot is allowed only in a short list of same-rank nouns, at most once per line.
 
@@ -57,14 +57,12 @@ These three apply to slides only. Prose and study notes take their form from WR-
 
 **WR-10 Preserve originals and data integrity.** Work on a new file or a backup and leave the original untouched. When redesigning a figure or table, keep the content and numbers exactly as they are and change only the design; departures from the original all get flagged. Render the result and check it visually before moving on, iterating in small steps.
 
-**WR-11 Show visual results with Playwright screenshots, not file attachments** (CLAUDE.md G-25). `SendUserFile` errors on the user's remote setup and they see nothing, while screenshot tool results render. Reading the screenshot back myself is still required for a seeing-judgment; the user seeing it is a separate, additional purpose. The Playwright MCP only writes under the working directory: a scratchpad `filename` is refused as outside allowed roots (measured 2026-09-15), so save to `.playwright-mcp/` and check that folder is gitignored before committing. Measured 2026-10-11, three times: a screenshot taken right after navigating came out blank (wait for `document.fonts.status` or a short delay first), and reading the PNG right after the screenshot call failed with "file does not exist" because it was not yet written (read it again).
+**WR-11 Show visual results with Playwright screenshots, not file attachments** (CLAUDE.md G-25). Reading the screenshot back myself is still required for a seeing-judgment. The Playwright MCP writes only under the working directory (measured 2026-09-15), so save to `.playwright-mcp/` and check it is gitignored before committing. Measured 2026-10-11: a screenshot right after navigating can come out blank (wait for `document.fonts.ready` first), and a PNG read right after the call can fail as not yet written (read it again).
 
-**WR-12 Never estimate length by eye — measure it with a script first (user directive 2026-07-23).** Measured failure: three seed stories were estimated by eye and were off by -22%, -16% and **-40%** (an estimate of 3,800 characters against an actual 2,281), and a cost estimate had been layered on top of the wrong numbers. It surfaced only when the user counted 392 characters themselves.
+**WR-12 Never estimate length by eye — measure it with a script first (user directive 2026-07-23).** Measured: three eye estimates were off by -22%, -16% and -40%, with a cost estimate built on them.
 
-- **The reference metric is 전체 — every character including spaces and newlines.** Korean paragraphs are short and newlines frequent, especially in web fiction, so excluding newlines diverges from the actual reading burden. Several counting conventions exist, so agree with the user on which one first.
-- Have the script emit several metrics at once (전체, 줄바꿈제외, 공백제외, 한글음절, 어절, 문단) to make that agreement easy.
-- **The Korean console is cp949**, so printing a Korean filename or body to stdout corrupts it. Write results as UTF-8 JSON and read them with the Read tool; keep stdout to one ASCII line.
-- **When a pipeline handles length, do not have the model count.** Models get character counts wrong. Code counts and inserts the number.
+- **The reference metric is 전체**, every character including spaces and newlines, because newlines are part of the reading burden in short Korean paragraphs. Agree on the convention with the user first; have the script emit several (전체, 줄바꿈제외, 공백제외, 한글음절, 어절, 문단). Write results as UTF-8 JSON (`work-rules-shell` SH-12).
+- **When a pipeline handles length, code counts and inserts the number;** models get character counts wrong.
 
 ## 5. Design
 
@@ -72,9 +70,9 @@ These three apply to slides only. Prose and study notes take their form from WR-
 
 ## 6. Deliverables and this file
 
-**WR-15 Verification status stays out of the deliverable (user directive 2026-08-09).** Evidence grades, bracketed source caveats and my own open questions — "미검증", "측정해야 함", "확인할 것" — go in the message to the user, never into the body of the thing a person reads. G-05 and G-07 govern what I must know and must say; they do not license annotating the artifact. And match verification depth to the stakes: a hackathon pitch is not a legal filing. Measured 2026-08-09 — the user said "기획이 합리적이되 반드시 모든 부분이 객관적이지 않아도 됨. 약간의 망상 가능", and the diagnosis was that what burdened the deck was the homework list outside the slides, not the slides. Loosening the prose instead is the overcorrection that followed, and it was rejected too ("너무 캐주얼 해졌는데.. 대체 너는 어떤 기준인거야?"). Depth changes are said in chat; the artifact just reads clean.
+**WR-15 Verification status stays out of the deliverable (user directive 2026-08-09).** Evidence grades, bracketed source caveats and my own open questions — "미검증", "측정해야 함", "확인할 것" — go in the message to the user, never into the body of the thing a person reads. G-05 and G-07 govern what I must know and say; they do not license annotating the artifact. Match verification depth to the stakes ("기획이 합리적이되 반드시 모든 부분이 객관적이지 않아도 됨", 2026-08-09), but do not loosen the prose instead; that overcorrection was rejected too ("너무 캐주얼 해졌는데").
 
-**WR-16 A narrative deliverable is written for the reader's decision, not as my audit trail (user directive 2026-09-09).** A 계획서, 자소서 or 지원서 is read by one person deciding one thing. Settle that before any style question and let style rules bend: "서술 중심의 문서는 규칙을 완벽히 준수하지 않아도 괜찮아." My verification log goes to a working file. What verification produced (dates, counts, first-party sources) stays in, because to the reader it is evidence; deleting it with the caveats left six answers 20% under their floor. A style metric that passes while the reader would not want the sentence is not a pass: a 중소벤처기업부 application met every metric and was still written as my own log. Code, specs and design documents keep strict compliance; there the rule is the contract.
+**WR-16 A narrative deliverable is written for the reader's decision, not as my audit trail (user directive 2026-09-09).** A 계획서, 자소서 or 지원서 is read by one person deciding one thing. Settle that before any style question and let style rules bend: "서술 중심의 문서는 규칙을 완벽히 준수하지 않아도 괜찮아." My verification log goes to a working file; what verification produced (dates, counts, first-party sources) stays in as evidence. A style metric that passes while the reader would not want the sentence is not a pass (measured 2026-09-09: an application met every metric and still read as my own log). Code, specs and design documents keep strict compliance; there the rule is the contract.
 
 **WR-17 Measured prose baselines live in `reference/korean-prose-baselines.md`.** They are evidence for WR-3 and for preferring real specifics. Do not load them for drafting and never revise toward them; chasing them is how the 2026-09-09 application went wrong.
 

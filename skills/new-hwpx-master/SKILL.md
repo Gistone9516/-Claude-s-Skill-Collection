@@ -148,7 +148,7 @@ def strip_marker(s):  # the style applies markers, so remove them from the sourc
 
 ### HX-7 Delete `linesegarray` — the single most important rule
 
-Every `<hp:p>` whose text was modified must have its `<linesegarray>` child removed. It is the line-layout cache saved by the original editor; changing the text invalidates it and characters render overlapping. Removing it makes Hangul recompute the layout on open, so removal is lossless. Full rationale in `work-rules-docs` DC-2, which also requires removing them across the **whole** section, not only the edited paragraphs.
+Every `<hp:p>` whose text was modified loses its `<linesegarray>` child, and per `work-rules-docs` DC-2 so does the rest of the section. It is a line-layout cache; stale, it makes Hangul refuse the file or render characters overlapping, and Hangul recomputes it on open.
 
 ```python
 def remove_linesegarray(p_element):
@@ -159,6 +159,8 @@ def remove_linesegarray(p_element):
 ```
 
 ### HX-8 Absolute prohibitions
+
+This procedure is a tree edit (`work-rules-docs` §2). The byte-level text patch of DC-2 and DC-4 is the other mode, for changing a few characters without restructuring; never mix the two in one file.
 
 - Never assemble XML as a string (f-string, concatenation, replace).
 - Never add the XML declaration (`<?xml ...?>`) by hand.
@@ -328,7 +330,7 @@ The body is Korean official-document prose:
 - Body order: 목적·배경 → 세부 내용 → 요청·협조 사항 → 붙임.
 - Standard phrasing: "~와 관련하여", "아래와 같이", "~하여 주시기 바랍니다".
 
-`work-rules-writing` WR-3 (punctuation) applies to this text, and WR-2 (composition) applies within the fixed body order above.
+`work-rules-writing` WR-3 (punctuation) applies to this text, and WR-2's truth minimum (keep certainty, invent no motive) applies within the fixed body order above.
 
 ## HX-11 Checklist
 
@@ -378,8 +380,8 @@ Diagnose before prescribing: export to PDF (`work-rules-docs` DC-15) and measure
 
 - Per level: clone an existing `<hh:style>`, give it a distinct `id` / `name` / `engName`, point `paraPrIDRef` at a per-level paraPr (its own bullet `idRef` + graded `margin/left`, cloned per HX-8) and `charPrIDRef` at the intended char; append to the `styles` container and bump its `itemCnt`. Add any new bullet to the `bullets` container the same way (clone, change `id` and `char`, bump `itemCnt`). Indent ladder that worked: `margin/left` 3700 / 4400 / 5100 HWPUNIT for levels 2-4 with the `case` value at half.
 - Then set each paragraph's `styleIDRef` to its level's new style, with `paraPrIDRef` and `charPrIDRef` matching that style (HX-3). Identify the paragraphs to remap by their per-level `paraPrIDRef`, which is unique to the level.
-- Failure mode this fixes: three distinct levels all on `styleIDRef="4"` (소본문) with only `paraPrIDRef` differing. Every level then reports as **소본문** in F6 — the user cannot select or restyle a level, and the editor's style system is bypassed. Rejected with "편집기 스타일 시스템을 사용하지 않았다 … 각 레벨 스타일을 생성해서 재적용하라". The fix was header-only (add styles 중점/소점/세부 to the `styles` container + remap 426 paragraphs' `styleIDRef`), no content regeneration — so getting this wrong is cheap to correct **if** the level→paraPr mapping was clean, which is a further reason to give each level its own paraPr from the start.
+- Failure mode this fixes: three levels on one `styleIDRef` with only `paraPrIDRef` differing all report as the same style in F6, so the user cannot select or restyle a level. Rejected with "편집기 스타일 시스템을 사용하지 않았다 … 각 레벨 스타일을 생성해서 재적용하라". The fix was header-only plus a `styleIDRef` remap, cheap only because each level already had its own paraPr.
 
-## HX-12 New lessons
+## HX-12 How this file changes
 
-Add hwpx template lessons here with the measured date and update the rule count. A trap that belongs to the hwpx format in general, rather than to filling a template, goes to `work-rules-docs` instead.
+A lesson revises the rule it belongs to in one or two lines with its measured date (`ai-characteristics` AI-17), and a new rule updates the header count. A trap of the hwpx format in general, rather than of filling a template, goes to `work-rules-docs`.

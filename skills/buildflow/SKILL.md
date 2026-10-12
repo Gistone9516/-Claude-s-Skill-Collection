@@ -6,9 +6,7 @@ description: Multi-cycle plan→design→build workflow for vibecoding. Operator
 # buildflow — plan → design → build workflow
 
 Rules: BF-1..BF-7 (7), tagged on the load-bearing points only; the stage and cycle headings carry the rest of the procedure. Section order is execution order, not importance.
-Execution mechanics are canonical in `agent-ops`; change discipline in `work-rules-diagnosis`; delegation policy in `agent-ops`.
-
-> **Terminology (user directive, 2026-06-10):** "opus" / "Operator Opus" in this skill = **the model currently applied to the Claude Code session** (role name), not the fixed `claude-opus-*`. "sonnet" stays literal. Canonical definition: `agent-ops`.
+Execution mechanics and delegation policy are canonical in `agent-ops`; change discipline in `work-rules-diagnosis`. "opus" / "Operator Opus" is a role name for the session's model (CLAUDE.md G-03).
 
 ## Definition & principles
 **Operator Opus** owns planning, design, spec, integration, judgment and gates. **Implementer sonnet** runs adversarial lenses, parallel implementation and verification. Four principles:
@@ -45,7 +43,7 @@ A wrong plan discards spec + build ×N. Highest leverage.
 - **G1:** intent + partition map ratified by the user (A-mode) or via the B-mode loop.
 
 ### ② Design·spec (HOW = contract) — the build SPOF
-- **opus — SoT-first (shared interface BEFORE per-folder contracts).** When contracts share cross-cutting interfaces (shared types · field names · enums · error codes · **serialization schema** · **runtime wiring**: global names / boot entry / config format), opus authors ONE shared-interface SoT (`_인터페이스계약.md`) **first**, then per-folder contracts are drafted/conformed **against it** (the SoT is authority — "on conflict, SoT wins"). Drafting per-folder contracts independently and reconciling afterward = N-round churn (observed: **7 rounds** on a 6-contract spec — card_id vs id, grade vs score_mode, blanks shape, tags nesting). The cross-contract surface is opus's, fixed up front.
+- **opus — SoT-first (shared interface BEFORE per-folder contracts).** When contracts share cross-cutting interfaces (shared types · field names · enums · error codes · **serialization schema** · **runtime wiring**: global names / boot entry / config format), opus authors ONE shared-interface SoT (`_인터페이스계약.md`) **first**, then per-folder contracts are drafted/conformed **against it** ("on conflict, SoT wins"). Reconciling independent drafts afterwards is N-round churn (`agent-ops` AO-22).
 - **opus:** per-folder spec as a **persistent `.md` contract** — *machine-verifiable* interfaces (type sigs · data schema · error rules), not prose. Over ~400ln/5k = a signal to split.
 - **sonnet adversarial integrity review** (deepflow, horizontal): undefined contracts · missed edges · internal contradictions · over-spec. opus cuts nitpick/over-spec.
 - **user red-pen** (vertical, intent): reviews the spec `.md` directly.
@@ -53,9 +51,9 @@ A wrong plan discards spec + build ×N. Highest leverage.
 - **Reconcile gate (anti-infinite):** when integrity-checking multi-contract conformance, the checker classifies each residual **BLOCKING** (a real cross-contract break the SoT doesn't resolve — type/field/signature/missing-function) vs **NON_BLOCKING** (local wording the SoT already overrides). Converge at **BLOCKING=0** — don't chase SoT-overridden cosmetics (that's the anti-infinite principle made checkable).
 
 ### ③ Build (#1 value: time)
-- **BF-5 opus:** decompose into partitions, then **one folder = one git worktree = one sonnet** in parallel (cap per `agent-ops` AO-13). Each sonnet edits **only its worktree**; **shared files (types, config) and the final merge stay with opus** — this is the explicit worktree exception to `agent-ops` AO-14 "writes are serial". opus resolves merge conflicts from the conflict markers and re-spawns the sonnet if needed. At larger scope the partition itself becomes the deliverable: each unit must be independently checkable and its check written with it (`agent-ops` AO-23).
-- **Parallel build = truly independent partitions only** (`agent-ops` AO-14). Producer to consumer is never co-parallel — pipeline the stages or pre-stage the shared input, because a consumer without its input invents one (`ai-characteristics` AI-6).
-- **sonnet hard rule:** before starting, read the **whole assignment (own spec + related/existing files in the folder) with zero omission** → coverage self-report.
+- **BF-5 opus:** decompose into partitions, then **one folder = one git worktree = one sonnet** in parallel (count and price per `agent-ops` AO-13). Each sonnet edits **only its worktree**; **shared files (types, config) and the final merge stay with opus** — this is the explicit worktree exception to `agent-ops` AO-14 "writes are serial". opus resolves merge conflicts from the conflict markers and re-spawns the sonnet if needed. At larger scope the partition itself becomes the deliverable: each unit must be independently checkable and its check written with it (`agent-ops` AO-23).
+- **Parallel build = truly independent partitions only** (`agent-ops` AO-14); producer to consumer is a pipeline.
+- **sonnet hard rule:** read the whole assignment before starting and report coverage (`agent-ops` AO-21).
 - **thin slice first** (reality check): build one partition → user reaction → contract OK → *then* fan out the rest.
 - **integrate · merge · integration-test · precise-edit · logic = opus** (not delegated).
 
@@ -85,14 +83,10 @@ Asymmetric risk: a missed major ≫ an unneeded check → when unsure, lean to t
   - **B = continuous autonomy across the whole cycle**, not just planning: unless a triage-major hits (intent/scope · irreversible/external · non-convergence · hard-floor failure), run ②→③→④→next cycle autonomously. Don't stop at stage gates for routine approval. (May vary by user — check user memory.)
   - **Execution = Workflow offload** (agent-ops, opt-in): run the adversarial convergence loop, ③ worktree fan-out, and ④ verify as `Workflow` scripts → short opus turns. opus keeps ② contract finalization, integration/merge, risky-writes, triage.
   - **Unattended (away):** if the user wants, `CronCreate`/`ScheduleWakeup` to wake → run the next Workflow phase → escalate only major / hard-floor. Not a cost saving (cache-cold); for unattended continuation only.
-  - **BF-6 Non-blocking autonomy (park and continue) — for full-delegation runs.** When the user grants full authority to complete a large scope unattended, do NOT stop and wait on each decision:
-    1. **Resolve by evidence first.** For any uncertainty, try **multi-agent web-search verification** (parallel sonnet, web-grounded per CLAUDE.md G-09 — never from embeddings). Resolvable → resolve and FYI-log.
-    2. **Park, don't block.** If it genuinely needs the user (taste · ambiguous intent · irreversible/external), **append it to a running decisions-log file (e.g. `_사용자판단대기.md`) and SKIP only that sub-part — continue the rest of the SAME task** (don't switch task/scope, don't halt the run). Never auto-execute an irreversible/external action — parking = safely not doing it + logging.
-    3. **End briefing.** When all scoped work is done, produce **one briefing doc enumerating every parked decision** (context · options · recommendation) for batch review.
-    - Hard-floor failures (test/integration fail, corruption) still **halt** — can't build on broken. Park applies to *decisions*, not to *broken state*.
+  - **BF-6 Non-blocking autonomy for full-delegation runs** is `agent-ops` AO-23's park-and-continue, with two additions. Resolve an uncertainty by evidence first: web-grounded sonnet verification (G-09), then FYI-log it. Park what genuinely needs the user in a running log (e.g. `_사용자판단대기.md`) with context, options and a recommendation per item, and never auto-execute an irreversible or external action while parked.
 
 ## Cross-cutting rules
-- **BF-7 Code is built with software-engineering discipline, always (user directive 2026-10-11:** "코드 구현은 반드시 소프트웨어 공학을 따르며 만들어야 한다"**).** Layers separated behind explicit contracts, one implementation per decision, derived values over stored ones, and a spec with rule IDs before the code. The standard itself is `work-rules-diagnosis` DG-1..DG-6; it is not restated here so the two cannot drift. It binds opus and every implementer: a delegated build prompt states it, and a slice that edits a template or existing code in place without that structure is rework, not progress. Measured 2026-10-11: a blog template was first patched file by file for its base path, and only the spec written afterwards produced the layered design.
+- **BF-7 Code is built with software-engineering discipline, always (user directive 2026-10-11:** "코드 구현은 반드시 소프트웨어 공학을 따르며 만들어야 한다"**).** Layers separated behind explicit contracts, one implementation per decision, derived values over stored ones, and a spec with rule IDs before the code. The standard itself is `work-rules-diagnosis` DG-1..DG-6; it is not restated here so the two cannot drift. It binds opus and every implementer: a delegated build prompt states it, and a slice that patches a template or existing code in place without that structure is rework, not progress (measured 2026-10-11 on a blog template).
 - **Hard floor (any class/mode):** regression/integration test fail → stop & report · irreversible/external/security → always user · spec resync always · accumulating auto-cycles → periodic summary.
 - **git prerequisite:** buildflow assumes a git repo (cycle boundaries · rollback · merge · spec-drift gate are all git-based). Not a repo at entry → propose `git init` first.
 - **Applicability:** parallelize only *independently decomposable* work (N CRUDs · tests · boilerplate · isomorphic migration · multiple components). High coupling → serial (Amdahl). Don't lay this down as a default reflex.
@@ -100,8 +94,8 @@ Asymmetric risk: a missed major ≫ an unneeded check → when unsure, lean to t
 
 ## Composition (component skills)
 - **Adversarial council** = `deepflow`, **called in component mode:** buildflow supplies the decision/criteria/constraints, so deepflow skips §0–§1 (enters at §2; G1/G2 replace them) and the return feeds the gate. Uses: ① plan-questioning, ② spec integrity review, B-mode adversarial loop, triage's sonnet×3.
-- **Delegation/model discipline** = `agent-ops` (model=sonnet · ultrathink · caveman · **Report envelope** · whole-read · folder=git worktree · integration=opus · tier caps work/verify/lens). Adversarial/lens = **lens tier**.
-- **Autonomy engine** = `Workflow` tool (mechanics — idle model, opt-in, `model:'sonnet'` footgun — canonical in agent-ops "Workflow offload"). B-mode / multi-cycle cost lever: loop-until-dry (convergence) · pipeline (③ build · ④ verify) as deterministic scripts. Unattended via `CronCreate`.
+- **Delegation/model discipline** = `agent-ops` (model and effort per stage, **Report envelope**, whole-read, folder=git worktree, integration=opus). Adversarial/lens = **lens tier**.
+- **Autonomy engine** = `Workflow` tool (idle model, opt-in, model per tier: `agent-ops` §3-§4). B-mode / multi-cycle cost lever: loop-until-dry (convergence) · pipeline (③ build · ④ verify) as deterministic scripts. Unattended via `CronCreate`.
 - Agent outputs follow the **agent-ops Report envelope**.
 
 ## Checklist

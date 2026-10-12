@@ -22,13 +22,13 @@ CLAUDE.md G-05..G-10 point here.
 
 State the grade when the answer rests on grade 4 or 5.
 
-**VF-2 A document is not canonical.** Measured: an AI-written code comment ("디자인 변경 금지") was lifted into a spec, acquired a `(사용자 확정)` tag, and the next session quoted it back to the user as their own decision. The user had given no such instruction. A document recording a user instruction is still a document an AI wrote.
+**VF-2 A document is not canonical.** A document recording a user instruction is still a document an AI wrote. Measured: an AI-written code comment ("디자인 변경 금지") was lifted into a spec, acquired a `(사용자 확정)` tag, and was quoted back to the user as their own decision; they had given no such instruction.
 
-**VF-3 A label is not a source.** `(사용자 확정)` and equivalents are valid only when they can point at a decision record — a question-table row, a memory entry, a quoted message. Nothing to point at means unverified, and the report says so.
+**VF-3 A label is not a source.** `(사용자 확정)` and equivalents are valid only when they point at a decision record: a question-table row, a memory entry, a quoted message. Nothing to point at means unverified, and the report says so.
 
-**VF-4 A session asserts false things with full confidence** (`ai-characteristics` AI-1). Measured: "the contract has no `difficulty` field", stated flatly after reading lines 93-99. It was on line 100. Calibration cannot be trusted, so artifacts must be built to make claims checkable instead.
+**VF-4 A session asserts false things with full confidence** (`ai-characteristics` AI-1), so artifacts are built to make claims checkable rather than relying on the operator's certainty.
 
-**VF-5 The signature of a session's defects is: locally reasonable, globally wrong** (AI-3). A session holds a part, never the whole. Measured in one project, all AI-authored:
+**VF-5 The signature of a session's defects is: locally reasonable, globally wrong** (AI-3). Measured in one project, all AI-authored:
 
 | Defect | Why it looked fine locally |
 |---|---|
@@ -42,50 +42,44 @@ State the grade when the answer rests on grade 4 or 5.
 
 | Mode | When | Cost | Owner |
 |---|---|---|---|
-| **brief** | at task start, and at first contact with a new file group (VF-8) | low | a pair, one agent per lens (VF-21), reading the index |
+| **brief** | at the countable triggers of VF-8 | low | a pair, one agent per lens (VF-21), reading the index |
 | **verify** | before asserting provenance; before finalizing a spec | low | script first, agent for leftovers |
 | **sweep** | inherited or ported code; periodically | high | agent, free lens |
 | **ratchet** | after sweep finds a mechanizable shape | one-off | script |
 
-**VF-6 Agents discover new defect shapes; scripts remember known ones.** A script finds only what someone already encoded, and code work keeps producing new shapes, so for code the agent leads and the script ratchets afterward. Measured: an agent audit found 9 defects; a script written from it reproduced 4 and hard-failed 2, and the script itself shipped with 5 bugs that were only visible because the audit had produced ground truth first. **A script with no oracle cannot be trusted.**
-
 Running the wrong mode returns nothing and costs the budget anyway.
 
-**VF-23 Gates batch by default; a single-item gate has to earn itself (user directive 2026-09-07:** "단건 게이트가 오버헤드와 추론 토큰을 너무 많이 먹고있어"**).** A gate's cost is paid per firing, not per item. An agent's floor is about 90,000 billable tokens (`agent-ops` AO-13), and the operator pays again to read and re-judge each return, so ten claims checked in one pass cost a fraction of ten passes of one claim and answer just as well.
+**VF-6 Agents discover new defect shapes; scripts remember known ones.** For code the agent leads and the script ratchets afterward. **A script with no oracle cannot be trusted:** measured, an audit found 9 defects, a script written from it reproduced 4, and the script itself had 5 bugs visible only because the audit had produced ground truth first.
 
-- **Collect, then fire once.** Hold items in a list as they arise and run them at the natural boundary — end of the file group, end of the task, before the deliverable goes out. §7 already batches 5-8 claims per agent; that is the default shape, not a concession.
-- **Fire a single-item gate only when the item cannot wait:** it is destructive or irreversible, it blocks everything after it, or a wrong answer changes what is done next. Name which of the three applies, in one clause.
-- **A parked gate is not a skipped gate.** Write it where it will be seen at the boundary and report what was batched. Quietly dropping an item is the failure this rule must not become (AI-8).
+**VF-23 Gates batch by default; a single-item gate has to earn itself (user directive 2026-09-07:** "단건 게이트가 오버헤드와 추론 토큰을 너무 많이 먹고있어"**).** A gate's cost is paid per firing, and the operator pays again to read each return (`agent-ops` AO-13).
+
+- Collect items as they arise and fire once at the natural boundary: end of the file group, end of the task, before the deliverable goes out. §7's 5-8 claims per agent is the default shape.
+- Fire a single-item gate only when the item is destructive or irreversible, blocks everything after it, or a wrong answer changes what is done next. Name which, in one clause.
+- A parked gate is not a skipped gate. Write it where it will be seen at the boundary and report what was batched (AI-8).
 
 ## 3. brief mode — runs first, always
 
-**VF-7 Standing exception (user directive 2026-07-29).** The brief pair is exempt from fan-out pre-approval, from any "spawn agents only when asked" restriction, and from ordering behind the rest of the preamble. Do not ask for it. **Do count it:** measured 2026-09-07, the standing pairs were 45% of every agent spawned in this install and 41% of all agent spend, and the exemption that hid that made every cap meaningless. What the pair is exempt from is permission, not arithmetic.
+**VF-7 Standing exception (user directive 2026-07-29).** The brief pair is exempt from fan-out pre-approval, from any "spawn agents only when asked" restriction, and from ordering behind the rest of the preamble. Do not ask for it. **Do count it** in the reported total (`agent-ops` AO-12): what it is exempt from is permission, not arithmetic.
 
-Gating it inverts its purpose: anything conditional gets skipped exactly when the session is busiest, which is when the locally-reasonable-globally-wrong defect appears (`work-rules-automation` AU-22). Note what this argument is **not**. The pair is not cheap — 313,408 billable tokens per agent, the second most expensive role measured. It runs unconditionally because a judged threshold is an unrun rule, not because it costs little; a rationale that claims cheapness gets falsified by the first measurement and takes the rule down with it (AI-7). What is weighed against the price is a plan built on a wrong premise and every commit that follows it.
+It runs unconditionally because a judged threshold is skipped exactly when the session is busiest (`work-rules-automation` AU-22), not because it is cheap. It is not: measured 2026-09-07, it was the second most expensive role in the install. What is weighed against the price is a plan built on a wrong premise and every commit that follows it.
 
-**VF-8 The triggers are countable, not a judgement (user directive 2026-07-30).** The former wording — "before editing anything not authored this turn" — required a judgement at every edit, and `work-rules-automation` AU-22 applies to rules as much as to hooks: a threshold that must be judged is what gets skipped exactly when the session is busy. Run the pair at these four moments, and count them.
+**VF-8 The triggers are countable, not a judgement (user directive 2026-07-30).** A threshold that must be judged is what gets skipped when busy. Run the pair at these four moments:
 
-1. **Task start.** When the user names a new task, before reading the code and *before proposing a plan*. This is the one that pays. Measured 2026-07-30: a brief at this point overturned 4 of 7 assumptions in a plan that had already been written into a commit message the day before. A brief that waits for the first edit arrives after the plan is fixed.
-2. **First contact with a new file group** — a package, directory or document set this task has not touched yet. `scripts/brief-nudge.sh` marks this moment at the edit itself; its per-session ledger makes it fire once per file, not once per edit.
+1. **Task start**, before reading the code and *before proposing a plan*. This is the one that pays: measured 2026-07-30, a brief here overturned 4 of 7 assumptions in a plan already written into a commit message.
+2. **First contact with a new file group** — a package, directory or document set this task has not touched. `scripts/brief-nudge.sh` marks this moment at the edit itself, once per file.
 3. **Resuming after a compaction.** A summary carries conclusions, not the constraints that produced them.
 4. **When the user states a past decision from recall** (CLAUDE.md G-06). Check the documents and the code before agreeing.
 
-Skip it — and say that it was skipped rather than passing over it silently — for a file created this turn, for a change that closes inside one file already read whole, and for a file group already briefed in this task.
+Skip it, and say so, for a file created this turn, for a change that closes inside one file already read whole, and for a file group already briefed in this task. Scope is every task, not only code ("어떤 작업에서나 선행하여 정확도를 올릴 것", 2026-07-29).
 
-**Scope is every task, not only code** (2026-07-29 directive: "어떤 작업에서나 선행하여 정확도를 올릴 것"). Documents, specs, config and prose deliverables all count.
-
-**VF-21 The brief is a pair, one agent per lens (user directive 2026-07-30:** "최소 2대를 운영해야 에이전트를 사용하는 의미가 있다"**).** Two agents given the same prompt are not two judgements — they share priors and return the same answer (AI-4), so the second one only pays when its framing is different. Use the two that map onto the defect signature in VF-5:
+**VF-21 The brief is a pair, one agent per lens (user directive 2026-07-30:** "최소 2대를 운영해야 에이전트를 사용하는 의미가 있다"**).** Two agents on the same prompt return one answer twice (AI-4); the second pays only when its framing differs. The two lenses map onto VF-5:
 
 | Lens | Its question | What it catches |
 |---|---|---|
-| **현장 the site** | What do the files I am about to touch actually say, and which of my assumptions about them are wrong? | *locally* wrong — a stale premise, a signature that is not what I remember, a table that has one column where I assumed four |
-| **주변 the surroundings** | What outside my target already does this job, must agree with it, or goes stale once I change it? | *globally* wrong — a duplicate implementation, a constant that must match, a document that restates the rule I am editing |
+| **현장 the site** | What do the files I am about to touch actually say, and which of my assumptions about them are wrong? | *locally* wrong: a stale premise, a signature not as remembered |
+| **주변 the surroundings** | What outside my target already does this job, must agree with it, or goes stale once I change it? | *globally* wrong: a duplicate implementation, a constant that must match, a document restating the rule being edited |
 
-Give each lens the half it owns **and tell it the other half is covered.** An agent that believes it is alone widens its scope to the whole surface, and then both come back with the same survey. Both go in a single message so they run concurrently (`agent-ops` AO-6).
-
-Model tier is not set here — §8 governs, and `agent-ops` AO-4 puts a lens on sonnet. **"Lens" here names the framing only, not AO-18's lens payload** (`stance · reasons · killer_point · risks · flip_condition`): a brief returns imperative decision lines, per VF-10.
-
-Measured 2026-07-30, the pair's first run: the site lens returned the rule numbering and byte budget the edit had to fit; the surroundings lens returned three files that restated the rule in the singular, one of them a hook script the operator had just reviewed line by line without noticing. Neither lens would have produced the other's list.
+Give each lens its half **and tell it the other half is covered**; an agent that believes it is alone surveys everything, and both return the same survey. Both go in one message so they run concurrently. Model tier is §8's; "lens" names the framing only, not AO-18's lens payload. Measured 2026-07-30 on the first run: neither lens returned anything the other did.
 
 Give the pair the relation index and the target path. Each returns **3-5 decision-shaped lines, not a relationship dump**:
 
@@ -96,40 +90,26 @@ Give the pair the relation index and the target path. Each returns **3-5 decisio
 3. 이 상수는 providers/deepseek/client.ts와 같아야 한다
 ```
 
-**VF-9 Either lens must be able to answer "주의할 것 없음".** An agent required to find something every time produces noise, noise gets skimmed, and a skimmed brief is an unrun brief. This binds harder on a pair — the second lens is the one under pressure to justify itself.
+**VF-9 Either lens must be able to answer "주의할 것 없음".** An agent required to find something produces noise, noise gets skimmed, and a skimmed brief is an unrun brief. The second lens is the one under pressure to justify itself.
 
-**VF-10 Shape is imperative** — do not build this / it already lives here / this must agree with that. Not "here are the relationships". Each reads the **index**, not the repository; that is what keeps a pair affordable.
-
-Measured: the `DEV_FORCE_TIER` reimplementation, the duplicated model ids, and the stored `turns_left` would each have been prevented by one brief pass.
+**VF-10 Shape is imperative** — do not build this / it already lives here / this must agree with that. Each reads the **index**, not the repository, which is what keeps a pair affordable. Measured: the reimplemented tier override, the duplicated model ids and the stored `turns_left` would each have been prevented by one brief pass.
 
 ## 4. Write so it can be searched — documents
 
 - **VF-11 Every normative statement carries an ID** (`B-1`, `D-2`). A rule with no ID cannot be cited, so a later patch reverses it silently.
-- **VF-12 Every ID carries source, rationale, test.** Rationale is load-bearing: without it a future session "improves" the rule and restores the original problem.
-- **VF-13 The header states ID ranges and counts** (`규칙: B-1~B-16 (16건)`). A gate greps and compares, so adding a rule without updating the header fails the count. Drift becomes impossible to hide rather than something to remember.
+- **VF-12 Every ID carries source, rationale, test** (`work-rules-diagnosis` DG-1). Rationale is load-bearing (AI-7).
+- **VF-13 The header states ID ranges and counts** (`규칙: B-1~B-16 (16건)`). A gate greps and compares, so a rule added without updating the header fails the count.
 - **VF-14 Normative and narrative sections are separated**, so a reader can skip narrative without losing a rule.
-- **VF-15 Correct a wrong document; do not annotate it (user directive 2026-07-29).** Write what is true now. No "개정 사유", no "원래는 X였으나", no dated correction notes. Git holds history; the document holds state. Distinguish the two kinds of why: a *rule's* rationale stays because it stops a future session from reverting the rule; a *document's* change history goes.
-- **VF-16 Do not create a new document for repeated work — revise in place.** Two documents stating the same rule is the document-layer form of two counters. A protocol lives in exactly one file; project docs reference it and never restate it.
+- **VF-15 Correct a wrong document; do not annotate it (user directive 2026-07-29).** Write what is true now: no "개정 사유", no "원래는 X였으나", no dated correction notes. Git holds history. A *rule's* rationale stays, because it stops a future session from reverting the rule; a *document's* change history goes.
+- **VF-16 Do not create a new document for repeated work — revise in place.** Two documents stating the same rule is the document-layer form of two counters. A protocol lives in one file; others reference it.
 
-- **VF-24 A document set whose proper nouns keep drifting gets a symbol registry — one table, no enforcement script (user directive 2026-09-23).** This is a technique to reach for when the symptoms appear, not a default. **The symptoms:** the same entity is spelled several ways across files; a term counts two different things; a setting was dropped in one revision and quietly returns in the next; nouns appear that nothing ever defines.
+- **VF-24 A document set whose proper nouns keep drifting gets a symbol registry: one table, no enforcement script (user directive 2026-09-23).** Reach for it when the symptoms appear: one entity spelled several ways, one term counting two things, a dropped setting quietly returning, load-bearing nouns defined nowhere. Measured on a 16-document worldbuilding set: one faction had three spellings and "회차" counted two different things.
+  - **Shape:** one markdown table as the single source (VF-16). Per row: ID, canonical spelling, English, known variants, status (canonical / retired / conflicted / undefined), where defined. Definition sites get an anchor comment; **prose keeps the plain word**, because inline IDs make a design document stop being read. IDs go only where a machine already reads (data contracts, tables, asset fields).
+  - **No checker by default:** a linter over a solo creative project is a gate that fires on prose. For a set several people write to, enforce only one rule: a retired symbol reappearing.
 
-  Measured on a worldbuilding set of 16 documents written a year apart with no version control: one faction carried three English spellings, one character name had a one-off misspelling, "회차" counted both a character's tenure and a world loop, a resource deleted by decision had no record stopping its return, and three nouns (`Alignment`, the creator civilization, "entropy erosion") were load-bearing yet defined nowhere.
-
-  **Shape.** One markdown table, parseable and readable, as the single source (VF-16). Per row: ID, canonical spelling, English, known variants, status (canonical / retired / conflicted / undefined), and where it is defined. Prefix by kind so a row's class is visible at a glance. Definition sites get an anchor comment; **prose keeps writing the plain word.** Inline IDs in narrative text are what makes a design document stop being read, and a design document nobody reads has no readers to protect.
-
-  **IDs go only where a machine already reads:** data contracts, tables, asset fields. There they were going to exist anyway.
-
-  **No checker by default (same directive).** A registry is a reference table; a linter over a solo creative project is a gate that fires on prose. It buys the author nothing and costs them a build step. Add enforcement only for a set that several people write to, and then only for the one rule worth a hard failure: **a retired symbol reappearing**, which is the document-layer form of a silently reversed decision.
-
-  The registry's real payoff is upstream of any check — it makes the naming conflicts *visible in one place*, so the session reading it spends its judgement on design contradictions instead of rediscovering that a faction has three names.
-
-- **VF-22 A decision gets a note at `_shadow/<same relative path>.md` (user directive 2026-07-30).** Specs and commits are addressed *by slice*; nothing tells a session which decisions govern **the file it is about to edit**. Mirror the repo tree under `_shadow/`, written as part of the work — **the main model writes it, not an agent** — holding only what the source cannot.
-
-  Per decision: **what breaks if a later session does the obvious thing instead** — the load-bearing field, because "why we did it" does not survive a competent future session (AI-7) · a grade on every claim (VF-1 tags; ungraded claims get laundered into fact, VF-2) · a number only beside **a repo-committed command** that reproduces it · lists **pointed at, never copied** · when the note goes stale, including states the plan itself produces.
-
-  And what no commit, spec or comment holds — **what that session knew**: read whole / not read / **did a brief run, and did it change the plan** / knowingly deferred / where in the session. If a past session's state cannot be recovered, say so; inventing it is AI-6.
-
-  Measured 2026-07-30, three cold-read rounds with a fresh agent given only the note: the **brief sub-field is what discriminated.** Notes saying "a brief ran and moved the plan from 4 keys to 11" were reconstructible; the decisions with no brief were the ones the agent independently rated thin, and were where the defects were. A "what pressure forced this" field was tried and dropped as uninformative. Those rounds also killed a claim of mine — a partition summing to its own total is an **identity, not an oracle**, and it had been written as the sole evidence a script was correct.
+- **VF-22 A decision gets a note at `_shadow/<same relative path>.md` (user directive 2026-07-30).** Specs and commits are addressed by slice; nothing tells a session which decisions govern **the file it is about to edit**. Mirror the repo tree under `_shadow/`, written as part of the work by the main model, not an agent, holding only what the source cannot.
+  - Per decision: **what breaks if a later session does the obvious thing instead** (the load-bearing field, AI-7) · a grade on every claim (VF-1) · a number only beside a repo-committed command that reproduces it · lists pointed at, never copied · when the note goes stale.
+  - And what no commit holds, **what that session knew**: read whole / not read / **did a brief run, and did it change the plan** / knowingly deferred. If it cannot be recovered, say so; inventing it is AI-6. Measured 2026-07-30 over three cold reads: the brief sub-field is what separated reconstructible decisions from thin ones.
 
 ## 5. Write so it can be searched — code
 
@@ -157,9 +137,9 @@ Measured: the `DEV_FORCE_TIER` reimplementation, the duplicated model ids, and t
 
 Order for an unfamiliar package: **index → barrel → README map → only then the modules the question touches.**
 
-**VF-19 Read whole units, never line windows.** An interface from `{` to `}`; a section to the next header. Measured: `offset 93, limit 7` concluded a field was absent when it was on line 100. A fixed-size window is how the last member of anything gets missed.
+**VF-19 Read whole units, never line windows.** An interface from `{` to `}`; a section to the next header. Measured: `offset 93, limit 7` concluded a field was absent when it was on line 100.
 
-**VF-20 grep returning nothing is not proof of absence.** It is "not found by this pattern". To assert absence, read the whole unit that would contain it and search the whole document *set*, not one file. Measured: grepping only the SoT and reporting a revision as unimplemented, when a sibling spec recorded it as a deliberate deferral.
+**VF-20 grep returning nothing is not proof of absence.** It is "not found by this pattern". To assert absence, read the whole unit that would contain it and search the whole document *set*. Measured: grepping only the SoT reported a revision as unimplemented when a sibling spec recorded it as a deliberate deferral.
 
 ## 7. verify mode — claims from documents
 
@@ -173,45 +153,37 @@ Order for an unfamiliar package: **index → barrel → README map → only then
 
 Free lenses, one agent per lens, read-only. Lenses that paid off: symbol with no consumer, one quantity two fields, one decision two implementations, authority from input, branch that cannot fire, platform assumption surviving a port, doc promise absent from code.
 
-**Model tier is not set here.** `agent-ops` owns model-per-tier and its default stands for every agent this protocol spawns. (A 2026-07-29 clause promoting findings agents to the session model was added and rolled back at the user's correction — do not reintroduce it.) The division: **agents gather and propose, opus judges and decides.** Every judgment step — adopt or reject a finding, classify a bug, decide scope, call convergence — is opus's own work.
+**Model tier is `agent-ops` AO-4's.** Do not promote findings agents to the session model here; a 2026-07-29 clause doing so was rolled back at the user's correction. **Agents gather and propose, opus judges and decides:** adopting or rejecting a finding, classifying a bug, deciding scope and calling convergence are opus's own work.
 
 ### 8-1. Partition the search surface (user directive 2026-07-29)
 
-An agent told to "audit this package" gravitates to the files that look important and skims the rest (`ai-characteristics` AI-13), and the rest is where things hide. The prompt must partition the surface and demand coverage of both halves:
+An agent told to "audit this package" reads the files that look important and skims the rest (AI-13), where things hide. Partition the surface and demand coverage of both halves:
 
 - **주요 파일** — the modules the question is obviously about. Name them by path.
-- **혹시 모르는 파일** — everything else in scope: barrels, fixtures, i18n resources, mocks, generated or copied assets, config, scripts, styles. Name the *directories* and require the agent to enumerate what it actually opened.
+- **혹시 모르는 파일** — everything else in scope: barrels, fixtures, i18n resources, mocks, generated or copied assets, config, scripts, styles. Name the directories and require the agent to enumerate what it actually opened.
 
-Require a coverage line per half. An agent that read the main files and skipped the tail must say so rather than reporting a clean result.
-
-Measured 2026-07-29, defects that lived entirely in the tail: a screen replaced but never deleted, three fully authored locale resources with zero consumers, a ternary with identical arms inside a helper, dead selectors for a UI generation that no longer exists. None of these sit in a file anyone would call 주요.
+Require a coverage line per half; an agent that skipped the tail says so rather than reporting clean.
 
 ### 8-2. Optimize for recall and citation quality, not precision
 
-A panel that is right 95% of the time makes the operator stop checking, and then the wrong 5% ships carrying the operator's full confidence (`ai-characteristics` AI-14). Uncertainty is what sends the operator back to the source, which is where the real finding happens.
+A panel that is right 95% of the time makes the operator stop checking, and the wrong 5% ships with full confidence (AI-14). This works only while **refutation is cheap**: require `file:line`, the verbatim quote and a `confidence` field on every finding. Low confidence is welcome when cited.
 
-Measured 2026-07-29, both from one audit:
-- A finding was **wrong** (`effectiveEntitlement` "ignores a field"). Checking it made the operator read an SoT clause never read before, which the code in fact satisfied. Cost: one grep. Value: a contract now known.
-- A finding was **right but understated** ("same model id in two files"). Checking it exposed a silent-downgrade fallback — pay for pro, receive flash, no error — far worse than the reported duplication. A perfect finding would have produced a smaller fix.
-
-This only works while **refutation is cheap**: require `file:line`, the verbatim quote, and a `confidence` field on every finding. Low confidence is welcome when cited. An uncited assertion turns checking into an investigation, and then the operator skims.
-
-The operator's matching duty: **never adopt and never dismiss on an agent's say-so.** Judge each finding against the source. A clean result is valid and valuable, but state its blind spots — a clean result with unstated blind spots reads as "nothing is wrong", which is a stronger claim than was checked.
+The operator's matching duty: **never adopt and never dismiss on an agent's say-so.** Judge each finding against the source. A clean result is valid, but state its blind spots; unstated, it reads as "nothing is wrong", a stronger claim than was checked.
 
 ## 9. ratchet — turn a found shape into a permanent check
 
 When sweep finds a countable shape, encode it in the project's index script so it cannot return for free.
 
 - **Hard-fail only invariants with no legitimate exception** (identical branches, authority from input, duplicate definition of a registered must-agree constant).
-- **`readers=0` must not hard-fail.** A legitimately unconsumed export exists when its consumer arrives next slice. It belongs in the committed index, whose **diff** is the signal.
-- Exceptions go in an allowlist **with a stated reason** — visible, not hidden.
-- **Validate a new check against known answers before trusting it.** Measured: an indexer shipped with 5 defects (missing `export *`, missing `type_identifier`, missing namespace imports, single-pass comment collection, pseudo-classes counted as classes). Four silently produced false positives at scale; one silently produced a false negative on the exact field it was written to catch.
-- **Exercise both branches, not only the firing one.** A check that fires correctly on the case you built it for can still be wrong about when to stay silent, and that half is invisible until it cries wolf in front of the user. Measured 2026-07-29: a README guard was tested only on a commit that genuinely lacked a README, so its "README is present, stay quiet" path was never run — and it was broken, matching the path pattern against the whole `M<tab>README.md` line instead of the extracted path. It shipped and produced a false positive on its first live run. Construct the negative case deliberately, in a throwaway fixture if necessary.
+- **`readers=0` must not hard-fail.** A legitimately unconsumed export exists when its consumer arrives next slice; it belongs in the committed index, whose **diff** is the signal.
+- Exceptions go in an allowlist **with a stated reason**.
+- **Validate a new check against known answers before trusting it.** Measured: an indexer shipped with 5 defects, four producing silent false positives and one a false negative on the field it was written to catch.
+- **Exercise both branches, not only the firing one.** Measured 2026-07-29: a README guard tested only on a commit lacking a README had a broken "stay quiet" path and fired falsely on its first live run. Build the negative case deliberately.
 
 ## 10. What no mode covers
 
 Runtime-only relationships (string-keyed lookup, dynamic import, reflection) · structural CSS selectors (dead *classes* are visible, dead *structures* are not) · semantic duplication under different names · anything never written down anywhere.
 
-## 11. New lessons
+## 11. How this file changes
 
-Add measured lessons here with dates, and update the rule count in the header. Reusable protocol → this file. Project-specific binding (paths, allowlists, script location) → that project's docs, by reference.
+A lesson revises the rule it belongs to in one or two lines, with its measured date (AI-17); a new rule only when no existing one owns it, with the header count updated. Project-specific binding (paths, allowlists, script location) goes to that project's docs, by reference.

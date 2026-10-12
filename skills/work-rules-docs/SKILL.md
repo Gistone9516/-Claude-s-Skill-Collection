@@ -6,45 +6,46 @@ description: Editing and extracting document files (hwpx, pptx, docx, xlsx) - a 
 # work-rules-docs — document file editing and extraction
 
 Rules: DC-1..DC-17 (17).
-For filling an hwpx official-document template end to end, use `new-hwpx-master`; this file holds the corruption rules that apply to any document work.
+For filling an hwpx official-document template end to end, use `new-hwpx-master`; this file holds the corruption rules that apply to any document work. Before rendering, editing or verifying a document, check that its application is not holding it open (CLAUDE.md G-28).
 
 ## 1. Extracting text (docx, xlsx, hwpx, pptx)
 
-**DC-1 Always write extraction output to a UTF-8 file.** This environment is full of Korean files and the Windows console is cp949, so printing a Python extraction straight to stdout kills the whole extraction with `UnicodeEncodeError` on Korean or a special character such as `\xa9` (©). Write with `open(path, "w", encoding="utf-8")` and read the file back with the Read tool. Never print to the console directly.
+**DC-1 Always write extraction output to a UTF-8 file** and read it back with the Read tool. Printing Korean or `©` to the cp949 console kills the whole extraction (`work-rules-shell` SH-12).
 
 ## 2. Editing hwpx
 
-**DC-2 Rule 0 — remove every `linesegarray`.** This is by a wide margin the most common cause of corruption. Change a single character of text and you must remove **all** `<hp:linesegarray>` elements from the entire section XML that text belongs to. Skip it and Hangul refuses the file with "문서가 손상되어 열 수 없음" — the trap that recurred most often. Removing only "the paragraphs I edited" is not enough; missing one body paragraph is enough to trigger the corruption verdict.
+There are two editing modes; pick one per file. **Text patch**: change a few characters of an existing document as bytes, with the rules below. **Tree edit**: restructure or rebuild the body with lxml, as `new-hwpx-master` does, where string manipulation of XML is forbidden (HX-8). Never restructure XML with string operations.
 
-- String substitution: `re.sub(r"<hp:linesegarray>.*?</hp:linesegarray>", "", d, flags=re.S)`, plus the self-closing `<hp:linesegarray/>`. Confirm the XML still parses afterwards.
-- With lxml, deleting from a live tree skips siblings — materialize the list first, then delete.
-- Why it is safe: `linesegarray` is a geometry cache of line and character positions. When the length of `<hp:t>` changes, the cache indices fall out of range and the file is judged corrupt. Hangul recomputes it on open, so removal is lossless.
+**DC-2 Remove every `linesegarray` in the section you touched.** The most common cause of corruption. Change one character and **all** `<hp:linesegarray>` elements in that section XML must go, not only those of the edited paragraphs; otherwise Hangul refuses the file ("문서가 손상되어 열 수 없음") or renders characters overlapping.
 
-**DC-3 Rule 1 — delete the hashkey when replacing an embedded image.** The `hashkey="..."` attribute on `<opf:item>` in `Contents/content.hpf` is a Hangul-proprietary hash; if it disagrees with the replaced bytes the file is corrupt. Deleting the attribute entirely on the replaced image skips the check and the file opens. Replacement images must have exactly the original pixel dimensions so frames and proportions are unchanged.
+- Text patch: `re.sub(r"<hp:linesegarray>.*?</hp:linesegarray>", "", d, flags=re.S)` plus the self-closing form, then confirm the XML still parses. Tree edit: materialize the list before deleting, since deleting from a live lxml tree skips siblings.
+- Safe because it is a geometry cache of line positions that Hangul recomputes on open.
 
-**DC-4 Rule 2 — no CJK regex character classes.** A range like `[一-鿿…]` can, on a boundary error, match Hangul (AC00-D7A3) and erase body text. Match and replace CJK with literal `str.find` / `str.replace` only, and verify `count == expected` before substituting.
+**DC-3 Delete the hashkey when replacing an embedded image.** The `hashkey` on `<opf:item>` in `Contents/content.hpf` is a proprietary hash; a mismatch is corruption, and deleting the attribute skips the check. Replacement images keep the original pixel dimensions.
 
-**DC-5 Rule 3 — repackaging.** Copy the original zip and replace only the changed entries, preserving the remaining bytes, their order and their `compress_type`. `mimetype` is the first entry, STORED, `application/hwp+zip`. Body XML has no BOM and no CR/LF.
+**DC-4 No CJK regex character classes in a text patch.** A range like `[一-鿿…]` can match Hangul on a boundary error and erase body text. Match and replace CJK with literal `str.find` / `str.replace`, and assert `count == expected` first.
 
-**DC-6 Rule 4 — verify before delivery.** (1) every section and hpf XML parses, (2) zero `linesegarray` remaining, (3) `mimetype` first and STORED, (4) `zip.testzip()` returns None, (5) unedited `<hp:t>` identical to the original, (6) the number of changed entries matches the intent.
+**DC-5 Repackaging.** Copy the original zip and replace only the changed entries, preserving the other bytes, their order and their `compress_type`. `mimetype` is the first entry, STORED, `application/hwp+zip`. Body XML has no BOM and no CR/LF.
+
+**DC-6 Verify before delivery.** (1) every section and hpf XML parses, (2) zero `linesegarray` remaining, (3) `mimetype` first and STORED, (4) `zip.testzip()` returns None, (5) unedited `<hp:t>` identical to the original, (6) the number of changed entries matches the intent. Then render (DC-15).
 
 ## 3. Editing pptx
 
-**DC-7 "복구하시겠습니까?" is a warning, not an error.** Choosing to repair opens the file normally. Do not misread it as "will not open" and waste effort. A deck with embedded fonts can raise this prompt from the original file itself — when in doubt, byte-diff against the original first to establish that the edit was not the cause.
+**DC-7 "복구하시겠습니까?" is a warning, not an error.** Repair opens the file normally. A deck with embedded fonts can raise it from the original itself, so byte-diff against the original before blaming the edit.
 
-**DC-8 The usual cause is `<Default xmlns="" .../>` in `[Content_Types].xml`.** The empty `xmlns=""` pulls `Default` out of the OPC namespace, violating the schema and triggering repair. Removing just the `xmlns=""` cleans it while keeping embedded fonts. Removal is optional.
+**DC-8 The usual cause is `<Default xmlns="" .../>` in `[Content_Types].xml`**, which pulls `Default` out of the OPC namespace. Removing only the `xmlns=""` cleans it and keeps embedded fonts.
 
-**DC-9 The diagnostic oracle is .NET `System.IO.Packaging.Package.Open`** (`Add-Type WindowsBase`). PowerPoint COM fails unconditionally in this environment even on healthy files (automation is blocked), so it is useless. python-pptx, zipfile and minidom are far too permissive and pass broken files. Trust only .NET OPC for the OPC layer — noting it does not check the slide PresentationML schema.
+**DC-9 The diagnostic oracle is .NET `System.IO.Packaging.Package.Open`** (`Add-Type WindowsBase`). PowerPoint COM is blocked in this environment even on healthy files, and python-pptx, zipfile and minidom pass broken files. .NET OPC checks the OPC layer only, not the slide schema.
 
-**DC-10 A python-pptx round-trip drops embedded fonts (.fntdata) and breaks the deck.** Use manual ZIP/XML injection, or produce a new file only. Recompress with the original `compress_type` profile (STORED stays STORED) and build fresh `ZipInfo` objects preserving `external_attr` and `date_time`.
+**DC-10 A python-pptx round-trip drops embedded fonts (.fntdata) and breaks the deck.** Inject into the ZIP/XML by hand or produce a new file. Keep each entry's `compress_type`, `external_attr` and `date_time`.
 
-**DC-11 When removing a slide, remove both the `sldIdLst` entry in `presentation.xml` and the rId in `presentation.xml.rels`.** Missing either leaves a dangling reference. Overwriting existing slides and appending only the shortfall is lower risk than removal.
+**DC-11 Removing a slide means removing both the `sldIdLst` entry in `presentation.xml` and its rId in `presentation.xml.rels`.** Overwriting existing slides and appending the shortfall is lower risk than removal.
 
-**DC-12 Change one variable at a time when diagnosing.** Changing several at once makes it impossible to narrow the cause.
+**DC-12 Change one variable at a time when diagnosing.**
 
-## 3.5 Verifying an hwpx or hwp — the render oracle
+## 4. Verifying an hwpx or hwp — the render oracle
 
-**DC-15 Hangul COM works in this environment and is the only oracle that proves a document opens (measured 2026-08-01).** DC-6's checklist proves the package is well formed; it cannot prove Hangul accepts it. `HWPFrame.HwpObject` is registered (Office 2024, `HKLM:\SOFTWARE\WOW6432Node\HNC`), opens both `HWP` and `HWPX`, and exports PDF headlessly. **A successful export is proof the file opens** — the exact thing the linesegarray corruption verdict denies — and the PDF then makes layout inspectable, which XML never is.
+**DC-15 Hangul COM works here and is the only oracle that proves a document opens (measured 2026-08-01).** DC-6 proves the package is well formed, not that Hangul accepts it. A successful headless PDF export proves the file opens, and the PDF makes layout measurable.
 
 ```powershell
 $hwp = New-Object -ComObject HWPFrame.HwpObject
@@ -56,31 +57,23 @@ $set.SetItem("FileName", $Pdf); $set.SetItem("Format", "PDF"); $null = $act.Exec
 $hwp.Clear(1); $hwp.Quit()
 ```
 
-- **This is the opposite of DC-9's finding for PowerPoint**, where COM is blocked unconditionally. Do not generalize "Office COM is blocked in this environment" from that rule — it holds for PowerPoint, not for Hangul.
-- Run it as a `Start-Job` with `Wait-Job -Timeout` and kill `Hwp*` on timeout: a modal dialog would otherwise block the tool call to its limit. The `RegisterModule` line is wrapped in try/catch because the security module is often absent and `forceopen:true` covers it.
-- Pass paths as `-Param` arguments, never inside the script body — see `work-rules-shell` SH-29.
-- **Hand COM an ASCII path (measured 2026-09-29).** Two freshly built hwpx files under `...\2026-2 docs\취업 활동\` both hit `TIMEOUT` when the Korean path went into the `Start-Job`. The untouched original, copied to the ASCII scratchpad, exported fine, and so did the same two new files once copied there. Copy to the scratchpad and export from there first; a timeout on a Korean path is not evidence of a corrupt build.
-- Measure the result rather than eyeballing it. PyMuPDF over the exported PDF gives page count, per-page text blocks and content bounding boxes, which turns "why is there a blank page" into arithmetic. Measured use: a block was 239.6 mm against ~245 mm of usable text area, so its 4.6 mm heading no longer fit and Hangul pushed the table to its own page.
-- The stale-preview corollary: `Preview/PrvImage.png` inside an hwpx is whatever the last editor saved, not the current content. One 회의록 preview showed an empty 회의 내용 cell that was actually filled. **Never use PrvImage as a rendering of the document** — render through COM.
-- **A `PDF_FAIL` from the oracle is not proof of corruption — it can be the environment (measured 2026-08-01).** Twice the export hit its `Wait-Job` timeout and returned `PDF_FAIL` on a freshly built file; a control run of the **previous session's known-good file** returned `PDF_FAIL` **too**, both hanging the full 120 s. So the failure was environmental — Hangul wedged, or, most likely, the target file already open in the Hangul GUI so COM's `Open` blocks — not the new file. **Before concluding a build is corrupt, re-run the same export on a file you know opens (last delivered version, or the untouched original).** Original fails too → environment, and the new file's `PDF_FAIL` is uninformative; fall back to DC-6 plus a byte-identical-construction argument and let the user do the definitive open. Original succeeds, new one fails → the build really is corrupt. This is the DC-12 one-variable rule applied to the oracle itself.
+- Unlike PowerPoint (DC-9), Hangul COM is not blocked; do not generalize either way.
+- Run it as a `Start-Job` with `Wait-Job -Timeout` and kill `Hwp*` on timeout, since a modal dialog would block the call. Pass paths as `-Param` arguments (`work-rules-shell` SH-29).
+- **Hand COM an ASCII path (measured 2026-09-29).** Files under a Korean path timed out and exported fine once copied to the scratchpad; a timeout on a Korean path is not evidence of a corrupt build.
+- **A `PDF_FAIL` is not proof of corruption (measured 2026-08-01).** Re-run the export on a file known to open. If it fails too, the cause is the environment, most often the file open in the Hangul GUI (G-28); fall back to DC-6 and let the user do the definitive open.
+- Measure the PDF with PyMuPDF (page count, text blocks, bounding boxes) rather than eyeballing it.
+- `Preview/PrvImage.png` is whatever the last editor saved; never use it as a rendering.
 
-## 3.6 hwpx table layout — the two traps that cost a rebuild each
+## 5. hwpx table layout
 
-**DC-16 A table with `treatAsChar="1"` cannot split across pages, so growing it past one page blanks the page before it (measured 2026-08-22).** 서식6 종합보고서's table is declared `<hp:pos treatAsChar="1" ... horzRelTo="PARA" ...>`. After filling it to ~2 pages the export put an **empty page 1** and started the table on page 2 — the table is an inline character, and a character cannot be broken, so Hangul pushed the whole thing to the next page and only then split it. Setting `pageBreak="CELL"` alone does **not** fix it; 글자처럼 취급 disables cell splitting.
+**DC-16 A table with `treatAsChar="1"` cannot split across pages, so growing it past one page blanks the page before it (measured 2026-08-22).** The table is an inline character, so Hangul pushes it whole to the next page. Set `treatAsChar="0"`, `horzRelTo="COLUMN"` and `pageBreak="CELL"`; `pageBreak` alone does not help. The tell is a first page holding only the running header. When a form's table must stay on one page, `treatAsChar="1"` is why.
 
-- Fix: `treatAsChar="0"` and `horzRelTo="COLUMN"` (plus `pageBreak="CELL"`), i.e. the same `hp:pos` profile that 서식7 일일보고서's 48-row table already carries and which splits across pages correctly.
-- The tell is a first page containing only the running header. Do not chase the content — check `treatAsChar` first.
-- Corollary: when a form's table must stay one page, `treatAsChar="1"` is why. Only flip it when the content genuinely exceeds a page.
-- **A blank page in the middle can also be padding paragraphs (measured 2026-10-07).** The clinic form ends a page with 16 empty paragraphs and then a `pageBreak="1"` paragraph. Once the 자소서 boxes grew, the empties spilled onto the next page and the forced break made it blank (6 pages instead of 5). Removing 12 empties fixed it with zero text change. Check for a run of empty `<hp:p>` before a `pageBreak="1"` when a page goes blank after content grows.
+- A blank middle page can also be a run of empty `<hp:p>` before a `pageBreak="1"` paragraph that spilled once content grew (measured 2026-10-07). Remove empties, not text.
 
-**DC-17 Under-estimate `cellSz height`, never over-estimate.** Hangul honours a declared cell height that is larger than the content, leaving dead whitespace it will not reclaim; a height that is too small it silently grows to fit. Measured 2026-08-22: estimating 36 chars/line on a 37.7-char line and flooring every body cell at the template's original 10370 pushed a 2-page 종합보고서 to 3 pages with visible gaps. Re-estimating at 40 chars/line with a 5500 floor gave exactly 2 pages and no clipping.
+**DC-17 Under-estimate `cellSz height`, never over-estimate.** Hangul keeps a declared height larger than the content as dead space and silently grows one that is too small (measured 2026-08-22: a too-high floor turned 2 pages into 3). Estimate lines with `chars_per_line` set slightly above the true value, keep only a floor that fits the label cell's own text, give the label and content cells of a row the same height, and verify by page count (DC-15).
 
-- So bias the estimate low. `lines = ceil(len(text) / chars_per_line)` with `chars_per_line` set slightly **above** the true value, and drop the template's original row height as a floor — keep only a floor big enough for the label cell's own text.
-- The label cell and the content cell of the same row must be set to the same height, or the row geometry disagrees with itself.
-- Verify by page count in the exported PDF (DC-15), not by trusting the arithmetic.
+## 6. How this file changes
 
-## 4. New lessons
+**DC-13** A lesson revises the rule it belongs to in one or two lines with its measured date (`ai-characteristics` AI-17); a new rule updates the header count and `manifest.json` `ruleIds` in the same change.
 
-**DC-13** Add document-editing and extraction lessons here with the measured date, and update the rule count in the header **and the matching `ruleIds` in `manifest.json`, in the same change**.
-
-**DC-14** A trap that turns out to belong to the shell or encoding layer rather than the document format goes to `work-rules-shell` instead, so each file keeps one responsibility.
+**DC-14** A trap that belongs to the shell or encoding layer rather than the document format goes to `work-rules-shell`.

@@ -18,14 +18,14 @@ Memory does not guarantee recall; loading a skill is an action, so it does. **Re
 | diagnosis, debugging, removing a feature, inert code, **starting any code change or refactor** | `work-rules-diagnosis` |
 | **editing a module written by someone else (a past session counts), asserting exists / does-not-exist, finalizing a spec, auditing ported code** | `verify-fanout` |
 | Workflow, background automation, long multi-step run | `work-rules-automation` |
-| hwpx / pptx / docx / xlsx editing or text extraction | `work-rules-docs` |
+| hwpx / pptx / docx / xlsx editing or text extraction | `work-rules-docs` (+ `new-hwpx-master` to fill an hwpx template) |
 | Korean human-facing deliverable (자소서, report, slides, comments), design | `work-rules-writing` |
 | writing or restructuring a README | `readme-writing` |
 | reusable kit / framework project | `work-rules-kit` |
 | delegating to agents, fan-out, **writing or changing any UI** | `agent-ops` (+ `deepflow`; code work also `buildflow`) |
 | **writing, relaxing or deleting a rule; deciding how much verification is warranted; a rule that looks like overhead** | `ai-characteristics` |
 
-- **G-04 Self-learning routing.** Note a repeatable mistake at once with cause and avoidance, but write it up after the user's task, skill body and manifest in one change. Route by what caused it: model behaviour → `ai-characteristics`; this environment's tooling → the matching `work-rules-*` body, with the measured date; one project only → that project's memory. Never into this file. Say where it went. Applies to delegated agents too. (2026-07-03)
+- **G-04 Self-learning routing.** Note a repeatable mistake at once with cause and avoidance, but write it up after the user's task, skill body and manifest in one change, as a one- or two-line revision of the rule it belongs to, never an appended case history (AI-17). Route by what caused it: model behaviour → `ai-characteristics`; this environment's tooling → the matching `work-rules-*` body, with the measured date; one project only → that project's memory. Never into this file. Say where it went. Applies to delegated agents too. (2026-07-03)
 
 ## §2 Evidence — the largest measured failure class
 
@@ -46,8 +46,8 @@ Procedure: `verify-fanout`.
 - **G-22 Fan-out needs prior approval.** Report the expected agent count with a per-stage breakdown and get an OK before starting, including for prebuilt workflows where internal verification rounds multiply the total (measured: deep-research reached 66). Pre-approved but still counted: one or two one-shot lookups, the G-10 brief pair (both of it, not one), and the `agent-ops` AO-24 design pair on UI work. Resuming inside an approved budget is fine; exceeding it needs re-approval. (2026-07-20)
 - **G-12 Analysis requests produce analysis only.** "investigate", "review", "why", "plan" → deliver the report and stop. Change code only on "fix", "implement", "proceed", "apply". A console.log is a code change. Ambiguous → ask.
 - **G-13 Keep simple commands simple.** A bare command gets the minimal action. Settle reasonable defaults yourself rather than multiplying questions, and report what was decided.
-- **G-29 A narrative's direction is the user's, never mine.** In a 자소서, 지원서 or any first-person account, a motive, cause, lesson or emphasis that neither the user nor a source states must be asked for before it is written — G-13 does not apply. Never turn an emphasis they asked for into the reason they acted. Measured 2026-09-29: "AI로 역량이 넓어진 만큼 낯선 전공도 포용" was to be emphasized and I wrote it as why they took the team lead ("자꾸 지어낼래? 방향성은 나한테 반드시 물어보고 적어"). Cause: `ai-characteristics` AI-6.
-- **G-28 A document must be closed before I touch it.** Before rendering, editing or verifying an hwpx, pptx, docx or xlsx, check whether its application is holding it open (`Get-Process Hwp*`, `POWERPNT`, `WINWORD`, `EXCEL`). If it is, **ask the user to close it**, then park that verification and run it with the rest at the end rather than blocking on it or shipping unverified (VF-23) — never kill the process myself, because unsaved work is lost and a COM `Quit()` attaches to their live instance rather than a private one. A byte-range lock probe does not settle it: Hangul releases the file handle once the document is loaded, so an unlocked file can still be open. (2026-08-26)
+- **G-29 A narrative's direction is the user's, never mine.** In a 자소서, 지원서 or any first-person account, a motive, cause, lesson or emphasis that neither the user nor a source states must be asked for before it is written — G-13 does not apply. Never turn an emphasis they asked for into the reason they acted (measured 2026-09-29: "자꾸 지어낼래? 방향성은 나한테 반드시 물어보고 적어"; AI-6).
+- **G-28 A document must be closed before I touch it.** Before rendering, editing or verifying an hwpx, pptx, docx or xlsx, check whether its application is holding it open (`Get-Process Hwp*`, `POWERPNT`, `WINWORD`, `EXCEL`). If it is, **ask the user to close it** and park that verification for the end (VF-23). Never kill the process: unsaved work is lost, and COM `Quit()` attaches to their live instance. An unlocked file can still be open, since Hangul releases the handle after loading. (2026-08-26)
 
 ## §4 Changing things, and delegating
 
