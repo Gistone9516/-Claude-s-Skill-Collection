@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "updated": "2026-10-12",
+  "updated": "2026-10-20",
   "purpose": "Single source of truth for what this ~/.claude install is supposed to contain. scripts/check-manifest.ps1 validates the live filesystem against this file at SessionStart and reports drift.",
   "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
   "policy": {
@@ -293,6 +293,11 @@
       "path": "scripts/brief-nudge.sh",
       "required": true,
       "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored, and since 2026-10-12 it fires once per folder rather than once per file (VF-8's file group), because per-file firing turned it into noise during a multi-skill edit."
+    },
+    {
+      "path": "scripts/machine-rules.ps1",
+      "required": true,
+      "role": "SessionStart: injects ~/.claude/machine.local.md, if present, together with the session's cwd drive. Rules that hold for one computer only (where study and project work belongs, which disk letter is which) live in that untracked file, never in CLAUDE.md, because CLAUDE.md syncs to every machine and this repo is public. A machine without the file gets no output. Added 2026-10-20 when the user asked for a warning, on this PC only, whenever study or project work starts outside F:\\SUAN."
     },
     {
       "path": "mods/work-panel/.claude-plugin/plugin.json",

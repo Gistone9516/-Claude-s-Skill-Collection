@@ -98,6 +98,7 @@ Report the `denied` count; a subtree with denied>0 is a floor, not a total. Sani
 - Keep a batch launcher pure ASCII, and `call` with an absolute path.
 
 **SH-29 A `.ps1` without a BOM is read by PowerShell 5.1 as cp949, so Korean inside the script is mojibaked (measured 2026-08-01).** Seven correct Korean paths all reported `MISSING`, and a `Test-Path` guard skipped them and exited 0. Prepend `b"\xef\xbb\xbf"` from Python, or keep the script ASCII and pass Korean paths as `-Param` arguments.
+- **The reverse also bites: `"secret" | node cli.js` in PowerShell prepends U+FEFF to the child's stdin (measured 2026-10-20).** A CLI stored `﻿password` as a hash and login failed; JS `trim()` strips U+FEFF, so only untrimmed fields break. A stdin-reading CLI strips `/^﻿/`; `Out-File -Encoding utf8` adds the same BOM to JSON, which `JSON.parse` rejects.
 
 **SH-17 It is the `/mnt/c/...` WSL form that breaks on non-ASCII paths, not the Bash tool (re-measured 2026-07-30).** The Bash tool is Git Bash and `cd "c:/.../한글 경로"` works; the same path as `/mnt/c/...` is corrupted. Reach WSL through PowerShell `wsl bash -c "cd '<path>'; ..."`, or a scratchpad `.sh` run by `wsl bash <script>` when there are variables and quotes. The general form of this rule was believed for weeks until writing a hook for it forced a re-measurement.
 
@@ -105,8 +106,10 @@ Report the `denied` count; a subtree with denied>0 is a floor, not a total. Sani
 - **SH-19 `wsl` restarts silently between tool calls and empties `/tmp`.** Keep multi-step work in one `.sh` run in a single call, and write results to the Windows scratchpad. An A/B comparison split across calls compares two empty files as IDENTICAL.
 
 **SH-20 Node's `#` subpath imports fail on paths containing Korean and spaces (measured 2026-07-21).** Any tool that self-imports through `#` (dependency-cruiser) dies with `MODULE_NOT_FOUND` there, whatever the version. Run from an ASCII path, or replace the tool with a dependency-free script. When a third-party tool fails strangely on a Korean path, reproduce minimally in an ASCII folder before reinstalling anything.
+- **A scratchpad `tsx` launcher that imports repo code must be `.mts` and import `file:///D:/.../a%20b/x` URLs (measured 2026-10-19).** A `.ts` outside a `"type":"module"` package compiles as CJS and top-level await fails; a bare `D:/...` specifier fails with `ERR_UNSUPPORTED_ESM_URL_SCHEME`.
 
 **SH-30 Calling `npm` or `npx` with the call operator from PowerShell mangles the arguments (measured 2026-08-02).** `& npm run build` fails with `Unknown command: "pm"`: the `npm.ps1` shim strips `InvocationName.Length` characters, and with `&` that is 1. `& npm -v` still works and misleads. Call `& (Get-Command npm.cmd).Source run build`, or plain `npm run build`.
+- **A command handed to the user for their admin PowerShell names `npm.cmd`, and joins dependent steps with `if ($?) { … }`, never `;` (measured 2026-10-18).** Their shell's execution policy blocked `npm.ps1`, and `;` restarted the live server anyway, which then served new code with the old web build.
 
 **SH-31 A file the Write tool creates in `~/.ssh` inherits the folder ACL, and OpenSSH refuses it (measured 2026-08-15).** Every `ssh` call died at exit 255 with "Bad permissions", which looks like a remote problem. Before the first `ssh`, run `icacls <path> /inheritance:r /grant:r "${me}:F"` with `$me = "$env:USERDOMAIN\$env:USERNAME"`. Keys from `ssh-keygen` are already correct.
 

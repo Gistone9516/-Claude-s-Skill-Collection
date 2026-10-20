@@ -15,6 +15,16 @@
         "hooks": [
           {
             "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_HOME>/scripts/machine-rules.ps1\" -Event SessionStart",
+            "timeout": 15,
+            "statusMessage": "Loading this machine's rules"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
             "command": "node \"<CLAUDE_HOME>/hooks/caveman-activate.js\"",
             "timeout": 30,
             "statusMessage": "Loading caveman mode..."
