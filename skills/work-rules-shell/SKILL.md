@@ -80,6 +80,7 @@ Report the `denied` count; a subtree with denied>0 is a floor, not a total. Sani
 
 - Probe the user's token: `schtasks /create /tn <n> /tr "cmd /c <cmd> > <ascii-path> 2>&1" /sc ONCE /st 00:00 /rl LIMITED /it /f`, then `/run`, read the file, `/delete /f`. The same channel performs the fix; store credentials with `cmdkey /add` first.
 - Scope: mapped network drives, subst drives, per-session device mappings. Prefer UNC paths, which need no mapping.
+- Also the Windows Credential Manager: `git push` over https fails from both the PowerShell and the Bash tool with "Unable to persist credentials with the 'wincredman' credential store" (measured 2026-10-20). Push through the same `/rl LIMITED /it` task, running an ASCII `.cmd` file, since an inline `/tr` with quoted paths is re-quoted apart (SH-14).
 
 **SH-34 `tsc -b` emits `.js` beside the sources and the bundler imports those instead of the `.ts` (measured 2026-09-05).** In a bundler project with no `noEmit`/`outDir`, `-b` wrote 64 files and the suite then tested a compiled snapshot; the tell is `X is not a function` for a function plainly there.
 
