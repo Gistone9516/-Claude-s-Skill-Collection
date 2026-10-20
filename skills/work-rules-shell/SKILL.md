@@ -125,6 +125,7 @@ Report the `denied` count; a subtree with denied>0 is a floor, not a total. Sani
 **SH-22 `git add -- <paths>` refuses the whole set if one path is ignored (measured 2026-07-21).** Tracked files in the same list then fail to commit. Filter with `git check-ignore -- <paths>` first; it exits 0 when something is ignored and 1 when nothing is.
 
 **SH-23 Update the root README.md before committing.** One file must explain the project: identity, structure map, design core, how to run, current state. Hard floor when structure, features or run instructions changed. Report to the user whether it was updated. This rule owns when; how to write it is `readme-writing`.
+- **A commit never shares a command with the test run that justifies it (measured 2026-10-21).** Tests piped to `grep | head` and then `bash commit.sh` committed past a failing test, because the pipeline's exit code was `head`'s. Run the tests, read the result, then commit in a separate call.
 
 **SH-26 Write git commands as `git -C <repo> ...`, never `cd <repo> && git ...`.** The SH-23 hook runs PostToolUse with the filter `if: "Bash(git *)"`, which is prefix matching, so a command beginning with `cd` never reaches it and the check silently does not run. Also, `cd` inside a compound command can trigger a permission prompt.
 
