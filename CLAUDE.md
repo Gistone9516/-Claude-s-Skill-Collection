@@ -18,7 +18,7 @@ Loaded every turn, so it holds only what must be true *before* a skill is read; 
 | diagnosis, debugging, removing a feature, inert code, **starting any code change or refactor** | `work-rules-diagnosis` |
 | **editing a module written by someone else (a past session counts), asserting exists / does-not-exist, finalizing a spec, auditing ported code** | `verify-fanout` |
 | Workflow, background automation, long multi-step run | `work-rules-automation` |
-| hwpx / pptx / docx / xlsx editing or text extraction | `work-rules-docs` (+ `new-hwpx-master` to fill an hwpx template) |
+| hwpx / pptx / docx / xlsx editing or text extraction; saving any document version | `work-rules-docs` (+ `new-hwpx-master` to fill an hwpx template) |
 | Korean human-facing deliverable (자소서, report, slides, comments), design | `work-rules-writing` |
 | writing or restructuring a README | `readme-writing` |
 | reusable kit / framework project | `work-rules-kit` |

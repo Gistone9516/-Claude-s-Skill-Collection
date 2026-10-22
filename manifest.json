@@ -105,8 +105,8 @@
       "kind": "local",
       "lang": "en",
       "tier": 2,
-      "role": "hwpx / pptx / docx / xlsx editing and extraction; corruption traps.",
-      "ruleIds": "DC-1..DC-17"
+      "role": "hwpx / pptx / docx / xlsx editing and extraction; corruption traps; document versioning (_@v, _archive).",
+      "ruleIds": "DC-1..DC-18"
     },
     {
       "name": "work-rules-kit",

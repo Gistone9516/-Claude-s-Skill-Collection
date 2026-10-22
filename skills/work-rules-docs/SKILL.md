@@ -1,11 +1,11 @@
 ---
 name: work-rules-docs
-description: Editing and extracting document files (hwpx, pptx, docx, xlsx) - a catalogue of measured corruption traps and the validated procedure for each. Read in full before changing a single character of an hwpx or pptx, and before extracting text from any document file. Triggers - hwpx 편집, pptx 편집, 한글 문서, 파워포인트, 문서 손상, 텍스트 추출, docx, xlsx.
+description: Editing and extracting document files (hwpx, pptx, docx, xlsx) - a catalogue of measured corruption traps and the validated procedure for each. Read in full before changing a single character of an hwpx or pptx, and before extracting text from any document file, and before saving a new version of any human-read document, md included. Triggers - hwpx 편집, pptx 편집, 한글 문서, 파워포인트, 문서 손상, 텍스트 추출, docx, xlsx, 문서 버전, archive, _@v.
 ---
 
 # work-rules-docs — document file editing and extraction
 
-Rules: DC-1..DC-17 (17).
+Rules: DC-1..DC-18 (18).
 For filling an hwpx official-document template end to end, use `new-hwpx-master`; this file holds the corruption rules that apply to any document work. Before rendering, editing or verifying a document, check that its application is not holding it open (CLAUDE.md G-28).
 
 ## 1. Extracting text (docx, xlsx, hwpx, pptx)
@@ -72,7 +72,17 @@ $hwp.Clear(1); $hwp.Quit()
 
 **DC-17 Under-estimate `cellSz height`, never over-estimate.** Hangul keeps a declared height larger than the content as dead space and silently grows one that is too small (measured 2026-08-22: a too-high floor turned 2 pages into 3). Estimate lines with `chars_per_line` set slightly above the true value, keep only a floor that fits the label cell's own text, give the label and content cells of a row the same height, and verify by page count (DC-15).
 
-## 6. How this file changes
+## 6. Versioning saved documents
+
+**DC-18 A human-read document carries its version in its file name, and superseded versions live in a sibling archive folder (user directive 2026-10-22, global: "앞으로 문서 같은 과거 파일은 '파일명_archive' 폴더를 만들고 그 안에 파일명_@v 을 만들어. 정본 파일도 파일명_@v 를 지킬 것").**
+
+- **Scope:** docx, hwpx, pptx, xlsx, pdf, and md written for a person to read (자소서, 보고서, notes). Not code, config, or a README or other file whose history git already holds.
+- **Shape:** the canonical file is `<name>_@v<N>.<ext>`, N an integer from 1. Its superseded versions are `<name>_archive/<name>_@v<k>.<ext>` beside it. Exactly one `<name>_@v*` file sits outside the archive.
+- **Saving a revision:** move the current file into the archive unchanged, then write the new one as `_@v<N+1>`. Never write a revision over the current file, and never edit or delete an archived version.
+- **A file without the suffix** adopts it at its next revision: it becomes the archive's `_@v1` and the revision `_@v2`. Renaming a file the user keeps in a date-named folder or has open (G-28) is asked first.
+- Rationale, inferred and not stated by the user: a name that carries the version shows which copy is canonical without opening anything, which matters because they lose track of decisions across busy days (CLAUDE.md G-06).
+
+## 7. How this file changes
 
 **DC-13** A lesson revises the rule it belongs to in one or two lines with its measured date (`ai-characteristics` AI-17); a new rule updates the header count and `manifest.json` `ruleIds` in the same change.
 

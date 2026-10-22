@@ -56,7 +56,7 @@ These three apply to slides only. Prose and study notes take their form from WR-
 
 **WR-9 Analyze the existing style first, then inherit it.** Before making any deliverable — slides, document, figure — study the tone and style of the existing ones in detail and continue them. Making something blind misses the target.
 
-**WR-10 Preserve originals and data integrity.** Work on a new file or a backup and leave the original untouched. When redesigning a figure or table, keep the content and numbers exactly as they are and change only the design; departures from the original all get flagged. Render the result and check it visually before moving on, iterating in small steps.
+**WR-10 Preserve originals and data integrity.** Work on a new file or a backup and leave the original untouched; name and archive versions per `work-rules-docs` DC-18. When redesigning a figure or table, keep the content and numbers exactly as they are and change only the design; departures from the original all get flagged. Render the result and check it visually before moving on, iterating in small steps.
 
 **WR-11 Show visual results with Playwright screenshots, not file attachments** (CLAUDE.md G-25). Reading the screenshot back myself is still required for a seeing-judgment. The Playwright MCP writes only under the working directory (measured 2026-09-15), so save to `.playwright-mcp/` and check it is gitignored before committing. Measured 2026-10-11: a screenshot right after navigating can come out blank (wait for `document.fonts.ready` first), and a PNG read right after the call can fail as not yet written (read it again).
 
