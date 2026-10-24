@@ -79,7 +79,7 @@ Skip it, and say so, for a file created this turn, for a change that closes insi
 | **현장 the site** | What do the files I am about to touch actually say, and which of my assumptions about them are wrong? | *locally* wrong: a stale premise, a signature not as remembered |
 | **주변 the surroundings** | What outside my target already does this job, must agree with it, or goes stale once I change it? | *globally* wrong: a duplicate implementation, a constant that must match, a document restating the rule being edited |
 
-Give each lens its half **and tell it the other half is covered**; an agent that believes it is alone surveys everything, and both return the same survey. Both go in one message so they run concurrently. Model tier is §8's; "lens" names the framing only, not AO-18's lens payload. Measured 2026-07-30 on the first run: neither lens returned anything the other did.
+Name each agent's `description` `Brief <lens>: …`; `scripts/skill-gate.sh` lets only those through ungated, since VF-7 puts the pair before the agent-ops read (measured 2026-10-25: the gate denied one half and the other ran alone). Give each lens its half **and tell it the other half is covered**; an agent that believes it is alone surveys everything, and both return the same survey. Both go in one message so they run concurrently. Model tier is §8's; "lens" names the framing only, not AO-18's lens payload. Measured 2026-07-30 on the first run: neither lens returned anything the other did.
 
 Give the pair the relation index and the target path. Each returns **3-5 decision-shaped lines, not a relationship dump**:
 

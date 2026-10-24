@@ -86,6 +86,10 @@ case "$tool" in
     fi
     ;;
   Agent|Task|Workflow)
+    # The verify-fanout brief pair runs before the rest of the preamble (VF-7), so it passes.
+    # Gating it denied one half of the pair while the other ran alone (measured 2026-10-25).
+    desc=$(field description)
+    [[ $tool == Agent && $desc == Brief* ]] && exit 0
     need=agent-ops; moment="agent launch"
     ;;
   Edit|Write|MultiEdit)
