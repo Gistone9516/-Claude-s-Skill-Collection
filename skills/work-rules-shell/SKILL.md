@@ -5,7 +5,7 @@ description: Shell, git and terminal discipline for this environment (Windows 11
 
 # work-rules-shell — shell, git and terminal discipline
 
-Rules: SH-1..SH-38 (38). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
+Rules: SH-1..SH-39 (39). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
 Every rule came from an actual incident. None is safe to skip on the assumption that this time is different.
 
 Thirteen of these are also enforced by hooks, because reading this file repeatedly failed to prevent them; a hook is closer to the action than any document.
@@ -72,6 +72,8 @@ Report the `denied` count; a subtree with denied>0 is a floor, not a total. Sani
 **SH-9 `Get-Item` and `Get-ChildItem` without `-Force` cannot see Hidden+System files (measured 2026-07-28).** `pagefile.sys` reported as absent, and `Test-Path` returns False for the active pagefile even elevated. Pass `-Force` on a drive root or system location; confirm pagefile facts with `Get-CimInstance Win32_PageFileUsage`. `C:\$Recycle.Bin` needs `-Force` plus the SH-8 walker; it hid 33.9 GB.
 
 **SH-10 PowerShell variable names are case-insensitive, so `$l` clobbers `$L` (measured 2026-07-27).** A loop variable overwrote an accumulator and the script wrote a 91-byte file while printing success. The symptom is a truncated output, not an error. Name accumulators distinctly and have the script print its own item count.
+
+**SH-39 One `[pscustomobject]` has no `.Count` in PowerShell 5.1 (measured 2026-10-30).** So `(… | Where-Object …).Count` is `$null` when exactly one item matches, and a check failed on a record the JSON held. Count through `@()`.
 
 **SH-11 `Measure-Object -Line` does not count blank lines (measured 2026-07-20).** A 764-line file reported 480. Use `(Get-Content file).Count`, and tell delegated agents to use the actual file when an assigned range disagrees.
 

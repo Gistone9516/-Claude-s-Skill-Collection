@@ -61,7 +61,9 @@
       "lang": "en",
       "tier": 1,
       "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene. SH-35..37 cover driving COM/UI automation from PowerShell (runspace breaks COM, integrity vs ROT, GetProperty/attach verify).",
-      "ruleIds": "SH-1..SH-38"
+      "ruleIds": "SH-1..SH-39",
+      "warnBytes": 20600,
+      "warnBytesReason": "First crossed the 20000 default on 2026-10-30 (about 20200) when SH-39 was added. DG-5's question: still one responsibility, a catalogue of measured shell, git and PowerShell traps read before running commands. But section 5b (SH-35..SH-38, COM and UI automation) serves a different moment, driving GUI apps, and is the natural split if it grows again; that split is the user's call, not made here. 20600 is the current size plus a little headroom; when it is next exceeded, split 5b out rather than raising this."
     },
     {
       "name": "agent-ops",
