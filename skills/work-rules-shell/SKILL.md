@@ -25,10 +25,11 @@ The other twenty-one have no reliable mechanical signature and stay in the text.
 
 **SH-2 Escapes handed to the Write tool become real control characters (measured 2026-07-21).** A placeholder `\0` became a raw NUL byte; the Read tool shows it as whitespace and Edit then fails with "String to replace not found". Write control characters from a Python script. When Edit cannot find something plainly there, dump the line with `repr()` before retrying.
 
-**SH-33 A doubled backslash collapses to one before the shell or Python sees it, and a quoted heredoc does not prevent it (measured 2026-09-02).** The collapse happens at the tool-argument layer: `\\` in a `<<'EOF'` heredoc arrived as `\`, while single `\n` survived, which is what makes it hard to spot.
+**SH-33 A doubled backslash collapses to one before the shell or Python sees it, even in a quoted heredoc (measured 2026-09-02).** It happens at the tool-argument layer: `\\` arrived as `\` while single `\n` survived, so it is hard to spot.
 
-- **Never type a literal backslash into a file-writing script.** Build it from its code point (`BS = chr(92)`) and join lines with `chr(10)`. Better, restructure so none is needed: `relative(a, b).split(sep).join("/")`.
-- A quoted heredoc also died on English prose with apostrophes (2026-09-15). For any script longer than a few lines, Write it to the scratchpad and run the file (SH-1).- Detect with a syntax check run per edit (`node --check`, `npx tsc --noEmit`); the symptom is a parse error on a line that looks correct.
+- **Never type a literal backslash into a file-writing script, however short** (recurred twice 2026-10-30 in 3-line `python - <<'PY'` edits). Build it from its code point (`BS = chr(92)`), join lines with `chr(10)`, or restructure so none is needed: `relative(a, b).split(sep).join("/")`.
+- A quoted heredoc also died on English prose with apostrophes (2026-09-15). Write the script to the scratchpad and run the file (SH-1).
+- Detect with a syntax check run per edit (`node --check`, `npx tsc --noEmit`); the symptom is a parse error on a line that looks correct.
 - In Python, a concatenation split across lines needs a trailing `+` on every line once an expression is in the chain.
 
 **SH-3 Anchor-append duplication in edit scripts (measured 2026-07-29, twice).** `s.replace(anchor, add + anchor)` is correct only if `add` does not itself end with the anchor; otherwise it produces `export function reduce(export function reduce(`.
