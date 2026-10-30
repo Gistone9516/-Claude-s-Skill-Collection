@@ -189,6 +189,8 @@ try {
   $skillsRoot = Join-Path $base "skills"
   if (Test-Path -LiteralPath $skillsRoot) {
     foreach ($dir in (Get-ChildItem -LiteralPath $skillsRoot -Force -ErrorAction SilentlyContinue)) {
+      # skills\synced is written by the Claude Code harness (claude.ai skill sync), not by this repo
+      if ($dir.Name -eq "synced") { continue }
       if (-not $declared.ContainsKey($dir.Name)) {
         [void]$orphans.Add("skills\" + $dir.Name)
       }

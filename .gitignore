@@ -24,6 +24,8 @@
 !/mods/
 # Python bytecode a skill's tests leave beside its scripts (portfolio-log).
 __pycache__/
+# claude.ai skill sync, written per account by the Claude Code harness; not part of this install.
+/skills/synced/
 
 # Global memory for the home-directory scope. Re-included level by level,
 # because git cannot re-include a file whose parent directory is excluded.

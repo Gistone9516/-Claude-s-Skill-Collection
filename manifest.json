@@ -60,8 +60,8 @@
       "kind": "local",
       "lang": "en",
       "tier": 1,
-      "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene.",
-      "ruleIds": "SH-1..SH-34"
+      "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene. SH-35..37 cover driving COM/UI automation from PowerShell (runspace breaks COM, integrity vs ROT, GetProperty/attach verify).",
+      "ruleIds": "SH-1..SH-38"
     },
     {
       "name": "agent-ops",
