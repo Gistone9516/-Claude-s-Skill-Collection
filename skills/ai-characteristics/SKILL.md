@@ -37,6 +37,8 @@ Generates: `verify-fanout` VF-5, VF-7, VF-8; CLAUDE.md G-10.
 
 N agents on one model share priors; their agreement is not N judgements. A panel's value is forced framing separation.
 
+The converse also holds: two judges on one input can disagree widely. Measured 2026-11-07: a byte-identical picture scored 0.69 and 0.44 on the same checklist by two sonnet judges, so a before/after across different judges measures the judges. Keep byte-identical controls in the set and compare the element the change targeted.
+
 Generates: `deepflow` DF-1 and §5, `verify-fanout` VF-21, `agent-ops` AO-24.
 
 ### AI-5 It wants to converge, so it downgrades valid critique
