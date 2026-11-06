@@ -5,7 +5,7 @@ description: Shell, git and terminal discipline for this environment (Windows 11
 
 # work-rules-shell — shell, git and terminal discipline
 
-Rules: SH-1..SH-39 (39). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
+Rules: SH-1..SH-39 (35 here; SH-35..SH-38 moved to `work-rules-ui-automation` as UI-1..UI-4). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
 Every rule came from an actual incident. None is safe to skip on the assumption that this time is different.
 
 Thirteen of these are also enforced by hooks, because reading this file repeatedly failed to prevent them; a hook is closer to the action than any document.
@@ -21,6 +21,7 @@ The other twenty-one have no reliable mechanical signature and stay in the text.
 
 **SH-1 No complex inline shell.** Multi-line commands, quotes, special characters, Korean text and heredocs, `python -c "..."` above all, break tool-call parsing, and a malformed call stops the run. **Write a `.py` or `.sh` file, then run it.** Inline is for genuinely simple one-liners.
 
+- **Give each scratchpad script a fresh name, and never send its Write and its run in the same parallel batch (measured 2026-11-03).** A Write onto an existing unread `fix3.py` was refused while the parallel run executed the stale script from hours earlier; only an assert stopped it before it rewrote a tracked file.
 - **Never name a scratchpad script after a stdlib module (measured 2026-09-29).** An `inspect.py` helper shadowed stdlib `inspect` for every script beside it, and the error blamed lxml and fitz. When a library suddenly fails to import, `ls` the script's directory first.
 
 **SH-2 Escapes handed to the Write tool become real control characters (measured 2026-07-21).** A placeholder `\0` became a raw NUL byte; the Read tool shows it as whitespace and Edit then fails with "String to replace not found". Write control characters from a Python script. When Edit cannot find something plainly there, dump the line with `repr()` before retrying.
@@ -73,7 +74,8 @@ Report the `denied` count; a subtree with denied>0 is a floor, not a total. Sani
 
 **SH-10 PowerShell variable names are case-insensitive, so `$l` clobbers `$L` (measured 2026-07-27).** A loop variable overwrote an accumulator and the script wrote a 91-byte file while printing success. The symptom is a truncated output, not an error. Name accumulators distinctly and have the script print its own item count.
 
-**SH-39 One `[pscustomobject]` has no `.Count` in PowerShell 5.1 (measured 2026-10-30).** So `(… | Where-Object …).Count` is `$null` when exactly one item matches, and a check failed on a record the JSON held. Count through `@()`.
+**SH-39 One `[pscustomobject]` has no `.Count` in PowerShell 5.1 (measured 2026-10-30).** So `(… | Where-Object …).Count` is `$null` when exactly one item matches, and a check failed on a record the JSON held. Count through `@()`. The reverse bites too: `@(… | ConvertFrom-Json)` of a JSON array is one item, the whole array (measured 2026-11-07: a 5-row scene file ran once); unroll with `| ForEach-Object { $_ }`.
+- **A `Write-X @(Read-Y | …)` one-liner wipes the file when `Read-Y` is undefined (measured 2026-11-05).** Command-not-found is non-terminating, `@()` comes out empty and the write proceeds; Cloa's picture queue was emptied this way. Dot-source every lib the function needs and check the read's count before writing.
 
 **SH-11 `Measure-Object -Line` does not count blank lines (measured 2026-07-20).** A 764-line file reported 480. Use `(Get-Content file).Count`, and tell delegated agents to use the actual file when an assigned range disagrees.
 
@@ -142,15 +144,9 @@ The repo folder itself moves safely whole, `.git` included. The risk is path ref
 - **Path key encoding.** Every non-alphanumeric character of the absolute path becomes one dash, no collapsing, case preserved: `C:\Users\USER` → `C--Users-USER`. Confirm the mapping from the `cwd` field inside the key folder's `.jsonl`.
 - Check for holding processes and collisions first. Rename the exact key only, never by prefix glob.
 
-## 5b. Driving COM / UI automation from PowerShell (measured 2026-10-25, REA Adapter 원격 조작)
+## 5b. COM and UI Automation
 
-**SH-35 A child runspace (`[PowerShell]::Create()`) silently breaks COM late-binding.** `InvokeMember` on a COM object inside a `BeginInvoke`'d runspace returns `null` and the call is a no-op, even with `ApartmentState='STA'` and no exception thrown — so an automation "succeeds" (ok) while nothing happens and every property reads null. The same code on the main thread (also STA) works (measured: `FileSystemObject.Drives.Count` = 4 on main, null in runspace). Run COM on the host's main STA thread; use a runspace only for things that must time out (a blocking COM call then risks wedging the thread — avoid the block instead, see SH-37).
-
-**SH-36 An elevated process cannot COM-attach a non-elevated app.** `Marshal::GetActiveObject("App.Application")` throws `MK_E_UNAVAILABLE (0x800401E3)` because the Running Object Table is filtered by integrity level. Run the automating process at the **same** integrity as the target app (a user's Office runs non-elevated → automate non-elevated). UI Automation is not blocked this way (higher IL reads lower), so a UIA click can succeed from an elevated process while COM attach fails — a misleading split. A non-elevated `HttpListener` bound to a non-loopback address then needs a one-time `netsh http add urlacl url=http://<addr>:<port>/ user=<user>` (admin once); loopback needs none.
-
-**SH-37 COM late-binding reads need the `GetProperty` flag, and a blocked target hangs the call.** `InvokeMember(name, InvokeMethod, …)` on a property returns null; use `[Reflection.BindingFlags]'InvokeMethod,GetProperty'` for no-arg members so properties (`Version`, `ActiveDocument.Name`, `Count`) return values — essential for verifying you attached to the right instance before acting, and reading back after. A target showing a modal/guard state (Word "Protected View") blocks COM until cleared; clear it via UIA first (find and Invoke the button) rather than COM. `GetActiveObject` returns one ROT instance, which may not be the visible document when several are open — read `ActiveDocument.Name` to confirm.
-
-**SH-38 PowerShell passes `$null` to a C# `string` parameter as `""` (measured 2026-10-26).** An `Add-Type` helper guarded by `title != null` treated every pid lookup as a search for an empty title, so AppHelm's screenshot-by-process never matched and only title lookups worked. Test with `String.IsNullOrEmpty`.
+Moved to `work-rules-ui-automation` on 2026-11-07: SH-35..SH-38 are now UI-1..UI-4 there. Read that skill before driving an app through COM or UI Automation. The numbers SH-35..SH-38 are not reused.
 
 ## 6. How this file changes
 
