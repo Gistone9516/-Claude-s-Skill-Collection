@@ -22,6 +22,7 @@ The other twenty-one have no reliable mechanical signature and stay in the text.
 **SH-1 No complex inline shell.** Multi-line commands, quotes, special characters, Korean text and heredocs, `python -c "..."` above all, break tool-call parsing, and a malformed call stops the run. **Write a `.py` or `.sh` file, then run it.** Inline is for genuinely simple one-liners.
 
 - **Give each scratchpad script a fresh name, and never send its Write and its run in the same parallel batch (measured 2026-11-03).** A Write onto an existing unread `fix3.py` was refused while the parallel run executed the stale script from hours earlier; only an assert stopped it before it rewrote a tracked file.
+- **Never append a `#` comment inside a one-line PowerShell hashtable or array (measured 2026-11-07).** It comments out every later entry and the closing brace; the library then fails to parse at the next run. Put the comment on the line above.
 - **Never name a scratchpad script after a stdlib module (measured 2026-09-29).** An `inspect.py` helper shadowed stdlib `inspect` for every script beside it, and the error blamed lxml and fitz. When a library suddenly fails to import, `ls` the script's directory first.
 
 **SH-2 Escapes handed to the Write tool become real control characters (measured 2026-07-21).** A placeholder `\0` became a raw NUL byte; the Read tool shows it as whitespace and Edit then fails with "String to replace not found". Write control characters from a Python script. When Edit cannot find something plainly there, dump the line with `repr()` before retrying.
