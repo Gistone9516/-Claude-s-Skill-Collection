@@ -1,80 +1,4 @@
 {
- "G-01": {
-  "en": "Language split",
-  "file": "CLAUDE.md"
- },
- "G-02": {
-  "en": "User is Korean",
-  "file": "CLAUDE.md"
- },
- "G-03": {
-  "en": "\"opus\" is a role name",
-  "file": "CLAUDE.md"
- },
- "G-04": {
-  "en": "Self-learning routing",
-  "file": "CLAUDE.md"
- },
- "G-05": {
-  "en": "No canonical source exists, only evidence grades",
-  "file": "CLAUDE.md"
- },
- "G-06": {
-  "en": "The user's statement is not canonical either",
-  "file": "CLAUDE.md"
- },
- "G-07": {
-  "en": "A label is not a source",
-  "file": "CLAUDE.md"
- },
- "G-08": {
-  "en": "Read the file before asserting anything about it",
-  "file": "CLAUDE.md"
- },
- "G-09": {
-  "en": "Never pass internal recall off as fact",
-  "file": "CLAUDE.md"
- },
- "G-10": {
-  "en": "Self-brief first, as a pair",
-  "file": "CLAUDE.md"
- },
- "G-11": {
-  "en": "Then brief the user",
-  "file": "CLAUDE.md"
- },
- "G-22": {
-  "en": "Fan-out needs prior approval",
-  "file": "CLAUDE.md"
- },
- "G-12": {
-  "en": "Analysis requests produce analysis only",
-  "file": "CLAUDE.md"
- },
- "G-13": {
-  "en": "Keep simple commands simple",
-  "file": "CLAUDE.md"
- },
- "G-29": {
-  "en": "A narrative's direction is the user's, never mine",
-  "file": "CLAUDE.md"
- },
- "G-28": {
-  "en": "A document must be closed before I touch it",
-  "file": "CLAUDE.md"
- },
- "G-25": {
-  "en": "Show visual results with Playwright screenshots, never file attachments",
-  "file": "CLAUDE.md"
- },
- "G-26": {
-  "en": "Route memory by scope, and say where it went",
-  "file": "CLAUDE.md"
- },
- "G-27": {
-  "en": "manifest.json declares what this install must contain",
-  "file": "CLAUDE.md"
- },
  "AI-1": {
   "en": "It asserts false things with full confidence",
   "file": "ai-characteristics"
@@ -284,7 +208,7 @@
   "file": "work-rules-shell"
  },
  "SH-33": {
-  "en": "A doubled backslash collapses to one before the shell or Python sees it, and a quoted heredoc does not prevent it (measured 2026-09-02)",
+  "en": "A doubled backslash collapses to one before the shell or Python sees it, even in a quoted heredoc (measured 2026-09-02)",
   "file": "work-rules-shell"
  },
  "SH-3": {
@@ -313,6 +237,10 @@
  },
  "SH-10": {
   "en": "PowerShell variable names are case-insensitive, so $l clobbers $L (measured 2026-07-27)",
+  "file": "work-rules-shell"
+ },
+ "SH-39": {
+  "en": "One [pscustomobject] has no .Count in PowerShell 5.1 (measured 2026-10-30)",
   "file": "work-rules-shell"
  },
  "SH-11": {
@@ -406,6 +334,22 @@
  "SH-25": {
   "en": "Project memory and session records live under ~/.claude/projects/<path key>/",
   "file": "work-rules-shell"
+ },
+ "UI-1": {
+  "en": "A child runspace ([PowerShell]::Create()) silently breaks COM late-binding",
+  "file": "work-rules-ui-automation"
+ },
+ "UI-2": {
+  "en": "An elevated process cannot COM-attach a non-elevated app",
+  "file": "work-rules-ui-automation"
+ },
+ "UI-3": {
+  "en": "COM late-binding reads need the GetProperty flag, and a blocked target hangs the call",
+  "file": "work-rules-ui-automation"
+ },
+ "UI-4": {
+  "en": "PowerShell passes $null to a C# string parameter as \"\" (measured 2026-10-26)",
+  "file": "work-rules-ui-automation"
  },
  "AO-1": {
   "en": "The tool descriptions are canonical for mechanics; this file is canonical for policy",
@@ -659,6 +603,30 @@
   "en": "How a lesson enters this file (user directive 2026-10-11)",
   "file": "work-rules-writing"
  },
+ "CL-1": {
+  "en": "Restate before a non-trivial change",
+  "file": "work-rules-collab"
+ },
+ "CL-2": {
+  "en": "Interview for a large or underspecified task",
+  "file": "work-rules-collab"
+ },
+ "CL-3": {
+  "en": "Propose the acceptance check before building",
+  "file": "work-rules-collab"
+ },
+ "CL-4": {
+  "en": "Build the minimum, list what was left out",
+  "file": "work-rules-collab"
+ },
+ "CL-5": {
+  "en": "Explain expert material plainly",
+  "file": "work-rules-collab"
+ },
+ "CL-6": {
+  "en": "Check outcome-changing claims against sources first",
+  "file": "work-rules-collab"
+ },
  "RD-1": {
   "en": "The reader decides the form (user 2026-10-12)",
   "file": "readme-writing"
@@ -753,6 +721,10 @@
  },
  "DC-17": {
   "en": "Under-estimate cellSz height, never over-estimate",
+  "file": "work-rules-docs"
+ },
+ "DC-18": {
+  "en": "A human-read document carries its version in its file name, and superseded versions live in a sibling archive folder (user directive 2026-10-22, global: \"앞으로 문서 같은 과거 파일은 '파일명_archive' 폴더를 만들고 그 안에 파일",
   "file": "work-rules-docs"
  },
  "KT-1": {

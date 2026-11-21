@@ -33,11 +33,11 @@
  },
  "G-09": {
   "ko": "기억을 사실처럼 말하지 않는다",
-  "en": "Never pass internal recall off as fact"
+  "en": "Do not pass internal recall off as fact"
  },
  "G-10": {
-  "ko": "작업 전에 현장과 주변 두 에이전트로 브리핑한다",
-  "en": "Self-brief first, as a pair"
+  "ko": "큰 작업 전에 현장과 주변 두 에이전트로 브리핑한다",
+  "en": "Brief before large work, as a pair"
  },
  "G-11": {
   "ko": "브리핑 뒤 사용자에게 계획을 알린다",
@@ -57,11 +57,11 @@
  },
  "G-29": {
   "ko": "서사의 방향은 사용자에게 먼저 묻는다",
-  "en": "A narrative's direction is the user's, never mine"
+  "en": "A narrative's direction is the user's"
  },
  "G-28": {
   "ko": "문서는 닫힌 뒤에 건드린다",
-  "en": "A document must be closed before I touch it"
+  "en": "A document is closed before I touch it"
  },
  "G-25": {
   "ko": "시각 결과는 Playwright 스크린샷으로 보인다",
@@ -886,5 +886,29 @@
  "HX-16": {
   "ko": "새 개요 수준은 자기 스타일을 따로 만든다",
   "en": "A new outline level needs its own named style, never a paraPr override on a shared one (measured 2026-08-02)"
+ },
+ "CL-1": {
+  "ko": "큰 변경 전에 목표와 범위를 1~3줄로 다시 말한다",
+  "en": "Restate before a non-trivial change"
+ },
+ "CL-2": {
+  "ko": "크거나 막연한 작업은 선택지로 인터뷰한다",
+  "en": "Interview for a large or underspecified task"
+ },
+ "CL-3": {
+  "ko": "만들기 전에 완료 확인 방법을 제안한다",
+  "en": "Propose the acceptance check before building"
+ },
+ "CL-4": {
+  "ko": "최소한만 만들고 빠진 것을 알린다",
+  "en": "Build the minimum, list what was left out"
+ },
+ "CL-5": {
+  "ko": "전문 내용은 비유 먼저, 용어는 정확히 풀어 쓴다",
+  "en": "Explain expert material plainly"
+ },
+ "CL-6": {
+  "ko": "결과를 바꾸는 주장은 출처부터 확인한다",
+  "en": "Check outcome-changing claims against sources first"
  }
 }

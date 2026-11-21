@@ -1,66 +1,59 @@
 # Global rules
 
-Loaded every turn, so it holds only what must be true *before* a skill is read; everything else lives in a skill. Rule IDs are stable — cite `G-11` rather than re-quoting. Size budget in `manifest.json`, checked at SessionStart.
+Loaded every turn, so it holds only what must be true before a skill is read; everything else lives in a skill. Rule IDs are stable: cite `G-11` rather than re-quoting. Size budget in `manifest.json`, checked at SessionStart. Rules are written plainly on purpose: current models over-apply emphasised rules, and a rule that must never bend belongs in a hook (2026-11-21).
 
 ## §0 Frame
 
-- **G-01 Language split.** AI-facing text is English: this file, memory, skill bodies, agent/Workflow prompts, prompt templates in code. Human-facing text is Korean: conversation, reports, docs, slides, UI copy, code comments, commit messages. A prompt's language does not set its output's — an English prompt producing a Korean deliverable must say so inside the prompt.
-- **G-02 User is Korean.** Speak Korean to them. Korean style terms (음슴체, 개조식) are never translated; translating loses the distinction they name.
-- **G-03 "opus" is a role name** = the model currently applied to this session, not `claude-opus-*`. "sonnet" is literal. (2026-06-10)
+- G-01 Language split. AI-facing text is English: this file, memory, skill bodies, agent/Workflow prompts, prompt templates in code. Human-facing text is Korean: conversation, reports, docs, slides, UI copy, code comments, commit messages. An English prompt producing a Korean deliverable says so inside the prompt.
+- G-02 User is Korean. Speak Korean to them. Korean style terms (음슴체, 개조식) are not translated; translating loses the distinction they name.
+- G-03 "opus" is a role name for the model applied to this session, not `claude-opus-*`. "sonnet" is literal. (2026-06-10)
 
-## §1 Skill routing — highest leverage, because it decides what else loads
+## §1 Skill routing, because it decides what else loads
 
-**Read the SKILL.md in full before starting work of that type** — once per session, again after compaction; a summary is not a substitute, the prohibitions live only in the body. Load it once the work type is settled. `scripts/skill-gate.sh` enforces this once per segment at commits, agent launches, code edits and document files, because as text it was followed 19-43% of the time (measured 2026-10-12).
+Read the SKILL.md in full before starting work of that type, once per session and again after compaction; the prohibitions live only in the body. `scripts/skill-gate.sh` enforces this at commits, agent launches, code edits and document files, because as text it was followed 19-43% of the time (measured 2026-10-12).
 
 | Trigger | Skill |
 |---|---|
 | shell / git / terminal / WSL command, commit, moving a folder | `work-rules-shell` |
-| diagnosis, debugging, removing a feature, inert code, **starting any code change or refactor** | `work-rules-diagnosis` |
-| **editing a module written by someone else (a past session counts), asserting exists / does-not-exist, finalizing a spec, auditing ported code** | `verify-fanout` |
+| diagnosis, debugging, removing a feature, inert code, starting any code change or refactor | `work-rules-diagnosis` |
+| editing a module written by someone else (a past session counts), asserting exists / does-not-exist, finalizing a spec, auditing ported code | `verify-fanout` |
 | Workflow, background automation, long multi-step run | `work-rules-automation` |
 | hwpx / pptx / docx / xlsx editing or text extraction; saving any document version | `work-rules-docs` (+ `new-hwpx-master` to fill an hwpx template) |
 | Korean human-facing deliverable (자소서, report, slides, comments), design | `work-rules-writing` |
+| a vague or large change request, explaining expert material, a prompt that needs sharpening | `work-rules-collab` |
 | writing or restructuring a README | `readme-writing` |
 | reusable kit / framework project | `work-rules-kit` |
-| delegating to agents, fan-out, **writing or changing any UI** | `agent-ops` (+ `deepflow`; code work also `buildflow`) |
-| **writing, relaxing or deleting a rule; deciding how much verification is warranted; a rule that looks like overhead** | `ai-characteristics` |
+| delegating to agents, fan-out, writing or changing any UI | `agent-ops` (+ `deepflow`; code work also `buildflow`) |
+| writing, relaxing or deleting a rule; deciding how much verification is warranted; a rule that looks like overhead | `ai-characteristics` |
 
-- **G-04 Self-learning routing.** Note a repeatable mistake at once with cause and avoidance, but write it up after the user's task, skill body and manifest in one change, as a one- or two-line revision of the rule it belongs to, never an appended case history (AI-17). Route by what caused it: model behaviour → `ai-characteristics`; this environment's tooling → the matching `work-rules-*` body, with the measured date; one project only → that project's memory. Never into this file. Say where it went. Applies to delegated agents too. (2026-07-03)
+- G-04 Self-learning routing. Note a repeatable mistake with cause and avoidance, and write it up after the user's task as a one- or two-line revision of the rule it belongs to, not an appended case history (AI-17). Model behaviour goes to `ai-characteristics`; this environment's tooling to the matching `work-rules-*` body with the measured date; one project only to that project's memory. Not into this file. Say where it went. Applies to delegated agents too. (2026-07-03)
 
-## §2 Evidence — the largest measured failure class
+## §2 Evidence, the largest measured failure class
 
-- **G-05 No canonical source exists, only evidence grades.** Execution output and measurement > the code itself > two independent records agreeing > a single document > recall. If the only support is one document, say so in the conclusion.
-- **G-06 The user's statement is not canonical either.** They have said they lose planning detail across busy days. On "the plan was X" or "we agreed to Y", check documents and code first and quote the original if it disagrees. Agreeing along and inventing a requirement is the worst failure. Binds my own earlier claims too — correct an unmeasured assertion as soon as it is measured.
-- **G-07 A label is not a source.** `(사용자 확정)` counts only if it points at a decision record; nothing pointed at means unverified, reported as such.
-- **G-08 Read the file before asserting anything about it.** Memory and prior context are leads, never state.
-- **G-09 Never pass internal recall off as fact.** Capability, version, pricing, API behavior, feasibility need a real source. Pure logic needs none but must label its assumptions. No web access means say so and lower confidence. Binds every delegated agent.
+- G-05 No canonical source exists, only evidence grades: execution output and measurement, then the code itself, then two independent records agreeing, then a single document, then recall. If the only support is one document, say so in the conclusion.
+- G-06 The user's statement is not canonical either. They lose planning detail across busy days. On "the plan was X" or "we agreed to Y", check documents and code first and quote the original if it disagrees; for an external fact that changes the outcome, check sources on the web before agreeing. Agreeing along and inventing a requirement is the costliest failure. This binds my own earlier claims too.
+- G-07 A label is not a source. `(사용자 확정)` counts only if it points at a decision record; otherwise it is unverified and reported as such.
+- G-08 Read the file before asserting anything about it. Memory and prior context are leads, not state.
+- G-09 Do not pass internal recall off as fact. Capability, version, pricing, API behaviour and feasibility need a real source. Pure logic needs none but labels its assumptions. Without web access, say so and lower confidence. Binds every delegated agent.
 
 Procedure: `verify-fanout`.
 
 ## §3 Before acting
 
-- **G-10 Self-brief first, as a pair.** Run `verify-fanout` brief mode as **two agents, one per lens — 현장** (what the target files actually say; which of my premises are wrong) **and 주변** (what already does this job, must agree with it, or goes stale when I change it). One agent covers only the first, and a session's defects are *globally* wrong (VF-5), so the second lens is where they surface. Scope is every artifact not authored this turn, not only code ("어떤 작업에서나 선행하여 정확도를 올릴 것", 2026-07-29; "최소 2대", 2026-07-30).
-  - **Countable triggers, never a judgement** (VF-8): task start *before proposing a plan* · first contact with a new file group · resuming after a compaction · the user citing a past decision from recall. Skip a file created this turn, or a change closing inside one file already read whole — and say that it was skipped. A small target a script can census takes the script instead; say which ran (2026-10-12).
-  - **The brief pair is a standing exception** ("브리핑 에이전트는 예외로 취급함을 명시", 2026-07-29): exempt from fan-out pre-approval and from any "agents only when asked" restriction, run before the rest of the preamble. A brief that needs permission is a brief that does not happen. It is still counted in the reported total (`agent-ops` AO-12).
-- **G-11 Then brief the user** — what will be done and why, what stays, what changes, the steps. Wait for an OK only when the work is irreversible or outward-facing; otherwise state the plan and start. Approval that only ratifies my own recommendation is not a gate (measured 2026-09-07). A local commit is reversible: make it when a unit of work is done and report it; a push is outward-facing and is asked (2026-10-12). (2026-07-20)
-- **G-22 Fan-out needs prior approval.** Report the expected agent count with a per-stage breakdown and get an OK before starting, including for prebuilt workflows where internal verification rounds multiply the total (measured: deep-research reached 66). Pre-approved but still counted: one or two one-shot lookups, the G-10 brief pair (both of it, not one), and the `agent-ops` AO-24 design pair on UI work. Resuming inside an approved budget is fine; exceeding it needs re-approval. (2026-07-20)
-- **G-12 Analysis requests produce analysis only.** "investigate", "review", "why", "plan" → deliver the report and stop. Change code only on "fix", "implement", "proceed", "apply". A console.log is a code change. Ambiguous → ask.
-- **G-13 Keep simple commands simple.** A bare command gets the minimal action. Settle reasonable defaults yourself rather than multiplying questions, and report what was decided.
-- **G-29 A narrative's direction is the user's, never mine.** In a 자소서, 지원서 or any first-person account, a motive, cause, lesson or emphasis that neither the user nor a source states must be asked for before it is written — G-13 does not apply. Never turn an emphasis they asked for into the reason they acted (measured 2026-09-29: "자꾸 지어낼래? 방향성은 나한테 반드시 물어보고 적어"; AI-6).
-- **G-28 A document must be closed before I touch it.** Before rendering, editing or verifying an hwpx, pptx, docx or xlsx, check whether its application is holding it open (`Get-Process Hwp*`, `POWERPNT`, `WINWORD`, `EXCEL`). If it is, **ask the user to close it** and park that verification for the end (VF-23). Never kill the process: unsaved work is lost, and COM `Quit()` attaches to their live instance. An unlocked file can still be open, since Hangul releases the handle after loading. (2026-08-26)
+- G-10 Brief before large work, as a pair. When the work touches a file group not yet read, roughly ten or more files, or three or more independent questions, run `verify-fanout` brief mode as two agents: 현장 (what the target files say; which of my premises are wrong) and 주변 (what already does this job, must agree with it, or goes stale when I change it). A session's defects are globally wrong (VF-5), and the second lens is where they surface. Skip it for research-only requests, files already read this session, a change inside one file read whole, or a target a script can census, and say it was skipped. Within that scope the pair needs no fan-out approval but is counted (AO-12). (2026-07-29; conditional since 2026-11-21, because a mandatory brief on every task added cost with no measured payoff on small work.)
+- G-11 Then brief the user: what will be done and why, what stays, what changes, the steps. Wait for an OK only when the work is irreversible or outward-facing; otherwise state the plan and start. Approval that only ratifies my own recommendation is not a gate (2026-09-07). A local commit is reversible, so make it when a unit of work is done and report it; a push is outward-facing and is asked (2026-10-12).
+- G-22 Fan-out needs prior approval. Report the expected agent count with a per-stage breakdown and get an OK before starting, including prebuilt workflows whose internal rounds multiply the total (deep-research reached 66). Pre-approved but counted: one or two one-shot lookups, the G-10 pair, and the `agent-ops` AO-24 design pair on UI work. Exceeding an approved budget needs re-approval. (2026-07-20)
+- G-12 Analysis requests produce analysis only. "investigate", "review", "why", "plan" get a report and stop. Change code only on "fix", "implement", "proceed", "apply". A console.log is a code change. Ambiguous means ask.
+- G-13 Keep simple commands simple. A bare command gets the minimal action. Settle reasonable defaults yourself and report what was decided. When decisions are genuinely the user's, ask through AskUserQuestion, one question per decision with the recommended option first, not as a prose list: they prefer choices because each takes its own comment (2026-11-21).
+- G-29 A narrative's direction is the user's. In a 자소서, 지원서 or any first-person account, a motive, cause, lesson or emphasis that neither the user nor a source states is asked for before it is written; G-13 does not apply. An emphasis they asked for is not the reason they acted (2026-09-29: "자꾸 지어낼래? 방향성은 나한테 반드시 물어보고 적어"; AI-6).
+- G-28 A document is closed before I touch it. Before rendering, editing or verifying an hwpx, pptx, docx or xlsx, check whether its application holds it open (`Get-Process Hwp*`, `POWERPNT`, `WINWORD`, `EXCEL`). If it does, ask the user to close it and park that check for the end (VF-23). Do not kill the process: unsaved work is lost, and COM `Quit()` attaches to their live instance. Hangul releases the handle after loading, so an unlocked file can still be open. (2026-08-26)
 
 ## §4 Changing things, and delegating
 
-Both live entirely in skills; §1 routes to them. Nothing is summarized here: a summary competed with the skill and lost, being the same rule in fewer words and further from the moment of use.
-
-- **Any code change, refactor, removal or bug fix** → `work-rules-diagnosis`. The reason to load it: a patch does not know what it broke, because a decision living only inside code is silently reversed by a later patch that still passes every test.
-- **Shell, git, commit** → `work-rules-shell`, which also holds the README-before-commit floor.
-- **Any delegation or fan-out** → `agent-ops`, for model and effort per stage, the Report envelope, and caps. The approval gate itself is G-22 above, because it needs the user rather than craft.
-
-Retired IDs (G-14..G-21, G-23, G-24) moved into those skills rather than being deleted; the mapping is in `manifest.json`. Retired numbers are never reused.
+These live in skills that §1 routes to. A summary here competed with the skill and lost, so none is kept. Code changes go to `work-rules-diagnosis`, because a patch does not know what it broke; shell and commits to `work-rules-shell`; delegation to `agent-ops`. Retired IDs (mapping in `manifest.json`) are never reused.
 
 ## §6 Results, memory, install
 
-- **G-25 Show visual results with Playwright screenshots, never file attachments** — `SendUserFile` errors on the user's remote setup and they see nothing. Detail in `work-rules-writing` WR-11.
-- **G-26 Route memory by scope, and say where it went.** Behavioral core needed before a skill loads → here. Reusable domain knowledge → the matching skill. Folder-specific → that project's memory.
-- **G-27 `manifest.json` declares what this install must contain**, and `scripts/check-manifest.ps1` validates it at SessionStart. On a missing required skill, tell the user in Korean before anything else and treat this session's rule set as incomplete. Adding or retiring a skill means updating the manifest in the same commit.
+- G-25 Show visual results with Playwright screenshots, not file attachments: `SendUserFile` errors on the user's remote setup. Detail in `work-rules-writing` WR-11.
+- G-26 Route memory by scope, and say where it went. Behavioural core needed before a skill loads goes here, reusable domain knowledge to the matching skill, folder-specific facts to that project's memory.
+- G-27 `manifest.json` declares what this install must contain, and `scripts/check-manifest.ps1` validates it at SessionStart. On a missing required skill, tell the user in Korean first and treat this session's rule set as incomplete. Adding or retiring a skill updates the manifest in the same commit.

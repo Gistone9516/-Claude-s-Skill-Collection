@@ -61,16 +61,16 @@ Running the wrong mode returns nothing and costs the budget anyway.
 
 **VF-7 Standing exception (user directive 2026-07-29).** The brief pair is exempt from fan-out pre-approval, from any "spawn agents only when asked" restriction, and from ordering behind the rest of the preamble. Do not ask for it. **Do count it** in the reported total (`agent-ops` AO-12): what it is exempt from is permission, not arithmetic.
 
-It runs unconditionally because a judged threshold is skipped exactly when the session is busiest (`work-rules-automation` AU-22), not because it is cheap. It is not: measured 2026-09-07, it was the second most expensive role in the install. What is weighed against the price is a plan built on a wrong premise and every commit that follows it.
+Within its size gate (VF-8) it runs without asking because a judged threshold is skipped exactly when the session is busiest (`work-rules-automation` AU-22), not because it is cheap. It is not: measured 2026-09-07, it was the second most expensive role in the install. What is weighed against the price is a plan built on a wrong premise and every commit that follows it.
 
-**VF-8 The triggers are countable, not a judgement (user directive 2026-07-30).** A threshold that must be judged is what gets skipped when busy. Run the pair at these four moments:
+**VF-8 The triggers are countable, not a judgement (user directive 2026-07-30).** A threshold that must be judged is what gets skipped when busy. The size gate is countable too (user choice 2026-11-21, after research showed a mandatory brief on every task cost more than it found on small work): the pair runs only when the work touches a file group not yet read, roughly ten or more files, or three or more independent questions, and never for a research-only request. Inside that gate, run the pair at these four moments:
 
 1. **Task start**, before reading the code and *before proposing a plan*. This is the one that pays: measured 2026-07-30, a brief here overturned 4 of 7 assumptions in a plan already written into a commit message.
 2. **First contact with a new file group** — a package, directory or document set this task has not touched. `scripts/brief-nudge.sh` marks this moment at the edit itself, once per file.
 3. **Resuming after a compaction.** A summary carries conclusions, not the constraints that produced them.
 4. **When the user states a past decision from recall** (CLAUDE.md G-06). Check the documents and the code before agreeing.
 
-Skip it, and say so, for a file created this turn, for a change that closes inside one file already read whole, and for a file group already briefed in this task. **Scale it to the target (user 2026-10-12):** when the target is a small set a script can census (counts, rule ids, cross-references), run the script instead of the pair and say so; the pair is for what a script cannot see, such as a rule restated in other words or a premise that is wrong. Measured 2026-10-12: half of one pair's findings were a single grep. Scope is every task, not only code ("어떤 작업에서나 선행하여 정확도를 올릴 것", 2026-07-29).
+Skip it, and say so, for a file created this turn, for a change that closes inside one file already read whole, and for a file group already briefed in this task. **Scale it to the target (user 2026-10-12):** when the target is a small set a script can census (counts, rule ids, cross-references), run the script instead of the pair and say so; the pair is for what a script cannot see, such as a rule restated in other words or a premise that is wrong. Measured 2026-10-12: half of one pair's findings were a single grep. Scope is any kind of task above the size gate, not only code ("어떤 작업에서나 선행하여 정확도를 올릴 것", 2026-07-29).
 
 **VF-21 The brief is a pair, one agent per lens (user directive 2026-07-30:** "최소 2대를 운영해야 에이전트를 사용하는 의미가 있다"**).** Two agents on the same prompt return one answer twice (AI-4); the second pays only when its framing differs. The two lenses map onto VF-5:
 

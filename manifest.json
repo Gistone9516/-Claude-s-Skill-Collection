@@ -5,7 +5,7 @@
   "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
   "policy": {
     "claudeMdMaxBytes": 9700,
-    "claudeMdMaxBytesReason": "CLAUDE.md is loaded into every turn. It reached 17848 bytes by accretion before the 2026-07-29 reorganization, which cut it to 8555 across 27 rules with no rule dropped - the detail moved into skills. 9000 is that measured floor plus a little headroom. It was briefly set to 7000, which could only have been met by deleting rules that must be true before a skill loads, so the number was raised deliberately and recorded here rather than adjusted silently later. The gate exists to catch drift back toward 17848, not to force deletion. Raised 9000 -> 9600 on 2026-09-29 for G-29 (a narrative's direction is asked, never invented), added on the user's explicit order ('전역 규칙에 박아') although G-04 routes self-learning away from this file; it must hold before work-rules-writing loads, because the failure happens while drafting. File was 8973 before, 9558 after; nothing else grew. Raised 9600 -> 9700 on 2026-10-12 for one routing row sending README work to the new readme-writing skill; the user chose a standalone skill over a work-rules-writing section knowing it needed this raise. 9558 -> 9615.",
+    "claudeMdMaxBytesReason": "CLAUDE.md is loaded into every turn. It reached 17848 bytes by accretion before the 2026-07-29 reorganization, which cut it to 8555 across 27 rules with no rule dropped - the detail moved into skills. 9000 is that measured floor plus a little headroom. It was briefly set to 7000, which could only have been met by deleting rules that must be true before a skill loads, so the number was raised deliberately and recorded here rather than adjusted silently later. The gate exists to catch drift back toward 17848, not to force deletion. Raised 9000 -> 9600 on 2026-09-29 for G-29 (a narrative's direction is asked, never invented), added on the user's explicit order ('전역 규칙에 박아') although G-04 routes self-learning away from this file; it must hold before work-rules-writing loads, because the failure happens while drafting. File was 8973 before, 9558 after; nothing else grew. Raised 9600 -> 9700 on 2026-10-12 for one routing row sending README work to the new readme-writing skill; the user chose a standalone skill over a work-rules-writing section knowing it needed this raise. 9558 -> 9615. 2026-11-21 rewrite: emphasis removed, G-10 made conditional, §4 folded to one paragraph, a routing row for work-rules-collab and a G-13 line on choices added; 10016 -> about 8530, under budget without a raise.",
     "skillWarnBytes": 20000,
     "ruleIdPattern": "^[A-Z]{1,3}-[0-9]{1,2}$",
     "onMissingRequired": "Tell the user, in Korean, which required assets are missing and that they should be restored from the repo. Do not silently continue as if the rule set were complete.",
@@ -98,6 +98,15 @@
       "tier": 2,
       "role": "Korean human-facing deliverables and design: writing from the features of user-chosen exemplars, by genre (WR-2, rebuilt 2026-10-11; exemplars in reference/), punctuation, verbatim rule, slide minimalism, measured length. Measured prose baselines moved to reference/ so they are not read as targets.",
       "ruleIds": "WR-1..WR-17"
+    },
+    {
+      "name": "work-rules-collab",
+      "required": true,
+      "kind": "local",
+      "lang": "en",
+      "tier": 2,
+      "role": "Helping a user who prompts as a beginner: restate vague change requests, interview for large ones, propose acceptance criteria first, explain expert material plainly, sharpen the user's prompt, check outcome-changing claims against web sources. Added 2026-11-21 from research on novice versus expert prompting.",
+      "ruleIds": "CL-1..CL-6"
     },
     {
       "name": "readme-writing",
@@ -355,9 +364,9 @@
       "role": "bridge.py, .env (bot token), skills/. Consumed by the discord-bridge skill.",
       "onMissing": "Machine-specific. The skill cannot run until this path exists or the env override is set. Report, do not block.",
       "exempt": {
-        "platforms": ["linux"],
+        "platforms": ["linux", "windows"],
         "since": "2026-08-14",
-        "reason": "User instruction, 2026-08-14: treat this as an exception rather than a finding. The declared path is a Windows Desktop folder and the app was never copied to this Linux install, so the check reported a fact that will not change and cannot be acted on. It was also mis-severed: policy.onMissing already says report-do-not-block and required is false, yet check-manifest.ps1 put the note in the same findings array as MISSING REQUIRED, so the hook message told the model the rule set was incomplete every session over two optional items. Windows is unaffected. Set CLAUDE_APP_DISCORD_AGENTS if the skill is ever needed here; the override is read before the exemption is consulted, so a real path still gets checked."
+        "reason": "User instruction, 2026-08-14: treat this as an exception rather than a finding. The declared path is a Windows Desktop folder and the app was never copied to this Linux install, so the check reported a fact that will not change and cannot be acted on. It was also mis-severed: policy.onMissing already says report-do-not-block and required is false, yet check-manifest.ps1 put the note in the same findings array as MISSING REQUIRED, so the hook message told the model the rule set was incomplete every session over two optional items. Extended to windows on 2026-11-21 at the user's choice: the app was never needed on this PC, so it is parked and installed when wanted. Set CLAUDE_APP_DISCORD_AGENTS if the skill is ever needed here; the override is read before the exemption is consulted, so a real path still gets checked."
       }
     },
     {
@@ -368,9 +377,9 @@
       "role": "Generic subject-agnostic learning bot code. Consumed by the learning-harness skill.",
       "onMissing": "Machine-specific. Report, do not block.",
       "exempt": {
-        "platforms": ["linux"],
+        "platforms": ["linux", "windows"],
         "since": "2026-08-14",
-        "reason": "Same instruction and same cause as discordAgents above. Windows Desktop path, app not present on this Linux install, nothing actionable. Set CLAUDE_APP_LEARNING_HARNESS to bring it back under the check."
+        "reason": "Same instruction and same cause as discordAgents above. Windows Desktop path, app not present on this Linux install, nothing actionable. Extended to windows on 2026-11-21 with discordAgents. Set CLAUDE_APP_LEARNING_HARNESS to bring it back under the check."
       }
     }
   ],

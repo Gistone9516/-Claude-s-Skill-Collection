@@ -2,6 +2,17 @@
   "hooks": {
     "SessionStart": [
       {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:/Program Files/Git/cmd/git.exe\" -C \"<CLAUDE_HOME>\" pull --ff-only -q",
+            "timeout": 30,
+            "statusMessage": "Pulling global config repo"
+          }
+        ]
+      },
+      {
         "hooks": [
           {
             "type": "command",
