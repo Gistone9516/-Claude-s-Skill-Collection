@@ -62,6 +62,11 @@
             "command": "node \"<CLAUDE_HOME>/hooks/caveman-mode-tracker.js\"",
             "timeout": 30,
             "statusMessage": "Tracking caveman mode..."
+          },
+          {
+            "type": "command",
+            "command": "python -I \"<CLAUDE_HOME>/scripts/recall-hook.py\"",
+            "timeout": 5
           }
         ]
       }

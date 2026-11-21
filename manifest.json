@@ -308,6 +308,16 @@
       "role": "Runs after a SKILL.md write and speaks only on actual drift: the header range disagreeing with this manifest's ruleIds, the body's highest rule id disagreeing with the header, or the file past its byte budget (since 2026-10-12; the unconditional reminder fired on ~20 edits in one session with no drift). Registered on PostToolUse (Write|Edit), synchronous so its additionalContext reaches the model. A reminder, not a gate - it never denies (work-rules-automation AU-22). Written 2026-08-03 after ai-characteristics, work-rules-shell and new-hwpx-master each gained a rule and corrected their own header while this file still declared the previous range; the drift is one-directional and silent because the body header looks authoritative, and only the SessionStart validator caught it a session later."
     },
     {
+      "path": "scripts/recall.py",
+      "required": false,
+      "role": "Asks the MyNAS semantic search server (MyNAS D-118, 127.0.0.1 with the token file under its dataDir) for documents and Claude session summaries by meaning. Prints nothing when the server is off, so callers never block. Machine-specific: needs MyNAS running with semantic configured."
+    },
+    {
+      "path": "scripts/recall-hook.py",
+      "required": false,
+      "role": "UserPromptSubmit hook: when the user cites a past decision from memory (G-06 wording such as 지난번, 정했던), attaches up to three semantic-search candidates for the record. User choice 2026-11-21 'decision records only'; rule injection was not wired because the 10-question test put the right file in the top three only 5 of 10 times."
+    },
+    {
       "path": "scripts/brief-nudge.sh",
       "required": true,
       "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored, and since 2026-10-12 it fires once per folder rather than once per file (VF-8's file group), because per-file firing turned it into noise during a multi-skill edit."
