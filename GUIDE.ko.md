@@ -19,6 +19,7 @@
     manifest-nudge.sh        SKILL.md를 고치면 매니페스트도 함께 고치라고 알림
     recall.py                MyNAS 의미 검색에 묻는 조회 도구
     recall-hook.py           지난 결정을 기억으로 말하면 결정 기록 후보를 붙이는 훅
+    verify-artifacts.py      병렬 작업 결과를 파일과 확인 명령으로 판정
     validate_doc.py          한국어 분량 실측용
   skills/                    스킬 24개(직접 만든 16개, 외부 8개)
   projects/<경로키>/memory/  폴더별 프로젝트 메모리

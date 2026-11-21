@@ -69,7 +69,7 @@ The `Workflow` description recommends omitting `model`; that is right for correc
 
 **The cost is reading, not writing:** output was 4% of billable tokens. Telling an agent to be brief saves little; naming the files it may open and forbidding it to survey past them saves most.
 
-**AO-14 Writes are serial; parallel is for reading.** Parallel writing is one agent per folder in its own worktree, with shared files and the final merge staying with opus. **Parallel needs true independence:** a producer-to-consumer dependency is a pipeline, because a consumer run without its input invents one (AI-6).
+**AO-14 Writes are serial; parallel is for reading.** Parallel writing is one agent per folder in its own worktree, with shared files and the final merge staying with opus. **Parallel needs true independence:** a producer-to-consumer dependency is a pipeline, because a consumer run without its input invents one (AI-6). The approved count, disjoint ownership and the Report envelope are enforced in code by `workflows/fanout-verified.js` (2026-11-21); use it rather than restating them in a prompt.
 
 ## 6. What a delegated agent is told
 

@@ -18,7 +18,9 @@ scripts/
   skill-gate.sh        불러오는 훅. 커밋, 에이전트 실행, 코드 수정, 문서 파일 작업 앞에서 해당 스킬을 아직 안 읽었으면 한 번 막음
   recall.py            MyNAS 의미 검색에 묻는 조회 도구. 서버가 꺼져 있으면 조용히 끝남
   recall-hook.py       상기시키는 훅. 지난 결정을 기억으로 말하면 결정 기록 후보를 붙임
+  verify-artifacts.py  병렬 작업 결과를 파일과 확인 명령으로 판정
   validate_doc.py      한국어 분량 실측
+workflows/         저장 워크플로우. fanout-verified.js는 병렬 작업의 상한, 소유 겹침, 보고 형식을 코드로 검사
 mods/work-panel/   작업 현황판 mod. 모든 세션이 상태를 올리고 CLI의 /panel이 그린다 (그 폴더의 README)
 hooks/             외부 caveman 스킬이 쓰는 런타임 9개. 규칙을 강제하는 훅이 아니라 그 스킬의 기능이라 `scripts/`와 섞지 않고 벤더 기본 경로에 그대로 둔다
 skills/            스킬 24개. 직접 만든 16개와 외부 8개

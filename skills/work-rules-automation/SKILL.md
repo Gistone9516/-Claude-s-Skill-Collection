@@ -54,6 +54,8 @@ The script is plain JavaScript run by the orchestrator, and two constraints give
 3. **opus re-verifies by executing**: run the code natively or through a light runner (`tcc -run`, `javac` + `java -cp`, Python `sqlite3` for SQL); for output prediction, stdout is the answer whatever the exit code.
 4. Final confidence comes from an end-to-end run with real code. Agents generate; deterministic execution proves.
 
+For parallel work over disjoint units, use `workflows/fanout-verified.js` (caps, ownership overlap and the Report schema are checked in code) and judge it with `scripts/verify-artifacts.py`, which re-checks files and re-runs each unit's check command. A workflow saved under `~/.claude/workflows/` mid-session was not found by name until it appeared in the listing a few turns later, and `scriptPath` outside the working folder is refused; copy it into the working folder or pass it inline when that happens (measured 2026-11-21).
+
 **AU-9 When handing an agent an absolute path, also state the fallback**: "if that fails, write relative to the repo root and return the actual path."
 
 ## 4. Claude Code CLI "Continue from where you left off" auto-injection (measured 2026-06-25)

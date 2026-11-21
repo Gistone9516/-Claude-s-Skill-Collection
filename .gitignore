@@ -11,6 +11,7 @@
 !/settings.hooks.example.json
 !/skills/
 !/scripts/
+!/workflows/
 # Third-party caveman hook runtime, installed at the vendor's own path so an
 # upstream refresh stays a straight copy and the vendor uninstaller still finds
 # it. Tracked because settings.hooks.example.json wires it: untracked here, a

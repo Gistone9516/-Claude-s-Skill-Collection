@@ -318,6 +318,16 @@
       "role": "UserPromptSubmit hook: when the user cites a past decision from memory (G-06 wording such as 지난번, 정했던), attaches up to three semantic-search candidates for the record. User choice 2026-11-21 'decision records only'; rule injection was not wired because the 10-question test put the right file in the top three only 5 of 10 times."
     },
     {
+      "path": "workflows/fanout-verified.js",
+      "required": false,
+      "role": "Workflow for parallel work over disjoint units. Enforces in code what agent-ops AO-12/AO-14/AO-18 and G-22 stated in prose: the approved agent count, non-overlapping ownership, one brief template and the Report envelope schema. Added 2026-11-21 (global-rules plan stage 5). Saved mid-session it was not found by name until it appeared in the workflow listing."
+    },
+    {
+      "path": "scripts/verify-artifacts.py",
+      "required": false,
+      "role": "Judges a fanout-verified result by code (work-rules-automation AU-8): checks each unit's files exist and are non-empty and re-runs its check command, ignoring the agents' own STATUS. Exit 0 only when every unit passes."
+    },
+    {
       "path": "scripts/brief-nudge.sh",
       "required": true,
       "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored, and since 2026-10-12 it fires once per folder rather than once per file (VF-8's file group), because per-file firing turned it into noise during a multi-skill edit."
