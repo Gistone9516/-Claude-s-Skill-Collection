@@ -330,7 +330,7 @@
       "path": "scripts/learn-topic.py",
       "ko": "Claude 작업 주제를 learning-harness 과목의 개념 목차에 넣고 옮김",
       "required": false,
-      "role": "work-rules-collab CL-9. Files a topic from a work session into a learning-harness subject's concept outline (a 'Claude 작업' unit rebuilt from a ledger at F:/SUAN/claude/_study-gateway/claude-topics.jsonl) and moves it between subjects. Writes through the subject's ai_server when it runs, else the state file. Paths overridable by LH_GATEWAY_JSON and LH_TOPIC_LEDGER."
+      "role": "work-rules-collab CL-9, run only after the user approves a proposed topic; topics they pass over go to a declined list (decline/declined) that sets the level of later proposals. Files a topic from a work session into a learning-harness subject's concept outline (a 'Claude 작업' unit rebuilt from a ledger at F:/SUAN/claude/_study-gateway/claude-topics.jsonl) and moves it between subjects. Writes through the subject's ai_server when it runs, else the state file. Paths overridable by LH_GATEWAY_JSON and LH_TOPIC_LEDGER."
     },
     {
       "path": "scripts/recall.py",

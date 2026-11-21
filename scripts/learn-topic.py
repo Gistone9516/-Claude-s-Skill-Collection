@@ -8,10 +8,14 @@
 #   python -I learn-topic.py move --id <id> --to <slug>
 #   python -I learn-topic.py list
 #   python -I learn-topic.py sync
+#   python -I learn-topic.py decline --title "<짧게>" --level "<이 수준은 안다는 한 줄>"
+#   python -I learn-topic.py declined
 import argparse, datetime, json, os, re, sys, urllib.request
 
 GATEWAY = os.environ.get('LH_GATEWAY_JSON', r'F:\SUAN\claude\_study-gateway\gateway.json')
 LEDGER = os.environ.get('LH_TOPIC_LEDGER', r'F:\SUAN\claude\_study-gateway\claude-topics.jsonl')
+# 사용자가 제안을 넘긴 주제. 이 수준은 이미 알거나 관심 없다는 뜻이라 다음 제안의 기준으로만 쓴다(CL-9, 2026-11-21)
+DECLINED = os.environ.get('LH_TOPIC_DECLINED', r'F:\SUAN\claude\_study-gateway\claude-topics-declined.jsonl')
 AREA = {'key': 'claude', 'label': 'Claude 작업'}
 
 
@@ -109,9 +113,9 @@ def sync(subs, rows, only=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('cmd', choices=['subjects', 'add', 'move', 'list', 'sync'])
+    ap.add_argument('cmd', choices=['subjects', 'add', 'move', 'remove', 'list', 'sync', 'decline', 'declined'])
     ap.add_argument('--subject'); ap.add_argument('--title'); ap.add_argument('--scope', default='')
-    ap.add_argument('--id'); ap.add_argument('--to')
+    ap.add_argument('--id'); ap.add_argument('--to'); ap.add_argument('--level', default='')
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding='utf-8')
     subs = subjects()
@@ -119,6 +123,29 @@ def main():
     if a.cmd == 'subjects':
         for k, v in subs.items():
             print('{}\t{}\t{}'.format(k, v['title'], '개념 화면 있음' if v['concept'] else '개념 화면 없음(넣을 수 없음)'))
+        return
+    if a.cmd == 'remove':
+        r = next((r for r in rows if r['id'] == a.id), None)
+        if not r:
+            sys.exit('unknown id')
+        rows.remove(r)
+        save_ledger(rows)
+        print('removed', a.id, sync(subs, rows, {r['subject']}))
+        return
+    if a.cmd == 'decline':
+        if not a.title:
+            sys.exit('--title is required')
+        with open(DECLINED, 'a', encoding='utf-8') as fh:
+            fh.write(json.dumps({'date': datetime.date.today().isoformat(), 'title': a.title.strip()[:80], 'level': a.level.strip()[:120]}, ensure_ascii=False) + chr(10))
+        print('declined', a.title.strip()[:80])
+        return
+    if a.cmd == 'declined':
+        try:
+            for l in open(DECLINED, encoding='utf-8'):
+                r = json.loads(l)
+                print(chr(9).join((r['date'], r['title'], r.get('level', ''))))
+        except OSError:
+            pass
         return
     if a.cmd == 'list':
         for r in rows:
