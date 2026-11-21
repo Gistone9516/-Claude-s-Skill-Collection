@@ -112,7 +112,7 @@
       "lang": "en",
       "tier": 2,
       "role": "Helping a user who prompts as a beginner: restate vague change requests, interview for large ones, propose acceptance criteria first, explain expert material plainly, sharpen the user's prompt, check outcome-changing claims against web sources. Added 2026-11-21 from research on novice versus expert prompting.",
-      "ruleIds": "CL-1..CL-6"
+      "ruleIds": "CL-1..CL-9"
     },
     {
       "name": "readme-writing",
@@ -327,6 +327,12 @@
       "role": "Generates the scripts/ lists in README.md and GUIDE.ko.md and GUIDE's work-rules table from this manifest's ko and koWhen fields, reading rule counts from each SKILL.md header. Hand-kept lists had drifted apart (2026-11-21). Edit ko/koWhen here, then run it."
     },
     {
+      "path": "scripts/learn-topic.py",
+      "ko": "Claude 작업 주제를 learning-harness 과목의 개념 목차에 넣고 옮김",
+      "required": false,
+      "role": "work-rules-collab CL-9. Files a topic from a work session into a learning-harness subject's concept outline (a 'Claude 작업' unit rebuilt from a ledger at F:/SUAN/claude/_study-gateway/claude-topics.jsonl) and moves it between subjects. Writes through the subject's ai_server when it runs, else the state file. Paths overridable by LH_GATEWAY_JSON and LH_TOPIC_LEDGER."
+    },
+    {
       "path": "scripts/recall.py",
       "ko": "MyNAS 의미 검색에 묻는 조회 도구. 서버가 꺼져 있으면 조용히 끝남",
       "required": false,
@@ -416,7 +422,7 @@
     },
     {
       "id": "learningHarness",
-      "path": "C:\\Users\\USER\\Desktop\\2026-하계\\learning-harness",
+      "path": "F:\\SUAN\\claude\\learning-harness",
       "envOverride": "CLAUDE_APP_LEARNING_HARNESS",
       "required": false,
       "role": "Generic subject-agnostic learning bot code. Consumed by the learning-harness skill.",

@@ -15,6 +15,7 @@ scripts/
   pattern-guard.sh     명령문을 보는 훅. 파괴적 구문 9종을 실행 전에 경고
   manifest-nudge.sh    상기시키는 훅. SKILL.md의 규칙 수나 크기가 매니페스트와 어긋날 때만 알림
   gen-doc-lists.py     manifest의 ko, koWhen에서 README와 GUIDE 목록을 만듦. --check는 어긋나면 1
+  learn-topic.py       Claude 작업 주제를 learning-harness 과목의 개념 목차에 넣고 옮김
   recall.py            MyNAS 의미 검색에 묻는 조회 도구. 서버가 꺼져 있으면 조용히 끝남
   recall-hook.py       상기시키는 훅. 지난 결정을 기억으로 말하면 결정 기록 후보를 붙임
   verify-artifacts.py  병렬 작업 결과를 파일과 확인 명령으로 판정

@@ -627,6 +627,18 @@
   "en": "Check outcome-changing claims against sources first",
   "file": "work-rules-collab"
  },
+ "CL-7": {
+  "en": "Close with a one- or two-line explanation of what was done and why, in words the user can learn from",
+  "file": "work-rules-collab"
+ },
+ "CL-8": {
+  "en": "Connect it to networking and cloud when it naturally fits",
+  "file": "work-rules-collab"
+ },
+ "CL-9": {
+  "en": "File the topic for later study",
+  "file": "work-rules-collab"
+ },
  "RD-1": {
   "en": "The reader decides the form (user 2026-10-12)",
   "file": "readme-writing"

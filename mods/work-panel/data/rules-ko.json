@@ -934,5 +934,17 @@
  "DC-18": {
   "ko": "사람이 읽는 문서는 파일 이름에 판을 적고 옛 판은 옆 archive 폴더에 둔다",
   "en": "A human-read document carries its version in its file name, and superseded versions live in a sibling archive folder (user directive 2026-10-22, global: \"앞으로 문서 같은 과거 파일은 '파일명_archive' 폴더를 만들고 그 안에 파일"
+ },
+ "CL-7": {
+  "ko": "작업이 끝나면 무엇을 왜 했는지 배울 수 있게 한두 줄로 설명한다",
+  "en": "Close with a one- or two-line explanation of what was done and why, in words the user can learn from"
+ },
+ "CL-8": {
+  "ko": "자연스러우면 네트워크와 클라우드 개념에 잇는다",
+  "en": "Connect it to networking and cloud when it naturally fits"
+ },
+ "CL-9": {
+  "ko": "학습할 주제를 learning-harness 과목에 등록한다",
+  "en": "File the topic for later study"
  }
 }

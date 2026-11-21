@@ -17,6 +17,7 @@
     pattern-guard.sh         명령문을 보는 훅. 파괴적 구문 9종을 실행 전에 경고
     manifest-nudge.sh        상기시키는 훅. SKILL.md의 규칙 수나 크기가 매니페스트와 어긋날 때만 알림
     gen-doc-lists.py         manifest의 ko, koWhen에서 README와 GUIDE 목록을 만듦. --check는 어긋나면 1
+    learn-topic.py           Claude 작업 주제를 learning-harness 과목의 개념 목차에 넣고 옮김
     recall.py                MyNAS 의미 검색에 묻는 조회 도구. 서버가 꺼져 있으면 조용히 끝남
     recall-hook.py           상기시키는 훅. 지난 결정을 기억으로 말하면 결정 기록 후보를 붙임
     verify-artifacts.py      병렬 작업 결과를 파일과 확인 명령으로 판정
@@ -138,7 +139,7 @@ SH-10(대소문자가 같은 변수를 덮어쓰는 것)은 이 표에 없습니
 | `work-rules-shell` | 셸, git, 터미널, WSL 명령, 커밋, 폴더 이동 | 35 |
 | `work-rules-automation` | Workflow, 백그라운드 자동화, 장시간 멀티스텝 | 26 |
 | `work-rules-writing` | 자소서, 보고서, 슬라이드, 주석 등 사람이 읽는 산출물과 디자인 | 17 |
-| `work-rules-collab` | 막연하거나 큰 변경 요청, 전문 내용 설명, 프롬프트 다듬기 | 6 |
+| `work-rules-collab` | 막연하거나 큰 변경 요청, 전문 내용 설명, 프롬프트 다듬기 | 9 |
 | `readme-writing` | README 작성과 정리. 포트폴리오 저장소, 작업용 저장소, 하위 폴더 인덱스 | 9 |
 | `work-rules-docs` | hwpx, pptx, docx, xlsx 편집과 텍스트 추출 | 18 |
 | `work-rules-kit` | 재사용 킷, 프레임워크 공용 코드 | 4 |
