@@ -12,15 +12,17 @@
   README.md                  저장소 입구
   settings.hooks.example.json  훅 배선 템플릿. 실제 settings.json은 넣지 않는다
   scripts/
-    check-manifest.ps1       세션 시작마다 매니페스트와 실제 파일을 대조
+    check-manifest.ps1       세션 시작마다 매니페스트와 실제 파일을 대조하고 경고
     guard.ps1                결과를 보는 훅. 쓰여진 파일과 만들어진 커밋을 검사
-    pattern-guard.sh         명령문을 보는 훅. 알려진 잘못된 구문을 실행 전에 경고
-    brief-nudge.sh           처음 건드리는 파일에 브리핑을 제안하던 훅. 2026-11-21 연결 해제
-    manifest-nudge.sh        SKILL.md를 고치면 매니페스트도 함께 고치라고 알림
-    recall.py                MyNAS 의미 검색에 묻는 조회 도구
-    recall-hook.py           지난 결정을 기억으로 말하면 결정 기록 후보를 붙이는 훅
+    pattern-guard.sh         명령문을 보는 훅. 파괴적 구문 9종을 실행 전에 경고
+    manifest-nudge.sh        상기시키는 훅. SKILL.md의 규칙 수나 크기가 매니페스트와 어긋날 때만 알림
+    gen-doc-lists.py         manifest의 ko, koWhen에서 README와 GUIDE 목록을 만듦. --check는 어긋나면 1
+    recall.py                MyNAS 의미 검색에 묻는 조회 도구. 서버가 꺼져 있으면 조용히 끝남
+    recall-hook.py           상기시키는 훅. 지난 결정을 기억으로 말하면 결정 기록 후보를 붙임
     verify-artifacts.py      병렬 작업 결과를 파일과 확인 명령으로 판정
-    validate_doc.py          한국어 분량 실측용
+    brief-nudge.sh           연결을 뺀 훅. 처음 건드리는 파일에 브리핑을 제안하던 것(2026-11-21 해제)
+    skill-gate.sh            불러오는 훅. 커밋, 에이전트 실행, 코드 수정, 문서 파일 작업 앞에서 해당 스킬을 아직 안 읽었으면 한 번 막음
+    validate_doc.py          한국어 분량 실측
   skills/                    스킬 24개(직접 만든 16개, 외부 8개)
   projects/<경로키>/memory/  폴더별 프로젝트 메모리
 ```
@@ -131,14 +133,14 @@ SH-10(대소문자가 같은 변수를 덮어쓰는 것)은 이 표에 없습니
 
 | 스킬 | 언제 | 규칙 수 |
 |---|---|---|
-| `work-rules-shell` | 셸, git, 터미널, WSL 명령, 커밋, 폴더 이동 | 34 |
-| `work-rules-diagnosis` | 원인 진단, 디버깅, 기능 제거, 코드 구현 및 리팩토링 착수 | 18 |
 | `verify-fanout` | 남이 쓴 모듈 수정, 있다 없다 단정, 스펙 확정, 이식 코드 감사 | 24 |
+| `work-rules-diagnosis` | 원인 진단, 디버깅, 기능 제거, 코드 구현 및 리팩토링 착수 | 18 |
+| `work-rules-shell` | 셸, git, 터미널, WSL 명령, 커밋, 폴더 이동 | 35 |
 | `work-rules-automation` | Workflow, 백그라운드 자동화, 장시간 멀티스텝 | 26 |
 | `work-rules-writing` | 자소서, 보고서, 슬라이드, 주석 등 사람이 읽는 산출물과 디자인 | 17 |
 | `work-rules-collab` | 막연하거나 큰 변경 요청, 전문 내용 설명, 프롬프트 다듬기 | 6 |
 | `readme-writing` | README 작성과 정리. 포트폴리오 저장소, 작업용 저장소, 하위 폴더 인덱스 | 9 |
-| `work-rules-docs` | hwpx, pptx, docx, xlsx 편집과 텍스트 추출 | 17 |
+| `work-rules-docs` | hwpx, pptx, docx, xlsx 편집과 텍스트 추출 | 18 |
 | `work-rules-kit` | 재사용 킷, 프레임워크 공용 코드 | 4 |
 
 전부 실제 사고에서 나온 규칙이다. 예를 들어 `work-rules-shell` SH-4는 PowerShell로 한글 파일을 한 줄 치환하려다 README 전체를 날린 사고에서 나왔다.

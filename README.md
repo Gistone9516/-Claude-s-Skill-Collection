@@ -13,12 +13,13 @@ scripts/
   check-manifest.ps1   세션 시작마다 매니페스트와 실제 파일을 대조하고 경고
   guard.ps1            결과를 보는 훅. 쓰여진 파일과 만들어진 커밋을 검사
   pattern-guard.sh     명령문을 보는 훅. 파괴적 구문 9종을 실행 전에 경고
-  brief-nudge.sh       연결을 뺀 훅. 처음 건드리는 파일에 브리핑을 제안하던 것(2026-11-21 해제)
   manifest-nudge.sh    상기시키는 훅. SKILL.md의 규칙 수나 크기가 매니페스트와 어긋날 때만 알림
-  skill-gate.sh        불러오는 훅. 커밋, 에이전트 실행, 코드 수정, 문서 파일 작업 앞에서 해당 스킬을 아직 안 읽었으면 한 번 막음
+  gen-doc-lists.py     manifest의 ko, koWhen에서 README와 GUIDE 목록을 만듦. --check는 어긋나면 1
   recall.py            MyNAS 의미 검색에 묻는 조회 도구. 서버가 꺼져 있으면 조용히 끝남
   recall-hook.py       상기시키는 훅. 지난 결정을 기억으로 말하면 결정 기록 후보를 붙임
   verify-artifacts.py  병렬 작업 결과를 파일과 확인 명령으로 판정
+  brief-nudge.sh       연결을 뺀 훅. 처음 건드리는 파일에 브리핑을 제안하던 것(2026-11-21 해제)
+  skill-gate.sh        불러오는 훅. 커밋, 에이전트 실행, 코드 수정, 문서 파일 작업 앞에서 해당 스킬을 아직 안 읽었으면 한 번 막음
   validate_doc.py      한국어 분량 실측
 workflows/         저장 워크플로우. fanout-verified.js는 병렬 작업의 상한, 소유 겹침, 보고 형식을 코드로 검사
 mods/work-panel/   작업 현황판 mod. 모든 세션이 상태를 올리고 CLI의 /panel이 그린다 (그 폴더의 README)

@@ -38,6 +38,7 @@
     },
     {
       "name": "verify-fanout",
+      "koWhen": "남이 쓴 모듈 수정, 있다 없다 단정, 스펙 확정, 이식 코드 감사",
       "required": true,
       "kind": "local",
       "lang": "en",
@@ -47,6 +48,7 @@
     },
     {
       "name": "work-rules-diagnosis",
+      "koWhen": "원인 진단, 디버깅, 기능 제거, 코드 구현 및 리팩토링 착수",
       "required": true,
       "kind": "local",
       "lang": "en",
@@ -56,6 +58,7 @@
     },
     {
       "name": "work-rules-shell",
+      "koWhen": "셸, git, 터미널, WSL 명령, 커밋, 폴더 이동",
       "required": true,
       "kind": "local",
       "lang": "en",
@@ -83,6 +86,7 @@
     },
     {
       "name": "work-rules-automation",
+      "koWhen": "Workflow, 백그라운드 자동화, 장시간 멀티스텝",
       "required": true,
       "kind": "local",
       "lang": "en",
@@ -92,6 +96,7 @@
     },
     {
       "name": "work-rules-writing",
+      "koWhen": "자소서, 보고서, 슬라이드, 주석 등 사람이 읽는 산출물과 디자인",
       "required": true,
       "kind": "local",
       "lang": "en",
@@ -101,6 +106,7 @@
     },
     {
       "name": "work-rules-collab",
+      "koWhen": "막연하거나 큰 변경 요청, 전문 내용 설명, 프롬프트 다듬기",
       "required": true,
       "kind": "local",
       "lang": "en",
@@ -110,6 +116,7 @@
     },
     {
       "name": "readme-writing",
+      "koWhen": "README 작성과 정리. 포트폴리오 저장소, 작업용 저장소, 하위 폴더 인덱스",
       "required": true,
       "kind": "local",
       "lang": "en",
@@ -119,6 +126,7 @@
     },
     {
       "name": "work-rules-docs",
+      "koWhen": "hwpx, pptx, docx, xlsx 편집과 텍스트 추출",
       "required": true,
       "kind": "local",
       "lang": "en",
@@ -128,6 +136,7 @@
     },
     {
       "name": "work-rules-kit",
+      "koWhen": "재사용 킷, 프레임워크 공용 코드",
       "required": true,
       "kind": "local",
       "lang": "en",
@@ -289,31 +298,43 @@
     },
     {
       "path": "scripts/check-manifest.ps1",
+      "ko": "세션 시작마다 매니페스트와 실제 파일을 대조하고 경고",
       "required": true,
       "role": "The validator this manifest drives. SessionStart hook."
     },
     {
       "path": "scripts/guard.ps1",
+      "ko": "결과를 보는 훅. 쓰여진 파일과 만들어진 커밋을 검사",
       "required": true,
       "role": "Mechanical enforcement of the four rules with a zero-false-positive signature: work-rules-shell SH-2 NUL bytes, SH-15 .bat with LF, SH-12 UnicodeEncodeError, SH-23 README after a structural commit. Registered on PostToolUse (Write|Edit asyncRewake, Bash filtered to git) and PostToolUseFailure. No PreToolUse: see work-rules-automation AU-21."
     },
     {
       "path": "scripts/pattern-guard.sh",
+      "ko": "명령문을 보는 훅. 파괴적 구문 9종을 실행 전에 경고",
       "required": true,
       "role": "PreToolUse scanner for command text naming a construct known to be wrong: work-rules-shell SH-1, SH-4, SH-5, SH-8, SH-9, SH-11, SH-26, SH-27, SH-28. Bash built-ins only, no forks - measured 190 ms per call against 550 ms with one grep per pattern and 600-700 ms in PowerShell. The SH-11 check cited SH-10 until 2026-07-30, and this line repeated the wrong id, so an unchecked rule read as covered."
     },
     {
       "path": "scripts/manifest-nudge.sh",
+      "ko": "상기시키는 훅. SKILL.md의 규칙 수나 크기가 매니페스트와 어긋날 때만 알림",
       "required": true,
       "role": "Runs after a SKILL.md write and speaks only on actual drift: the header range disagreeing with this manifest's ruleIds, the body's highest rule id disagreeing with the header, or the file past its byte budget (since 2026-10-12; the unconditional reminder fired on ~20 edits in one session with no drift). Registered on PostToolUse (Write|Edit), synchronous so its additionalContext reaches the model. A reminder, not a gate - it never denies (work-rules-automation AU-22). Written 2026-08-03 after ai-characteristics, work-rules-shell and new-hwpx-master each gained a rule and corrected their own header while this file still declared the previous range; the drift is one-directional and silent because the body header looks authoritative, and only the SessionStart validator caught it a session later."
     },
     {
+      "path": "scripts/gen-doc-lists.py",
+      "ko": "manifest의 ko, koWhen에서 README와 GUIDE 목록을 만듦. --check는 어긋나면 1",
+      "required": true,
+      "role": "Generates the scripts/ lists in README.md and GUIDE.ko.md and GUIDE's work-rules table from this manifest's ko and koWhen fields, reading rule counts from each SKILL.md header. Hand-kept lists had drifted apart (2026-11-21). Edit ko/koWhen here, then run it."
+    },
+    {
       "path": "scripts/recall.py",
+      "ko": "MyNAS 의미 검색에 묻는 조회 도구. 서버가 꺼져 있으면 조용히 끝남",
       "required": false,
       "role": "Asks the MyNAS semantic search server (MyNAS D-118, 127.0.0.1 with the token file under its dataDir) for documents and Claude session summaries by meaning. Prints nothing when the server is off, so callers never block. Machine-specific: needs MyNAS running with semantic configured."
     },
     {
       "path": "scripts/recall-hook.py",
+      "ko": "상기시키는 훅. 지난 결정을 기억으로 말하면 결정 기록 후보를 붙임",
       "required": false,
       "role": "UserPromptSubmit hook: when the user cites a past decision from memory (G-06 wording such as 지난번, 정했던), attaches up to three semantic-search candidates for the record. User choice 2026-11-21 'decision records only'; rule injection was not wired because the 10-question test put the right file in the top three only 5 of 10 times."
     },
@@ -324,11 +345,13 @@
     },
     {
       "path": "scripts/verify-artifacts.py",
+      "ko": "병렬 작업 결과를 파일과 확인 명령으로 판정",
       "required": false,
       "role": "Judges a fanout-verified result by code (work-rules-automation AU-8): checks each unit's files exist and are non-empty and re-runs its check command, ignoring the agents' own STATUS. Exit 0 only when every unit passes."
     },
     {
       "path": "scripts/brief-nudge.sh",
+      "ko": "연결을 뺀 훅. 처음 건드리는 파일에 브리핑을 제안하던 것(2026-11-21 해제)",
       "required": false,
       "role": "Unwired 2026-11-21 at the user's choice: over 115 sessions it fired 1048 times and a brief followed 8 times (0.8%), and once G-10 became conditional on task size a hook could no longer tell when it applied. The file stays so it can be rewired. Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored, and since 2026-10-12 it fires once per folder rather than once per file (VF-8's file group), because per-file firing turned it into noise during a multi-skill edit."
     },
@@ -344,11 +367,13 @@
     },
     {
       "path": "scripts/skill-gate.sh",
+      "ko": "불러오는 훅. 커밋, 에이전트 실행, 코드 수정, 문서 파일 작업 앞에서 해당 스킬을 아직 안 읽었으면 한 번 막음",
       "required": true,
       "role": "Loads the matching skill at the moment it is needed (CLAUDE.md section 1): PreToolUse denies the first git commit, agent launch, code edit or document-file action of a segment until work-rules-shell, agent-ops, work-rules-diagnosis or work-rules-docs has been read, and only once per segment so a broken ledger cannot stall work. PostToolUse on Skill and Read records loads; SessionStart compact and clear empties the ledger. Subagent calls (agent_id present) are never gated. Added 2026-10-12 after measuring 79 sessions: the needed skill had been read in time for 19% of agent launches, 40% of code edits and 43% of commits. Tested on both branches, 21 cases, median 133 ms per call."
     },
     {
       "path": "scripts/validate_doc.py",
+      "ko": "한국어 분량 실측",
       "required": false,
       "role": "Korean document length measurement, used by work-rules-writing WR-12."
     },

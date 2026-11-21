@@ -125,6 +125,21 @@ Asked to stop a mistake recurring, it appends case history to the rule file; tog
 
 Generates: every skill's closing rule — revise the owning rule in one or two lines with its measured date; long evidence is cut, not appended (`verify-fanout` VF-16, `work-rules-writing` WR-14).
 
+## 4-1. Where each concept is owned
+
+A concept spread over several rules is edited in its owner and only pointed at elsewhere; changing the brief rule on 2026-11-21 touched five files because no owner was named. Before changing one of these, edit the owner first and check the pointers still hold.
+
+| Concept | Owner (full text) | Pointers only |
+|---|---|---|
+| Brief pair: when, lenses, return size | `verify-fanout` VF-7, VF-8, VF-21 | CLAUDE.md G-10, `agent-ops` AO-12, AO-15, AO-24 |
+| Fan-out approval and counting | CLAUDE.md G-22 | `agent-ops` AO-12, `workflows/fanout-verified.js` |
+| Report envelope | `agent-ops` AO-18 | `workflows/fanout-verified.js` schema |
+| Completion is proven by execution | `work-rules-automation` AU-8 | `scripts/verify-artifacts.py`, `agent-ops` AO-20 |
+| Language split | CLAUDE.md G-01, G-02 | `work-rules-writing` WR-1 |
+| Evidence grades | `verify-fanout` VF-1 | CLAUDE.md G-05 |
+| How a lesson enters a rule file | this file, AI-17 | the closing line of every skill |
+| Asking the user to decide | CLAUDE.md G-13 | `work-rules-collab` CL-2 |
+
 ## 5. Adding an entry
 
 A new entry belongs here when the cause is **the model's behaviour**, not this environment's tooling: would it still happen on a different OS with different tools? Each entry gives the characteristic, the measured evidence with its date in a sentence or two, and the rule IDs it generates. Update the header count, and point other rules at the `AI-n` rather than restating the reason.
