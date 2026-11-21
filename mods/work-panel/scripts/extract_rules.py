@@ -29,16 +29,19 @@ def extract():
     manifest = json.loads((HOME / "manifest.json").read_text(encoding="utf-8"))
     for s in manifest["skills"]:
         if s.get("kind") == "local" or s.get("name") == "portfolio-log":
-            p = HOME / "skills" / s["name"] / "SKILL.md"
-            if p.exists():
-                files.append(p)
+            d = HOME / "skills" / s["name"]
+            # 두 층 스킬(2026-11-21)은 규칙 원문이 reference/에 있다. 원문을 먼저 읽어야 카드의 짧은 줄이 제목으로 잡히지 않는다
+            files.extend(sorted((d / "reference").glob("rules*.md")))
+            if (d / "SKILL.md").exists():
+                files.append(d / "SKILL.md")
     rules = {}
     for f in files:
         text = f.read_text(encoding="utf-8")
+        owner = "CLAUDE.md" if f.name == "CLAUDE.md" else (f.parent.parent.name if f.parent.name == "reference" else f.parent.name)
         for m in list(HEAD_RE.finditer(text)) + list(BOLD_RE.finditer(text)):
             rid, title = m.group(1), clean(m.group(2))
             if rid not in rules and len(title) > 3:
-                rules[rid] = {"en": title[:200], "file": f.parent.name if f.name == "SKILL.md" else "CLAUDE.md"}
+                rules[rid] = {"en": title[:200], "file": owner}
     return rules
 
 

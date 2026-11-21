@@ -284,8 +284,8 @@
   "en": "Escapes handed to the Write tool become real control characters (measured 2026-07-21)"
  },
  "SH-33": {
-  "ko": "겹 백슬래시는 하나로 줄어든다",
-  "en": "A doubled backslash collapses to one before the shell or Python sees it, and a quoted heredoc does not prevent it (measured 2026-09-02)"
+  "ko": "겹 백슬래시는 셸이나 Python에 닿기 전에 하나로 줄어든다",
+  "en": "A doubled backslash collapses to one before the shell or Python sees it, even in a quoted heredoc (measured 2026-09-02)"
  },
  "SH-3": {
   "ko": "수정 스크립트의 앵커 덧붙임 중복을 조심한다",
@@ -910,5 +910,29 @@
  "CL-6": {
   "ko": "결과를 바꾸는 주장은 출처부터 확인한다",
   "en": "Check outcome-changing claims against sources first"
+ },
+ "SH-39": {
+  "ko": "PowerShell 5.1에서 객체 하나에는 .Count가 없다",
+  "en": "One [pscustomobject] has no .Count in PowerShell 5.1 (measured 2026-10-30)"
+ },
+ "UI-1": {
+  "ko": "자식 런스페이스는 COM 늦은 바인딩을 조용히 깨뜨린다",
+  "en": "A child runspace ([PowerShell]::Create()) silently breaks COM late-binding"
+ },
+ "UI-2": {
+  "ko": "관리자 권한 프로세스는 일반 권한 앱에 COM으로 붙지 못한다",
+  "en": "An elevated process cannot COM-attach a non-elevated app"
+ },
+ "UI-3": {
+  "ko": "COM 속성 읽기에는 GetProperty 플래그가 필요하고 막힌 대상은 호출을 멈춘다",
+  "en": "COM late-binding reads need the GetProperty flag, and a blocked target hangs the call"
+ },
+ "UI-4": {
+  "ko": "PowerShell은 C# 문자열 인자에 $null을 빈 문자열로 넘긴다",
+  "en": "PowerShell passes $null to a C# string parameter as \"\" (measured 2026-10-26)"
+ },
+ "DC-18": {
+  "ko": "사람이 읽는 문서는 파일 이름에 판을 적고 옛 판은 옆 archive 폴더에 둔다",
+  "en": "A human-read document carries its version in its file name, and superseded versions live in a sibling archive folder (user directive 2026-10-22, global: \"앞으로 문서 같은 과거 파일은 '파일명_archive' 폴더를 만들고 그 안에 파일"
  }
 }
