@@ -329,8 +329,8 @@
     },
     {
       "path": "scripts/brief-nudge.sh",
-      "required": true,
-      "role": "Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored, and since 2026-10-12 it fires once per folder rather than once per file (VF-8's file group), because per-file firing turned it into noise during a multi-skill edit."
+      "required": false,
+      "role": "Unwired 2026-11-21 at the user's choice: over 115 sessions it fired 1048 times and a brief followed 8 times (0.8%), and once G-10 became conditional on task size a hook could no longer tell when it applied. The file stays so it can be rewired. Reminds the model to consider a verify-fanout brief before editing a file this session has not written (CLAUDE.md G-10). A suggestion, not a gate - it does not deny and it does not run an agent, because a script hook cannot spawn one (work-rules-automation AU-26). A per-session ledger keeps it from firing on files just authored, and since 2026-10-12 it fires once per folder rather than once per file (VF-8's file group), because per-file firing turned it into noise during a multi-skill edit."
     },
     {
       "path": "scripts/machine-rules.ps1",
@@ -458,7 +458,7 @@
     },
     {
       "key": "hooks.PreToolUse[Write|Edit]",
-      "expected": "brief-nudge.sh check",
+      "expected": "none (brief-nudge.sh unwired 2026-11-21)",
       "role": "Suggests a brief on a file new to this session. Paired with a PostToolUse brief-nudge.sh record that maintains the ledger."
     },
     {

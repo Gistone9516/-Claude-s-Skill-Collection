@@ -84,17 +84,6 @@
         ]
       },
       {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"<CLAUDE_HOME>/scripts/brief-nudge.sh\" check",
-            "shell": "bash",
-            "timeout": 10
-          }
-        ]
-      },
-      {
         "matcher": "Bash|PowerShell|Agent|Task|Workflow|Write|Edit|MultiEdit",
         "hooks": [
           {
@@ -117,13 +106,6 @@
             "asyncRewake": true,
             "rewakeSummary": "guard: file written with a known-bad byte pattern",
             "rewakeMessage": "A guard hook found a defect in a file just written. Fix it before continuing: "
-          },
-          {
-            "type": "command",
-            "command": "bash \"<CLAUDE_HOME>/scripts/brief-nudge.sh\" record",
-            "shell": "bash",
-            "timeout": 10,
-            "async": true
           },
           {
             "type": "command",

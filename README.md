@@ -13,7 +13,7 @@ scripts/
   check-manifest.ps1   세션 시작마다 매니페스트와 실제 파일을 대조하고 경고
   guard.ps1            결과를 보는 훅. 쓰여진 파일과 만들어진 커밋을 검사
   pattern-guard.sh     명령문을 보는 훅. 파괴적 구문 9종을 실행 전에 경고
-  brief-nudge.sh       상기시키는 훅. 처음 건드리는 파일에 브리핑을 제안
+  brief-nudge.sh       연결을 뺀 훅. 처음 건드리는 파일에 브리핑을 제안하던 것(2026-11-21 해제)
   manifest-nudge.sh    상기시키는 훅. SKILL.md의 규칙 수나 크기가 매니페스트와 어긋날 때만 알림
   skill-gate.sh        불러오는 훅. 커밋, 에이전트 실행, 코드 수정, 문서 파일 작업 앞에서 해당 스킬을 아직 안 읽었으면 한 번 막음
   recall.py            MyNAS 의미 검색에 묻는 조회 도구. 서버가 꺼져 있으면 조용히 끝남
@@ -67,8 +67,8 @@ git clone https://github.com/Gistone9516/-Claude-s-Skill-Collection.git ~/.claud
 |---|---|
 | SessionStart | check-manifest.ps1, caveman-activate.js, skill-gate.sh reset(압축과 clear 직후) |
 | UserPromptSubmit | caveman-mode-tracker.js |
-| PreToolUse | pattern-guard.sh(셸 명령), brief-nudge.sh check(파일 편집), skill-gate.sh check(셸, 에이전트, 파일 편집) |
-| PostToolUse | guard.ps1(파일 편집), brief-nudge.sh record, manifest-nudge.sh, guard.ps1(git 명령, Bash와 PowerShell 각각), skill-gate.sh record(Skill, Read) |
+| PreToolUse | pattern-guard.sh(셸 명령), skill-gate.sh check(셸, 에이전트, 파일 편집) |
+| PostToolUse | guard.ps1(파일 편집), manifest-nudge.sh, guard.ps1(git 명령, Bash와 PowerShell 각각), skill-gate.sh record(Skill, Read) |
 | PostToolUseFailure | guard.ps1(셸 실패) |
 
 `hooks/`에 있는 둘은 성격이 다르다. 규칙을 강제하는 것이 아니라 외부 `caveman` 스킬이 모드 상태를 유지하고 `/caveman-stats`를 만들어 내는 데 쓰는 런타임이다. 위 표의 나머지와 달리 없어도 규칙은 그대로 산다.

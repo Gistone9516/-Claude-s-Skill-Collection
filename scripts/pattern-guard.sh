@@ -74,7 +74,11 @@ fi
 # SH-26 - a command that begins with cd never reaches the README guard, because that hook is
 # filtered with a prefix pattern. The violation disables an existing check rather than merely
 # being wrong, so it is the one pattern here whose cost compounds.
-if has 'git '; then
+# Only a git call in command position without -C can be missed by the guard. Until 2026-11-21 any
+# "git " after a cd fired, including `cd x && python ... ; git -C repo ...`, which was already the
+# fix; 80 of 678 firings had no git command at all.
+bare_git_re='(^|["&;|(])[[:space:]]*git[[:space:]]+(-[^C]|[^-])'
+if [[ $raw =~ $bare_git_re ]]; then
   before_git="${raw%%git *}"
   cd_re='(^|["&;|])[[:space:]]*cd[[:space:]]'
   if [[ $before_git =~ $cd_re ]]; then

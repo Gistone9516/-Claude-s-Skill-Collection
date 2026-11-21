@@ -66,7 +66,7 @@ Within its size gate (VF-8) it runs without asking because a judged threshold is
 **VF-8 The triggers are countable, not a judgement (user directive 2026-07-30).** A threshold that must be judged is what gets skipped when busy. The size gate is countable too (user choice 2026-11-21, after research showed a mandatory brief on every task cost more than it found on small work): the pair runs only when the work touches a file group not yet read, roughly ten or more files, or three or more independent questions, and never for a research-only request. Inside that gate, run the pair at these four moments:
 
 1. **Task start**, before reading the code and *before proposing a plan*. This is the one that pays: measured 2026-07-30, a brief here overturned 4 of 7 assumptions in a plan already written into a commit message.
-2. **First contact with a new file group** — a package, directory or document set this task has not touched. `scripts/brief-nudge.sh` marks this moment at the edit itself, once per file.
+2. **First contact with a new file group** — a package, directory or document set this task has not touched. No hook marks it: `scripts/brief-nudge.sh` did until 2026-11-21 and was unwired after 1048 firings led to 8 briefs.
 3. **Resuming after a compaction.** A summary carries conclusions, not the constraints that produced them.
 4. **When the user states a past decision from recall** (CLAUDE.md G-06). Check the documents and the code before agreeing.
 
