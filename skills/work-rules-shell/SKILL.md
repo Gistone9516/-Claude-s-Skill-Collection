@@ -10,7 +10,7 @@ Rules: SH-1..SH-39 (35). Full text, measured incidents and workarounds: `referen
 The card is 12 lines because thirteen rules are already enforced by hooks (`scripts/guard.ps1`, `scripts/pattern-guard.sh`) at the moment of use; it keeps the rules with no mechanical signature and the data-loss ones (2026-11-21, card size chosen per skill).
 
 1. SH-1, SH-33: no complex inline shell. Anything with quotes, Korean, a heredoc or a backslash goes into a script file written with the Write tool, then run. SH-29: the Write tool adds no BOM, so PowerShell 5.1 reads a `.ps1`'s Korean as cp949 and silently writes garbage (2026-11-23, into Cloa's live state; repeat). Korean work goes in a Python script (`encoding='utf-8'`), or the `.ps1` stays ASCII and takes Korean as arguments.
-2. SH-3: edit scripts assert the anchor count (`assert s.count(anchor) == 1`) and never restate the anchor in what they insert.
+2. SH-3: edit scripts assert the anchor count (`assert s.count(anchor) == 1`) and never restate the anchor in what they insert. A `# comment` appended to a replacement inside a one-line PowerShell block comments out the closing braces after it; put the comment after the last `}` of the line, and parse the file before running it (2026-11-23, three times in one session, once took the daemon down).
 3. SH-4: never `Get-Content -Raw | Set-Content`; it destroys UTF-8. Use the Edit tool or Python with `encoding='utf-8'`.
 4. SH-7: no git stash, checkout or restore while parallel agents or another session work in the repo; stage explicit paths, never `git add -A` over a shared folder.
 5. SH-12: the console is cp949. Write Korean results to a UTF-8 file and keep stdout ASCII.
