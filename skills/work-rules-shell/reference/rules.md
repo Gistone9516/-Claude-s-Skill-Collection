@@ -1,7 +1,7 @@
 
 # work-rules-shell — shell, git and terminal discipline
 
-Rules: SH-1..SH-39 (35 here; SH-35..SH-38 moved to `work-rules-ui-automation` as UI-1..UI-4). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
+Rules: SH-1..SH-40 (36 here; SH-35..SH-38 moved to `work-rules-ui-automation` as UI-1..UI-4). Ordered by what a violation costs: data loss first, then silently wrong results, then stopped runs, then procedure.
 Every rule came from an actual incident. None is safe to skip on the assumption that this time is different.
 
 Thirteen of these are also enforced by hooks, because reading this file repeatedly failed to prevent them; a hook is closer to the action than any document.
@@ -23,7 +23,7 @@ The other twenty-one have no reliable mechanical signature and stay in the text.
 
 **SH-2 Escapes handed to the Write tool become real control characters (measured 2026-07-21).** A placeholder `\0` became a raw NUL byte; the Read tool shows it as whitespace and Edit then fails with "String to replace not found". Write control characters from a Python script. When Edit cannot find something plainly there, dump the line with `repr()` before retrying.
 
-**SH-33 A doubled backslash collapses to one before the shell or Python sees it, even in a quoted heredoc (measured 2026-09-02).** It happens at the tool-argument layer: `\\` arrived as `\` while single `\n` survived, so it is hard to spot.
+**SH-33 A doubled backslash collapses to one before the shell or Python sees it, even in a quoted heredoc (measured 2026-09-02).** It happens at the tool-argument layer: `\\` arrived as `\` while single `\n` survived, so it is hard to spot. Nested escapes break silently: a Python edit script writing Kotlin or Markdown turned `"\n"` into a real newline and `tools\tone` / `logs\fast` into a tab and a form feed (2026-11-24, three compile or doc breaks). Keep inserted code in a raw string or a separate file, and grep the written file for `\t`, `\f` and broken literals.
 
 - **Never type a literal backslash into a file-writing script, however short** (recurred twice 2026-10-30 in 3-line `python - <<'PY'` edits; three times 2026-11-16, where a regex `\\b`, a path `\\r` and `\\t` became a backspace, a CR that split a line, and a tab — silent until `od -c`). Put any script that carries a backslash in a file with the Write tool, or build it from its code point (`BS = chr(92)`), join lines with `chr(10)`, or restructure so none is needed: `relative(a, b).split(sep).join("/")`.
 - A quoted heredoc also died on English prose with apostrophes (2026-09-15). Write the script to the scratchpad and run the file (SH-1).
@@ -100,6 +100,8 @@ Report the `denied` count; a subtree with denied>0 is a floor, not a total. Sani
 
 - **SH-16 This does not show up in `git diff`**, because git normalizes to LF on commit. Check the working-tree bytes: `raw.count(b"\n") == raw.count(b"\r\n")`.
 - Keep a batch launcher pure ASCII, and `call` with an absolute path.
+
+**SH-40 Never pipe or capture a command that may start a background daemon (Gradle, Kotlin, dev servers); send its output to a file and read the file (measured 2026-11-24).** `gradle-check.ps1 ... 2>&1 | tail` hung 3.5 to 8 minutes after `BUILD SUCCESSFUL in 20s`, every time a fresh Gradle daemon started: the daemon ends up holding the caller's pipe, so the pipe never closes. The same script with `> file 2>&1` finished in 21 s with a fresh daemon (process tree sampled every 10 s). PowerShell's own `*>` on a native exe is the same trap one level down (it reads through a pipe). Three guess-patches to the launcher (ShellExecute, `cmd` redirects, clearing the std-handle inherit flag) did not fix it and cost about an hour; the observation run is what found it. When a call hangs after its work is done, sample the process tree before changing any code.
 
 **SH-29 A `.ps1` without a BOM is read by PowerShell 5.1 as cp949, so Korean inside the script is mojibaked (measured 2026-08-01).** Seven correct Korean paths all reported `MISSING`, and a `Test-Path` guard skipped them and exited 0. Prepend `b"\xef\xbb\xbf"` from Python, or keep the script ASCII and pass Korean paths as `-Param` arguments. The Write tool writes no BOM, so every `.ps1` it creates with Korean in it hits this; 2026-11-23 a one-off script wrote a mojibaked Korean string into live state (`later-cards.json`) with no error. Promoted to the card.
 - **A Python edit script that writes back with `encoding='utf-8-sig'` adds a BOM to a file that had none (measured 2026-11-20: Cloa's `지침.md`, a cached prompt prefix).** Check the first three bytes and write back the way they came.
