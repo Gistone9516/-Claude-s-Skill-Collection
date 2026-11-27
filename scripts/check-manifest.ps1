@@ -158,7 +158,15 @@ try {
     if ($skill.ruleIds -and ($skill.ruleIds -match '^([A-Z]{1,3})-1\.\.[A-Z]{1,3}-(\d+)$')) {
       $prefix    = $Matches[1]
       $declaredHi = [int]$Matches[2]
+      # Card-style skills keep rule bodies in reference/*.md, so read those too. This file has no
+      # BOM, so the comment stays ASCII (SH-29). Added 2026-11-27: SH-40 existed only there and was missed.
       $body = Get-Content -LiteralPath $skillMd -Raw -Encoding UTF8
+      $refDir = Join-Path $skillDir "reference"
+      if (Test-Path -LiteralPath $refDir) {
+        foreach ($ref in Get-ChildItem -LiteralPath $refDir -Filter *.md -File) {
+          $body += "`n" + (Get-Content -LiteralPath $ref.FullName -Raw -Encoding UTF8)
+        }
+      }
       $found = [regex]::Matches($body, "\b$prefix-(\d+)")
       if ($found.Count -gt 0) {
         $actualHi = 0

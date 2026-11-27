@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "updated": "2026-11-07",
+  "updated": "2026-11-27",
   "purpose": "Single source of truth for what this ~/.claude install is supposed to contain. scripts/check-manifest.ps1 validates the live filesystem against this file at SessionStart and reports drift.",
   "repo": "https://github.com/Gistone9516/-Claude-s-Skill-Collection.git",
   "policy": {
@@ -63,8 +63,8 @@
       "kind": "local",
       "lang": "en",
       "tier": 1,
-      "role": "Windows 11 / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene. SH-35..SH-38 (COM and UI automation) moved to work-rules-ui-automation on 2026-11-07 when the file passed its 20600 budget, as the earlier warnBytesReason planned and the user chose ('5b 분리'); the numbers are not reused.",
-      "ruleIds": "SH-1..SH-39"
+      "role": "Windows / PowerShell 5.1 / WSL / git trap catalogue, non-ASCII paths, commit hygiene. SH-35..SH-38 (COM and UI automation) moved to work-rules-ui-automation on 2026-11-07 when the file passed its 20600 budget, as the earlier warnBytesReason planned and the user chose ('5b 분리'); the numbers are not reused.",
+      "ruleIds": "SH-1..SH-40"
     },
     {
       "name": "work-rules-ui-automation",
@@ -449,18 +449,8 @@
   "settingsKeys": [
     {
       "key": "model",
-      "expected": "opus[1m]",
-      "role": "Session model."
-    },
-    {
-      "key": "effortLevel",
-      "expected": "xhigh",
-      "role": "Reasoning ceiling."
-    },
-    {
-      "key": "alwaysThinkingEnabled",
-      "expected": true,
-      "role": "Thinking on by default."
+      "expected": "opus",
+      "role": "Session model. effortLevel and alwaysThinkingEnabled were removed from settings.json and are left unset; effort is chosen per session (synced with live settings 2026-11-27)."
     },
     {
       "key": "hooks.SessionStart",

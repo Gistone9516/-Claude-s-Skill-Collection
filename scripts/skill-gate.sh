@@ -104,7 +104,11 @@ case "$tool" in
     ;;
 esac
 [ -n "$need" ] || exit 0
-[ -f "$HOME/.claude/skills/$need/SKILL.md" ] || exit 0
+# A renamed or merged skill used to switch this gate off silently; say so, without blocking (2026-11-27).
+if [ ! -f "$HOME/.claude/skills/$need/SKILL.md" ]; then
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"[skill-gate] skill %s is missing; update the mapping in scripts/skill-gate.sh (G-27)."}}' "$need"
+  exit 0
+fi
 
 have=""
 [ -f "$loaded" ] && have=$(<"$loaded")

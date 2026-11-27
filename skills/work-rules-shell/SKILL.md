@@ -1,11 +1,11 @@
 ---
 name: work-rules-shell
-description: Shell, git and terminal discipline for this environment (Windows 11 + PowerShell 5.1 + the Bash/WSL tool + non-ASCII paths). A card of the traps that cost the most, with the full catalogue in reference/rules.md. Read before running PowerShell, Bash or WSL commands, before git commit / stash / checkout, before writing inline shell or an edit script, and before moving a project folder. Triggers - shell 명령, git 작업, WSL, 터미널, PowerShell, 커밋, 폴더 이동, "run command", 스크립트 실행.
+description: Shell, git and terminal discipline for this environment (Windows + PowerShell 5.1 + the Bash/WSL tool + non-ASCII paths). A card of the traps that cost the most, with the full catalogue in reference/rules.md. Read before running PowerShell, Bash or WSL commands, before git commit / stash / checkout, before writing inline shell or an edit script, and before moving a project folder. Triggers - shell 명령, git 작업, WSL, 터미널, PowerShell, 커밋, 폴더 이동, "run command", 스크립트 실행.
 ---
 
 # work-rules-shell — card
 
-Rules: SH-1..SH-39 (35). Full text, measured incidents and workarounds: `reference/rules.md`. Open the section named below when that situation is in front of you.
+Rules: SH-1..SH-40 (36). Full text, measured incidents and workarounds: `reference/rules.md`. Open the section named below when that situation is in front of you.
 
 The card is 12 lines because thirteen rules are already enforced by hooks (`scripts/guard.ps1`, `scripts/pattern-guard.sh`) at the moment of use; it keeps the rules with no mechanical signature and the data-loss ones (2026-11-21, card size chosen per skill).
 

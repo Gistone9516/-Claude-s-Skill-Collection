@@ -25,14 +25,14 @@ rest=${rest# }
 rest=${rest#${q}}
 path=${rest%%${q}*}
 
+# Card-style skills keep rules in reference/*.md, so edits there are checked too (2026-11-27).
 case "$path" in
-  *skills*SKILL.md | *skills*SKILL.MD) ;;
+  *skills*SKILL.md | *skills*SKILL.MD) name=${path##*skills}; name=${name%SKILL.*} ;;
+  *skills*reference*.md) name=${path##*skills}; name=${name%reference*} ;;
   *) exit 0 ;;
 esac
 
-# skills/<name>/SKILL.md -> <name>; separators may be / or escaped backslashes.
-name=${path##*skills}
-name=${name%SKILL.*}
+# skills/<name>/... -> <name>; separators may be / or escaped backslashes.
 name=${name//[^a-z0-9-]/}
 [ -n "$name" ] || exit 0
 
@@ -63,6 +63,9 @@ fi
 
 max=0
 s=$content
+for ref in "$HOME/.claude/skills/$name/reference/"*.md; do
+  [ -f "$ref" ] && s="$s $(<"$ref")"
+done
 re="$prefix-([0-9]+)"
 while [[ $s =~ $re ]]; do
   n=$((10#${BASH_REMATCH[1]}))
