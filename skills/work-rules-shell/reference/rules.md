@@ -92,7 +92,7 @@ Report the `denied` count; a subtree with denied>0 is a floor, not a total. Sani
 
 ## 3. Stopped runs and broken parsing
 
-**SH-13 Nested quotes inline break the parser.** Pass commit messages and multi-argument calls through a scratchpad `.sh` using `git commit -F - <<'MSG' ... MSG`.
+**SH-13 Nested quotes inline break the parser.** Pass commit messages and multi-argument calls through a scratchpad `.sh` using `git commit -F - <<'MSG' ... MSG`. A message file for `-F` is written only with the Write tool to a fresh path: `Set-Content -Encoding utf8` adds a BOM that git keeps as the subject's first character, and the Write tool keeps an existing file's BOM when it overwrites it (measured 2026-11-26). `Set-Content -Encoding ascii` on a file with Korean writes `?` for every Hangul character; a helper `.py` made that way produced a commit subject of question marks (2026-11-26).
 
 **SH-14 A PowerShell here-string still splits if its body contains double quotes (measured 2026-07-20).** PowerShell 5.1 re-quotes arguments for a native exe, and fragments became pathspecs. Remove double quotes from the message or go through `-F -`.
 
