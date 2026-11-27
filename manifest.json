@@ -259,15 +259,18 @@
       "role": "Authoring and evaluating skills themselves - scaffold a new skill, edit an existing one, run evals, tune a description for trigger accuracy. Anthropic-authored and vendored into skills/ with its own LICENSE.txt, so it carries no local rule IDs and is not part of the G-series rule set. Registered 2026-09-07 after sitting unregistered on disk; it had been reported as drift at every SessionStart.",
       "warnBytes": 34000,
       "warnBytesReason": "SKILL.md is 33,168 bytes, well past the 20000 default, and DG-5's responsibility question does not apply the way it does to the local skills: this file is upstream's, shipped with a LICENSE, and splitting or trimming it would fork a vendored asset that gets replaced wholesale on the next update. The number is its current size plus headroom so ordinary upstream drift does not fire an advisory. If it grows a lot, re-check that the vendored copy is still wanted rather than raising this."
-    },
+    }
+  ],
+  "parkedSkills": [
     {
       "name": "portfolio-log",
-      "required": true,
+      "required": false,
       "kind": "local",
       "lang": "en",
       "tier": 3,
       "ruleIds": "PL-1..PL-19",
-      "role": "Collect today's Claude Code sessions (day boundary 05:30 KST), let the user mark each issue 깊게/짧게/빼기, ask their view on the deep ones, and write a private Korean study note in the work-rules-writing TIL exemplar's form; two review agents rewrite the draft. Reads the candidates picked on the work-panel mod (PL-18, PL-19), whose format it shares. Registered 2026-10-11 as an external junction; moved into this repo 2026-10-13 at the user's choice to make it public, so the skill and the panel change in one commit. scripts/plog.py and tests/test_plog.py live beside SKILL.md."
+      "role": "Collect today's Claude Code sessions (day boundary 05:30 KST), let the user mark each issue 깊게/짧게/빼기, ask their view on the deep ones, and write a private Korean study note in the work-rules-writing TIL exemplar's form; two review agents rewrite the draft. Reads the candidates picked on the work-panel mod (PL-18, PL-19), whose format it shares. Registered 2026-10-11 as an external junction; moved into this repo 2026-10-13 at the user's choice to make it public, so the skill and the panel change in one commit. scripts/plog.py and tests/test_plog.py live beside SKILL.md.",
+      "parked": "2026-11-27: moved to _parked/portfolio-log at the user's choice; the skill is to be re-planned from scratch. work-panel registers portfolio_suggest only while skills/portfolio-log/SKILL.md exists."
     }
   ],
   "files": [

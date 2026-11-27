@@ -271,7 +271,8 @@ export const register: Register = on => {
       },
     })
     const text = (d: string) => ({ type: 'string', description: d })
-    await $.tool.register({
+    // portfolio-log 스킬이 _parked/로 빠져 있으면(2026-11-27 재기획 대기) 후보를 모을 곳이 없으니 도구를 걸지 않는다
+    if (await $.fs.exists((await home($)) + '/.claude/skills/portfolio-log/SKILL.md')) await $.tool.register({
       name: 'portfolio_suggest',
       isDeferred: false,
       description:
