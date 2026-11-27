@@ -23,10 +23,9 @@ The user does not use v5 and plans to move `/study` and `learn-topic.py` to v6 l
 
 ## Governance (hard rules)
 
-- **One code copy, subjects are data.** A subject folder holds `config/subject.json`, `lab/*.sh`, `.env` (VM key) and `_state/`. No code.
-- **Zero subject literals in kit code.** `lh/tests/test_subject_agnostic.py` (v6) and `bot/tests/test_subject_agnostic.py` (v5) fail on leakage. Subject wording, areas, unit rules, lab topology go in the subject config.
+- **Kit stays generic:** `work-rules-kit` KT-1..KT-4 (the guard tests are listed in KT-4). Here a subject folder holds `config/subject.json`, `lab/*.sh`, `.env` (VM key) and `_state/`; subject wording, areas, unit rules and lab topology go in `config/subject.json`.
 - **Spec before code.** v6 behaviour rules carry IDs (IF-, CO-, ME-, VM-, SV-, WB-). Change the spec first, then code, then tests named after the rule.
-- **Information overload is the failure this kit exists to prevent, and the AI is a guide.** Before the learner arrives, AI output only points the way (verdict paragraph, hint, term meaning on tap). Full explanation comes only as the destination explanation after the learner arrives, moves on or gives up, folded behind a summary (plan `docs/기획_v6_사이클_@v6.md` section 0, core rules 2, 3, 11 to 18 in `lh/core/prompts/base.txt`). Do not add explanations anywhere else.
+- **Information overload is the failure this kit exists to prevent, and the AI is a guide.** Before the learner arrives, AI output only points the way (verdict paragraph, hint, term meaning on tap). Full explanation comes only as the destination explanation after the learner arrives, moves on or gives up, folded behind a summary (plan `docs/기획_v6_사이클_@v7.md` section 0, core rules 2, 3, 11 to 18 in `lh/core/prompts/base.txt`). Do not add explanations anywhere else.
 
 ## Running v6
 

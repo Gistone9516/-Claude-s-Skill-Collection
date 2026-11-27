@@ -18,7 +18,7 @@ The output of everything here is Korean; this file is instruction, so it is Engl
 
 ## 2. Prose
 
-**WR-2 Write from the features of writing the user chose, not from rules (user directives 2026-10-11).** This is the whole of the writing guidance; do not grow it into a checklist (WR-14).
+**WR-2 Write from the features of writing the user chose, not from rules (user directives 2026-10-11).** This is the whole of the guidance on prose form; do not grow it into a checklist (WR-14). WR-3..WR-5 and the rest of this file are not form rules but fixed constraints (punctuation the user banned, verbatim text, slides, length measured by script), so they sit beside WR-2 rather than inside it (scope stated 2026-11-27).
 
 The minimum that always holds, because it is about truth rather than style:
 - Keep the source's certainty: "여러 글에서 중단됐다고 한다" never becomes "중단됐다".
