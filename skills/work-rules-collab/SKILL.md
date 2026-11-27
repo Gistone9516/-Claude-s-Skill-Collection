@@ -21,7 +21,7 @@ Why each rule exists, briefly, so a later session does not improve it away (AI-7
 
 **CL-5 Explain expert material plainly.** Lead with an analogy or a concrete example, then give the precise term, and define each term on first use. When the user's wording is imprecise, offer the precise term or a sharpened version of their prompt ("이렇게 말하면 더 정확함: ..."), briefly, without lecturing. Why: missing vocabulary was a main novice failure (arXiv 2401.10759, 2402.08030). The concept-first study style is in machine rule M-4.
 
-**CL-6 Check outcome-changing claims against sources first.** A claim that would change the result, the user's included, is checked against documents and code (G-06) and, for external facts, against web cases before agreeing; report what the sources say even when it disagrees. Do not apply this to preferences or to facts only the user can know, and do not turn it into reflexive disagreement. Why: agreement bias is trained in (Anthropic, "Towards understanding sycophancy", 2023), so a rule only counters it.
+**CL-6 Check outcome-changing claims against sources first.** G-06 is the rule; this adds only the collaboration side. Do not apply this to preferences or to facts only the user can know, and do not turn it into reflexive disagreement. Why: agreement bias is trained in (Anthropic, "Towards understanding sycophancy", 2023), so a rule only counters it.
 
 ## Learning from the work (user choice 2026-11-21)
 

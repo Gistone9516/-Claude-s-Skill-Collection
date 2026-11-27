@@ -76,7 +76,7 @@ The `Workflow` description recommends omitting `model`; that is right for correc
 - Effort is set only by AO-4; `deepflow` and `buildflow` follow it.
 - **Fix the return size at delegation time (user directive 2026-09-07).** Every agent bills twice, once to run and once for opus to read. A standing pair returns 3-5 decision lines (`verify-fanout` VF-10). Measured 2026-08-22: brief-pair forensics flowed into a student's internship diary and had to be rewritten.
 
-**AO-16 Evidence-grounding is mandatory for factual, research and feasibility tasks.** `[fact-cited]` means a real source: URL, file or run output. A claim without one is `[assumption]` with lowered confidence (AI-2). Skip search for pure logic and mechanical tasks.
+**AO-16 Evidence-grounding is mandatory for factual, research and feasibility tasks.** `[fact-cited]` means a real source: URL, file or run output. A claim without one is `[assumption]` with lowered confidence (AI-2). These two tags are the vocabulary everywhere; a lens payload may add `[inference]` and `[base-rate]` (`deepflow` §3), and those count as `[assumption]` when graded (`verify-fanout` evidence grades). Skip search for pure logic and mechanical tasks.
 
 **AO-17 High-output tasks are split, never single-shot.** An agent past its response cap returns nothing after doing all the work (AI-12). Split by natural unit; **each agent writes its chunk to a file and returns only the path and stats** (ROUTE: relay); opus reassembles by concatenation. Output characters ÷ 3 ≈ tokens; when unsure, over-split.
 

@@ -87,7 +87,7 @@ Base deepflow stops at a **decision**. deepflow-auto keeps going: it loops **cri
 - **1. Critique panel (§2–§3)** — domain-fit lenses in parallel (sonnet, Report envelope, lens-tier 6 fields). **Pass an "already-fixed — do not re-flag" context** so rounds don't relitigate resolved issues (dryness depends on this).
 - **2. opus synthesis (§5) — load-bearing, never delegated.** opus judges each critique **against the source material** (paper / spec / requirements / user intent), not the critique text alone. Adopt/reject per source; consensus across lenses = weak signal (same-model). Decide the **scope** of this round's fix.
 - **3. Improve (execute)** — hand the adopted directives to **section/chunk-level sonnet writers** (Workflow, `model:'sonnet'`, **write to file, return path + stats only** per `agent-ops` AO-17; never re-emit the body). **Scope-limit to the named sections** — full rewrites churn and regress; touch only what this round adopted. Unchanged sections are copied forward, not regenerated.
-- **4. Re-critique → loop-until-dry (§4)** — re-extract the improved artifact, back to step 1. **2 consecutive rounds with 0 *meaningful* critiques = converged → stop.** Round cap (default 5); cap hit with real issues still open = **escalate to user** (no forced pass). "meaningful" = new + substantive + actionable + conclusion-changing (§4).
+- **4. Re-critique → loop-until-dry (§4)** — re-extract the improved artifact, back to step 1; convergence, cap and "meaningful" are as defined in §4.
 - **5. Report each round** — for user-read artifacts, emit a short per-round change summary (what was adopted/rejected and why).
 
 **Discipline:**

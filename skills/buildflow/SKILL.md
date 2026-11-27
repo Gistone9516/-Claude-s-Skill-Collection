@@ -44,7 +44,7 @@ A wrong plan discards spec + build ×N. Highest leverage.
 - **G1:** intent + partition map ratified by the user (A-mode) or via the B-mode loop.
 
 ### ② Design·spec (HOW = contract) — the build SPOF
-- **opus — SoT-first (shared interface BEFORE per-folder contracts).** When contracts share cross-cutting interfaces (shared types · field names · enums · error codes · **serialization schema** · **runtime wiring**: global names / boot entry / config format), opus authors ONE shared-interface SoT (`_인터페이스계약.md`) **first**, then per-folder contracts are drafted/conformed **against it** ("on conflict, SoT wins"). Reconciling independent drafts afterwards is N-round churn (`agent-ops` AO-22).
+- **opus — SoT-first** (`agent-ops` AO-22): here the shared-interface file is `_인터페이스계약.md`, and per-folder contracts conform to it ("on conflict, SoT wins").
 - **opus:** per-folder spec as a **persistent `.md` contract** — *machine-verifiable* interfaces (type sigs · data schema · error rules), not prose. A spec an agent cannot read whole is a signal to split (DG-5).
 - **sonnet adversarial integrity review** (deepflow, horizontal): undefined contracts · missed edges · internal contradictions · over-spec. opus cuts nitpick/over-spec.
 - **user red-pen** (vertical, intent): reviews the spec `.md` directly.
@@ -79,7 +79,7 @@ Asymmetric risk: a missed major ≫ an unneeded check → when unsure, lean to t
 
 ## Planning modes A / B
 - **A (default):** planning always user-reviewed.
-- **B (explicitly granted):** opus plan → sonnet×3 adversarial → opus re-judge ⟲ **until 2 consecutive dry (0 new meaningful)** → design. Adversaries: "only NEW weaknesses each round, rebut the plan." Hard round cap (default 5) — at the cap with real issues still surfacing = non-convergence → user.
+- **B (explicitly granted):** opus plan → sonnet×3 adversarial → opus re-judge, looped until dry per `deepflow` §4 (two dry rounds, cap 5, cap hit = non-convergence → user) → design.
   - **B autonomy ceiling = derivable improvements** (bugs · completion · hardening · tech-debt · backlog). *New intent/direction* or *prior-plan change* → user. Autonomous planning/convergence = FYI log (guards self-grading bias).
   - **B = continuous autonomy across the whole cycle**, not just planning: unless a triage-major hits (intent/scope · irreversible/external · non-convergence · hard-floor failure), run ②→③→④→next cycle autonomously. Don't stop at stage gates for routine approval, inside the agent budget approved at G1.
   - **Execution = Workflow offload** (agent-ops, opt-in): run the adversarial convergence loop, ③ worktree fan-out, and ④ verify as `Workflow` scripts → short opus turns. opus keeps ② contract finalization, integration/merge, risky-writes, triage.
