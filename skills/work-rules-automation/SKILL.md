@@ -5,7 +5,7 @@ description: Robustness rules for automation, background Workflows and long mult
 
 # work-rules-automation — automation and Workflow robustness
 
-Rules: AU-1..AU-26 (26). Ordered by what a violation costs.
+Rules: AU-1..AU-26 (23; AU-17..AU-19 retired). Ordered by what a violation costs.
 Delegation policy is in `agent-ops`; why these rules exist is in `ai-characteristics`. The `Workflow` tool description is canonical for script semantics; this file holds only traps it does not warn about or that were measured here.
 
 **A single format error that halts a run is a critical defect.** One malformed tool call or one unguarded crash kills the whole automation.
@@ -29,15 +29,7 @@ Delegation policy is in `agent-ops`; why these rules exist is in `ai-characteris
 
 ## 2-1. Writing a Workflow script
 
-The script is plain JavaScript run by the orchestrator, and two constraints give no helpful error.
-
-**AU-17 It is JavaScript, not TypeScript.** Type annotations, interfaces and generics are parse errors before a single agent spawns.
-
-**AU-18 `Date.now()`, `Math.random()` and argless `new Date()` throw,** because a resumed run must reproduce the same call sequence. Pass timestamps through `args`, stamp results after the run, and vary by item index.
-
-**AU-19 Scale the fan-out from the declared budget, not from a guess.** When a token target is set, size the loop or fleet from what remains, and guard on the target existing; without one, a naive loop runs to the agent cap.
-
-**Barriers cost wall-clock.** Prefer a pipeline where each item flows through all stages independently. A barrier is right only when a stage needs cross-item context (deduplicating across all results, an early exit on a zero count, comparing findings); flattening or filtering is done inside a stage.
+Script semantics (JavaScript only, no `Date.now()`/`Math.random()`, budget guards, pipeline over barrier) are in the `workflow-authoring` reference; load it before writing a script. AU-17, AU-18 and AU-19 restated it and were retired on 2026-11-27 after a check against that reference (AU-20, `agent-ops` AO-1); the numbers are not reused.
 
 ## 3. Running background Workflows
 

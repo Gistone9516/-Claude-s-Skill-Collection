@@ -35,7 +35,7 @@ There are two editing modes; pick one per file. **Text patch**: change a few cha
 
 **DC-8 The usual cause is `<Default xmlns="" .../>` in `[Content_Types].xml`**, which pulls `Default` out of the OPC namespace. Removing only the `xmlns=""` cleans it and keeps embedded fonts.
 
-**DC-9 The diagnostic oracle is .NET `System.IO.Packaging.Package.Open`** (`Add-Type WindowsBase`). PowerPoint COM is blocked in this environment even on healthy files, and python-pptx, zipfile and minidom pass broken files. .NET OPC checks the OPC layer only, not the slide schema.
+**DC-9 The diagnostic oracle is .NET `System.IO.Packaging.Package.Open`** (`Add-Type WindowsBase`). Do not plan on PowerPoint COM: it needs PowerPoint installed and registered and an attachable instance (`work-rules-ui-automation` UI-2); check `HKCR\PowerPoint.Application` before relying on it (2026-11-27: the old "blocked even on healthy files" was REGDB_E_CLASSNOTREG, PowerPoint not installed). python-pptx, zipfile and minidom pass broken files. .NET OPC checks the OPC layer only, not the slide schema.
 
 **DC-10 A python-pptx round-trip drops embedded fonts (.fntdata) and breaks the deck.** Inject into the ZIP/XML by hand or produce a new file. Keep each entry's `compress_type`, `external_attr` and `date_time`.
 
@@ -45,7 +45,7 @@ There are two editing modes; pick one per file. **Text patch**: change a few cha
 
 ## 4. Verifying an hwpx or hwp — the render oracle
 
-**DC-15 Hangul COM works here and is the only oracle that proves a document opens (measured 2026-08-01).** DC-6 proves the package is well formed, not that Hangul accepts it. A successful headless PDF export proves the file opens, and the PDF makes layout measurable.
+**DC-15 Hangul COM, where Hangul is installed, is the only oracle that proves a document opens (measured 2026-08-01).** DC-6 proves the package is well formed, not that Hangul accepts it. A successful headless PDF export proves the file opens, and the PDF makes layout measurable.
 
 ```powershell
 $hwp = New-Object -ComObject HWPFrame.HwpObject
@@ -57,7 +57,7 @@ $set.SetItem("FileName", $Pdf); $set.SetItem("Format", "PDF"); $null = $act.Exec
 $hwp.Clear(1); $hwp.Quit()
 ```
 
-- Unlike PowerPoint (DC-9), Hangul COM is not blocked; do not generalize either way.
+- Whether a COM oracle exists depends on what is installed (DC-9); check the ProgID instead of assuming.
 - Run it as a `Start-Job` with `Wait-Job -Timeout` and kill `Hwp*` on timeout, since a modal dialog would block the call. Pass paths as `-Param` arguments (`work-rules-shell` SH-29).
 - **Hand COM an ASCII path (measured 2026-09-29).** Files under a Korean path timed out and exported fine once copied to the scratchpad; a timeout on a Korean path is not evidence of a corrupt build.
 - **A `PDF_FAIL` is not proof of corruption (measured 2026-08-01).** Re-run the export on a file known to open. If it fails too, the cause is the environment, most often the file open in the Hangul GUI (G-28); fall back to DC-6 and let the user do the definitive open.
