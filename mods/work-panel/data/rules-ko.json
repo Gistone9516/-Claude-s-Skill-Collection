@@ -9,7 +9,7 @@
  },
  "G-03": {
   "ko": "opus는 현재 세션 모델을 뜻한다",
-  "en": "\"opus\" is a role name"
+  "en": "\"opus\" is a role name for the model applied to this session, not claude-opus-*"
  },
  "G-04": {
   "ko": "반복 실수는 알맞은 곳에 한두 줄로 기록한다",
@@ -17,7 +17,7 @@
  },
  "G-05": {
   "ko": "절대적 출처는 없고 증거 등급만 있다",
-  "en": "No canonical source exists, only evidence grades"
+  "en": "No canonical source exists, only evidence grades: execution output and measurement, then the code itself, then two independent records agreeing, then a single document, then recall"
  },
  "G-06": {
   "ko": "사용자의 말도 출처로 확인한다",
@@ -41,7 +41,7 @@
  },
  "G-11": {
   "ko": "브리핑 뒤 사용자에게 계획을 알린다",
-  "en": "Then brief the user"
+  "en": "Then brief the user: what will be done and why, what stays, what changes, the steps"
  },
  "G-22": {
   "ko": "팬아웃은 사전 승인을 받는다",
@@ -65,7 +65,7 @@
  },
  "G-25": {
   "ko": "시각 결과는 Playwright 스크린샷으로 보인다",
-  "en": "Show visual results with Playwright screenshots, never file attachments"
+  "en": "Show visual results with Playwright screenshots, not file attachments: SendUserFile errors on the user's remote setup"
  },
  "G-26": {
   "ko": "기억은 범위별로 나눠 저장하고 위치를 알린다",
@@ -73,7 +73,7 @@
  },
  "G-27": {
   "ko": "manifest.json이 필수 구성을 정한다",
-  "en": "manifest.json declares what this install must contain"
+  "en": "`manifest"
  },
  "AI-1": {
   "ko": "모델은 틀린 말도 자신 있게 한다",
@@ -220,8 +220,8 @@
   "en": "A document set whose proper nouns keep drifting gets a symbol registry: one table, no enforcement script (user directive 2026-09-23)"
  },
  "VF-22": {
-  "ko": "결정은 _shadow 아래 같은 경로 노트에 남긴다",
-  "en": "A decision gets a note at _shadow/<same relative path>.md (user directive 2026-07-30)"
+  "ko": "(폐기) 파일마다 _shadow 결정 노트를 쓰던 의무. 이미 있는 노트는 읽는다",
+  "en": "(a mandatory _shadow/ decision note per edited file) was retired on 2026-11-27 at the user's choice, as an always-on procedure"
  },
  "VF-18": {
   "ko": "색인이 답하는 질문에 패키지를 다시 읽지 않는다",
@@ -515,18 +515,6 @@
   "ko": "멱등하고 재개 가능하게 만든다",
   "en": "Make it idempotent and resumable"
  },
- "AU-17": {
-  "ko": "JavaScript이고 TypeScript가 아니다",
-  "en": "It is JavaScript, not TypeScript"
- },
- "AU-18": {
-  "ko": "Date.now와 Math.random은 예외를 던진다",
-  "en": "Date.now(), Math.random() and argless new Date() throw,"
- },
- "AU-19": {
-  "ko": "팬아웃은 추측 말고 선언된 예산으로 정한다",
-  "en": "Scale the fan-out from the declared budget, not from a guess"
- },
  "AU-5": {
   "ko": "20분마다 상태를 점검한다",
   "en": "Health-check every 20 minutes (user directive 2026-06-22)"
@@ -744,8 +732,8 @@
   "en": "Change one variable at a time when diagnosing"
  },
  "DC-15": {
-  "ko": "한글 COM만이 문서가 열리는지 증명한다",
-  "en": "Hangul COM works here and is the only oracle that proves a document opens (measured 2026-08-01)"
+  "ko": "한글이 설치된 곳에서는 한글 COM만이 문서가 열리는지 증명한다",
+  "en": "Hangul COM, where Hangul is installed, is the only oracle that proves a document opens (measured 2026-08-01)"
  },
  "DC-16": {
   "ko": "treatAsChar 표는 쪽을 넘기면 앞 쪽이 빈다",
@@ -895,10 +883,6 @@
   "ko": "크거나 막연한 작업은 선택지로 인터뷰한다",
   "en": "Interview for a large or underspecified task"
  },
- "CL-3": {
-  "ko": "만들기 전에 완료 확인 방법을 제안한다",
-  "en": "Propose the acceptance check before building"
- },
  "CL-4": {
   "ko": "최소한만 만들고 빠진 것을 알린다",
   "en": "Build the minimum, list what was left out"
@@ -935,16 +919,8 @@
   "ko": "사람이 읽는 문서는 파일 이름에 판을 적고 옛 판은 옆 archive 폴더에 둔다",
   "en": "A human-read document carries its version in its file name, and superseded versions live in a sibling archive folder (user directive 2026-10-22, global: \"앞으로 문서 같은 과거 파일은 '파일명_archive' 폴더를 만들고 그 안에 파일"
  },
- "CL-7": {
-  "ko": "작업이 끝나면 무엇을 왜 했는지 배울 수 있게 한두 줄로 설명한다",
-  "en": "Close with a one- or two-line explanation of what was done and why, in words the user can learn from"
- },
- "CL-8": {
-  "ko": "자연스러우면 네트워크와 클라우드 개념에 잇는다",
-  "en": "Connect it to networking and cloud when it naturally fits"
- },
- "CL-9": {
-  "ko": "학습할 주제를 learning-harness 과목에 등록한다",
-  "en": "File the topic for later study"
+ "SH-40": {
+  "ko": "데몬을 띄울 수 있는 명령은 파이프로 받지 말고 출력을 파일로 보낸다",
+  "en": "Never pipe or capture a command that may start a background daemon (Gradle, Kotlin, dev servers); send its output to a file and read the file (measured 2026-11-24)"
  }
 }

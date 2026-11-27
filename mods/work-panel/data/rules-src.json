@@ -1,4 +1,80 @@
 {
+ "G-01": {
+  "en": "Language split",
+  "file": "CLAUDE.md"
+ },
+ "G-02": {
+  "en": "User is Korean",
+  "file": "CLAUDE.md"
+ },
+ "G-03": {
+  "en": "\"opus\" is a role name for the model applied to this session, not claude-opus-*",
+  "file": "CLAUDE.md"
+ },
+ "G-04": {
+  "en": "Self-learning routing",
+  "file": "CLAUDE.md"
+ },
+ "G-05": {
+  "en": "No canonical source exists, only evidence grades: execution output and measurement, then the code itself, then two independent records agreeing, then a single document, then recall",
+  "file": "CLAUDE.md"
+ },
+ "G-06": {
+  "en": "The user's statement is not canonical either",
+  "file": "CLAUDE.md"
+ },
+ "G-07": {
+  "en": "A label is not a source",
+  "file": "CLAUDE.md"
+ },
+ "G-08": {
+  "en": "Read the file before asserting anything about it",
+  "file": "CLAUDE.md"
+ },
+ "G-09": {
+  "en": "Do not pass internal recall off as fact",
+  "file": "CLAUDE.md"
+ },
+ "G-10": {
+  "en": "Brief before large work, as a pair",
+  "file": "CLAUDE.md"
+ },
+ "G-11": {
+  "en": "Then brief the user: what will be done and why, what stays, what changes, the steps",
+  "file": "CLAUDE.md"
+ },
+ "G-22": {
+  "en": "Fan-out needs prior approval",
+  "file": "CLAUDE.md"
+ },
+ "G-12": {
+  "en": "Analysis requests produce analysis only",
+  "file": "CLAUDE.md"
+ },
+ "G-13": {
+  "en": "Keep simple commands simple",
+  "file": "CLAUDE.md"
+ },
+ "G-29": {
+  "en": "A narrative's direction is the user's",
+  "file": "CLAUDE.md"
+ },
+ "G-28": {
+  "en": "A document is closed before I touch it",
+  "file": "CLAUDE.md"
+ },
+ "G-25": {
+  "en": "Show visual results with Playwright screenshots, not file attachments: SendUserFile errors on the user's remote setup",
+  "file": "CLAUDE.md"
+ },
+ "G-26": {
+  "en": "Route memory by scope, and say where it went",
+  "file": "CLAUDE.md"
+ },
+ "G-27": {
+  "en": "`manifest",
+  "file": "CLAUDE.md"
+ },
  "AI-1": {
   "en": "It asserts false things with full confidence",
   "file": "ai-characteristics"
@@ -143,10 +219,6 @@
   "en": "A document set whose proper nouns keep drifting gets a symbol registry: one table, no enforcement script (user directive 2026-09-23)",
   "file": "verify-fanout"
  },
- "VF-22": {
-  "en": "A decision gets a note at _shadow/<same relative path>.md (user directive 2026-07-30)",
-  "file": "verify-fanout"
- },
  "VF-18": {
   "en": "Never re-read a package to answer a question the index answers",
   "file": "verify-fanout"
@@ -157,6 +229,10 @@
  },
  "VF-20": {
   "en": "grep returning nothing is not proof of absence",
+  "file": "verify-fanout"
+ },
+ "VF-22": {
+  "en": "(a mandatory _shadow/ decision note per edited file) was retired on 2026-11-27 at the user's choice, as an always-on procedure",
   "file": "verify-fanout"
  },
  "DG-1": {
@@ -273,6 +349,10 @@
  },
  "SH-16": {
   "en": "This does not show up in git diff",
+  "file": "work-rules-shell"
+ },
+ "SH-40": {
+  "en": "Never pipe or capture a command that may start a background daemon (Gradle, Kotlin, dev servers); send its output to a file and read the file (measured 2026-11-24)",
   "file": "work-rules-shell"
  },
  "SH-29": {
@@ -459,18 +539,6 @@
   "en": "Make it idempotent and resumable",
   "file": "work-rules-automation"
  },
- "AU-17": {
-  "en": "It is JavaScript, not TypeScript",
-  "file": "work-rules-automation"
- },
- "AU-18": {
-  "en": "Date.now(), Math.random() and argless new Date() throw,",
-  "file": "work-rules-automation"
- },
- "AU-19": {
-  "en": "Scale the fan-out from the declared budget, not from a guess",
-  "file": "work-rules-automation"
- },
  "AU-5": {
   "en": "Health-check every 20 minutes (user directive 2026-06-22)",
   "file": "work-rules-automation"
@@ -611,10 +679,6 @@
   "en": "Interview for a large or underspecified task",
   "file": "work-rules-collab"
  },
- "CL-3": {
-  "en": "Propose the acceptance check before building",
-  "file": "work-rules-collab"
- },
  "CL-4": {
   "en": "Build the minimum, list what was left out",
   "file": "work-rules-collab"
@@ -625,18 +689,6 @@
  },
  "CL-6": {
   "en": "Check outcome-changing claims against sources first",
-  "file": "work-rules-collab"
- },
- "CL-7": {
-  "en": "Close with a one- or two-line explanation of what was done and why, in words the user can learn from",
-  "file": "work-rules-collab"
- },
- "CL-8": {
-  "en": "Connect it to networking and cloud when it naturally fits",
-  "file": "work-rules-collab"
- },
- "CL-9": {
-  "en": "File the topic for later study",
   "file": "work-rules-collab"
  },
  "RD-1": {
@@ -724,7 +776,7 @@
   "file": "work-rules-docs"
  },
  "DC-15": {
-  "en": "Hangul COM works here and is the only oracle that proves a document opens (measured 2026-08-01)",
+  "en": "Hangul COM, where Hangul is installed, is the only oracle that proves a document opens (measured 2026-08-01)",
   "file": "work-rules-docs"
  },
  "DC-16": {

@@ -54,7 +54,7 @@ For parallel work over disjoint units, use `workflows/fanout-verified.js` (caps,
 
 **AU-10** Ending a turn right after a tool use can make the harness inject `Continue from where you left off.` (anthropics/claude-code #44459). It is the CLI, not discord-bridge re-invoking. The model may then answer `No response requested.` and drop the tool result.
 
-**AU-11 On receiving it, never end empty (user directive).** Give the answer that tool result was for, or restate the conclusion in one line if everything was done. Delete this section once the CLI fix lands.
+**AU-11 On receiving it, never end empty (user directive).** Give the answer that tool result was for, or restate the conclusion in one line if everything was done. Delete this section once the behaviour is measured gone; the issue was closed unfixed as stale on 2026-05-27 (checked 2026-11-27), so its state says nothing.
 
 ## 5. `claude -p` session lifetime — no orphans (user directive 2026-07-21)
 

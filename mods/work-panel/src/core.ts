@@ -143,10 +143,11 @@ export type GlobalCheck = { id: string; label: string; state: string; ok: boolea
 // P-8: 측정할 수 있는 전역 규칙의 이번 요청 상태
 export function globalChecks(rec: SessionRecord): GlobalCheck[] {
   const s = rec.stats
-  const brief = s.edited ? (s.agentsBeforeEdit >= 2 ? '수정 전 실행' : '수정 전 미실행') : '아직 수정 없음'
+  // G-10은 큰 작업에만 걸리므로(2026-11-21) 미실행은 위반이 아니라 판정 없음
+  const brief = s.edited ? (s.agentsBeforeEdit >= 2 ? '수정 전 실행' : '미실행(작은 작업이면 정상)') : '아직 수정 없음'
   const pending = rec.repos.reduce((n, r) => n + r.unpushed, 0)
   return [
-    { id: 'G-10', label: '사전 확인', state: brief, ok: s.edited ? s.agentsBeforeEdit >= 2 : null },
+    { id: 'G-10', label: '사전 확인', state: brief, ok: s.edited && s.agentsBeforeEdit >= 2 ? true : null },
     { id: 'G-22', label: '이번 요청 에이전트', state: `${s.agents}대`, ok: null },
     { id: 'G-11', label: 'push 대기', state: pending > 0 ? `${pending}개` : '없음', ok: pending === 0 },
   ]

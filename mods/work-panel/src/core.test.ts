@@ -87,7 +87,8 @@ test('P-8 G-10 counts agents launched before the first edit of the request', () 
   expect(globalChecks(r)[1]?.state).toBe('3대')
   r = applyPrompt(r, '다음 요청', 6)
   r = applyToolUse(r, 'Write', 7)
-  expect(globalChecks(r)[0]?.ok).toBe(false)
+  expect(globalChecks(r)[0]?.ok).toBe(null)
+  expect(globalChecks(r)[0]?.state).toBe('미실행(작은 작업이면 정상)')
 })
 
 test('P-9 fired ids come from hook markers in failure text', () => {

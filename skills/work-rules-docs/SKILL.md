@@ -10,7 +10,7 @@ For filling an hwpx official-document template end to end, use `new-hwpx-master`
 
 ## 1. Extracting text (docx, xlsx, hwpx, pptx)
 
-**DC-1 Always write extraction output to a UTF-8 file** and read it back with the Read tool. Printing Korean or `©` to the cp949 console kills the whole extraction (`work-rules-shell` SH-12).
+**DC-1 Always write extraction output to a UTF-8 file** and read it back with the Read tool. Printing Korean or `©` to a non-UTF-8 console kills the whole extraction (`work-rules-shell` SH-12).
 
 ## 2. Editing hwpx
 

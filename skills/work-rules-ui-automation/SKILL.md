@@ -1,6 +1,6 @@
 ---
 name: work-rules-ui-automation
-description: Traps when driving COM or UI Automation from PowerShell on this machine - a child runspace silently breaks COM late-binding, an elevated process cannot attach a non-elevated app, property reads need the GetProperty flag, and PowerShell passes $null to a C# string as "". Read in full before automating Office, Hangul or any GUI app through COM, UI Automation, GetActiveObject or InvokeMember. Triggers - COM 자동화, UI 자동화, 원격 조작, Office COM, GetActiveObject, InvokeMember, Add-Type 헬퍼.
+description: Traps when driving COM or UI Automation from PowerShell on Windows - a child runspace silently breaks COM late-binding, an elevated process cannot attach a non-elevated app, property reads need the GetProperty flag, and PowerShell passes $null to a C# string as "". Read in full before automating Office, Hangul or any GUI app through COM, UI Automation, GetActiveObject or InvokeMember. Triggers - COM 자동화, UI 자동화, 원격 조작, Office COM, GetActiveObject, InvokeMember, Add-Type 헬퍼.
 ---
 
 # work-rules-ui-automation - COM and UI Automation from PowerShell

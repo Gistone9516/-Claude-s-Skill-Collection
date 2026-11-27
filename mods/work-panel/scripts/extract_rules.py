@@ -17,6 +17,8 @@ DATA = HERE / "data"
 # **G-05 No canonical source...** 또는 ### AI-1 It asserts...
 BOLD_RE = re.compile(r"\*\*([A-Z]{1,3}-\d+)\s+([^*]+?)\*\*")
 HEAD_RE = re.compile(r"^#{2,4}\s+([A-Z]{1,3}-\d+)\s+(.+)$", re.M)
+# - G-05 No canonical source exists... (2026-11-21 개편에서 CLAUDE.md 강조를 빼 굵은 글씨 형식이 사라졌다)
+LIST_RE = re.compile(r"^- ([A-Z]{1,3}-\d+)\s+([^.]+)", re.M)
 
 
 def clean(title):
@@ -38,7 +40,7 @@ def extract():
     for f in files:
         text = f.read_text(encoding="utf-8")
         owner = "CLAUDE.md" if f.name == "CLAUDE.md" else (f.parent.parent.name if f.parent.name == "reference" else f.parent.name)
-        for m in list(HEAD_RE.finditer(text)) + list(BOLD_RE.finditer(text)):
+        for m in list(HEAD_RE.finditer(text)) + list(BOLD_RE.finditer(text)) + list(LIST_RE.finditer(text)):
             rid, title = m.group(1), clean(m.group(2))
             if rid not in rules and len(title) > 3:
                 rules[rid] = {"en": title[:200], "file": owner}
