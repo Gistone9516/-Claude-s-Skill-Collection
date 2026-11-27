@@ -12,7 +12,7 @@ export const meta = {
 // - work-rules-automation AU-8: a worker's "done" is not trusted; it must list artifacts and a check command,
 //   and the caller runs scripts/verify-artifacts.py on the returned result. This script cannot read files.
 //
-// args: { task, maxAgents, effort?, model?, units: [{ id, goal, owns: [paths], out, check?, notes? }] }
+// args: { task, maxAgents, effort? (default 'high', AO-4), model?, units: [{ id, goal, owns: [paths], out, check?, notes? }] }
 
 const a = args || {}
 const units = Array.isArray(a.units) ? a.units : []
@@ -72,7 +72,7 @@ function brief(u) {
   ].filter(Boolean).join('\n')
 }
 
-const opts = (phase, label) => ({ phase, label, schema: REPORT, ...(a.effort ? { effort: a.effort } : {}), ...(a.model ? { model: a.model } : {}) })
+const opts = (phase, label) => ({ phase, label, schema: REPORT, effort: a.effort || 'high',...(a.model ? { model: a.model } : {}) })
 
 const results = await pipeline(
   units,
