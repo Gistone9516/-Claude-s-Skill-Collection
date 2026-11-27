@@ -54,7 +54,7 @@
       "lang": "en",
       "tier": 1,
       "role": "Root-cause discipline, anti-patchwork, spec-before-code, change discipline. CLAUDE.md §4 routes here.",
-      "ruleIds": "DG-1..DG-18"
+      "ruleIds": "DG-1..DG-19"
     },
     {
       "name": "work-rules-shell",

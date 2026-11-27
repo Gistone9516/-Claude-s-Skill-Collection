@@ -5,7 +5,7 @@ description: Diagnosis and code-change discipline - anti-patchwork rules, root-c
 
 # work-rules-diagnosis — diagnosis and change discipline
 
-Rules: DG-1..DG-18 (18). Ordered by what a violation costs.
+Rules: DG-1..DG-19 (19). Ordered by what a violation costs.
 CLAUDE.md §4 routes here; the rules live only in this file.
 
 ## 1. Anti-patchwork — spec before code (user directive 2026-07-28, global)
@@ -44,6 +44,15 @@ A bad state guarded by checks yields a bug at every path that forgot the check. 
 ### DG-4 Spec precedes substantial change
 
 A change that substantially alters a subsystem gets a spec first (behavior-rule table, contracts, verification table), reviewed before implementation. Measured in one session: a 51-site CSS change without a spec went the wrong way and was reverted; the next slice, specced first, surfaced two long-lived bugs before any code.
+
+**Companion features (user directive 2026-11-27).** Read as a closed list, a spec ships only what is written, and a companion the core feature plainly needs (create → delete, async → loading, failure, retry; destructive → confirm or undo) goes missing because G-06 makes omission feel safe. Deriving from a stated feature is not inventing a requirement when the source is named. While writing any implementation spec, whatever its size:
+
+- Number the core features in the spec, one user-visible action (verb + object) each.
+- One read-only sonnet agent per core feature at `effort: high`, all in one message through `Agent` (`fanout-verified.js` caps at 5 and demands write paths). Give it the feature, the whole spec, the files it may open, the tree schema and the verdict rule. No approval; count and cost (47-58k tokens each, four runs 2026-11-27) are stated first, and more than 15 in a round is asked (G-22).
+- Each returns a tree, depth ≤ 3, ≤ 15 items, empty allowed: 기능명, 파생원, 내용, 필요 근거 {출처, 없으면}, UI {위치, 상태, 문구, 조작} or 없음, 판단, 하위. 기본 포함 only if without it the feature is unusable or unsafe, it is cheap and needs no policy choice; depth 3 is 판단 필요.
+- opus counts the items itself (an agent's own count was wrong in two of four runs), checks each 출처 against the spec and drops what has none, merges duplicates keeping every 파생원 (a split verdict becomes 판단 필요), and accepts an empty tree only with STATUS done and a coverage line; a failed agent is retried once, then reported as not derived.
+- Results enter the spec's rule table marked 파생; the user's answer is recorded as 채택 or 제외 with its date, and 제외 rows stay. 기본 포함 items are listed before the questions and dropped by name; 판단 필요 items go through AskUserQuestion, 4 per call, and past 8 the deeper, lower-impact ones are parked in the spec as 보류.
+- One round per spec: adopted companions are not re-derived; only a core feature added later gets a round.
 
 ### DG-5 Size is a signal, not a rule
 
@@ -90,6 +99,19 @@ Applies to opus and to delegated agents alike.
 - **DG-17 Removing inert code: classify by git history first** (user directive 2026-07-04). (a) Unfinished, consumer not implemented: wire it. (b) Reverted remains, consumer deliberately deleted in a regression fix: delete, never rebuild, or the regression returns. (c) Speculation that never had a consumer: optional cleanup. Use `git log -S <symbol>` and the commit messages; "no consumer" alone kills (a) or resurrects (b).
 - **DG-18 Removing working code: never remove a verified feature on a side effect alone.** Check whether it holds up another front. Measured: a feature blamed for one bottleneck and removed was the verified engine of another; performance collapsed and it was redesigned the same day. If the purpose is alive, condition it; the defect is usually indiscriminate firing.
 - **Byte-verifying that a deletion changed nothing: filter nondeterministic log noise first** (timing telemetry, headers, debug lines), or a harmless deletion reads as DIFFERS. Run build, execution and comparison in one call (`work-rules-shell` SH-19).
+
+### DG-19 Walk the ripple, not only the census (user directive 2026-11-27, not yet measured)
+
+A census taken before the change (G-10) cannot see a neighbour that breaks only because A moved (`ai-characteristics` AI-3), and tests rarely catch it because the breakage is not a logic error. Triggered when a change alters an interface, an output format or a layout; otherwise skip and say why in one line (e.g. no public signature diff).
+
+1. A node's neighbours are its direct dependents: callers, consumers of its output, contracts it touches; for UI, siblings, parent and elements sharing its token, per viewport. Start from the census; where the brief was skipped, grep the 1-hop dependents and note that grep misses dynamic and string references (VF-20).
+2. Before editing, write the neighbours, each one's measuring command and its output to a scratch file outside the commit, so the baseline survives compaction. What is already broken in the baseline is a prior defect, not A's ripple.
+3. After the edit rerun the same commands. A B is something newly broken, not merely moved: type error, test failure, output diff; for UI, overflow, overlap, clipped text, a tap target under the project's minimum. A neighbour with no means of measuring is recorded 미측정, never counted as passing.
+4. "Intended" needs a named source (a rule ID, a spec line, the user's dated words); otherwise B is broken. Broken by A's design → revisit A, not patch B (DG-6); a missing or wrong rule → DG-2 first. When B changes, its neighbours join the set and the walk repeats from B.
+5. Stop when nothing measured breaks. At depth 3 (A→B→C→D) park the branch, finish the rest and ask the parked branches together at the end (`agent-ops` AO-23); a chain that long usually means A is wrong.
+6. Report the chain one node per line (measurement, 정상/깨짐/미측정, judgement, action), with the 미측정 and parked counts on top.
+
+UI measurement is a trial until the project has a measuring tool.
 
 ## 6. How this file changes
 

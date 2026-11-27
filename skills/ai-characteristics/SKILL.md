@@ -29,7 +29,7 @@ Generates: CLAUDE.md G-09, `agent-ops` AO-16.
 
 Every edit is correct in its own window; the defect is visible only from outside it. Measured in one project: two counters for one quantity, a tier override reimplemented out of view, one model id hardcoded in two packages, a screen replaced but never deleted.
 
-Generates: `verify-fanout` VF-5, VF-7, VF-8; CLAUDE.md G-10.
+Generates: `verify-fanout` VF-5, VF-7, VF-8; CLAUDE.md G-10; `work-rules-diagnosis` DG-19.
 
 ## 2. What the model does with judgement
 
@@ -139,6 +139,8 @@ A concept spread over several rules is edited in its owner and only pointed at e
 | Evidence grades | `verify-fanout` VF-1 | CLAUDE.md G-05 |
 | How a lesson enters a rule file | this file, AI-17 | the closing line of every skill |
 | Asking the user to decide | CLAUDE.md G-13 | `work-rules-collab` CL-2 |
+| Companion features in a spec | `work-rules-diagnosis` DG-4 | CLAUDE.md G-22, `agent-ops` AO-12, `buildflow` ② |
+| Ripple walk after an edit | `work-rules-diagnosis` DG-19 | `agent-ops` AO-24 |
 
 ## 5. Adding an entry
 

@@ -61,7 +61,7 @@ The `Workflow` description recommends omitting `model`; that is right for correc
 
 ## 5. Fan-out
 
-**AO-12 Report the count with its breakdown before fanning out (G-22).** For a prebuilt workflow, estimate its multiplying stages first; measured, deep-research expanded to 66 agents through per-claim votes. Pre-approved but still counted in the reported total: one or two one-shot lookups, the `verify-fanout` brief pair (both agents), the AO-24 design pair, and a self-activated `deepflow` panel of 3 or fewer (2026-11-27). Measured 2026-09-07: the standing pairs were 45% of all agents spawned and invisible to the gate, so exemption from permission is not exemption from arithmetic. Resuming inside an approved budget needs no re-approval; exceeding it does.
+**AO-12 Report the count with its breakdown before fanning out (G-22).** For a prebuilt workflow, estimate its multiplying stages first; measured, deep-research expanded to 66 agents through per-claim votes. Pre-approved but still counted in the reported total: one or two one-shot lookups, the `verify-fanout` brief pair (both agents), the AO-24 design pair, a self-activated `deepflow` panel of 3 or fewer (2026-11-27), and the companion-feature agents of `work-rules-diagnosis` DG-4, asked only above 15 in a round (2026-11-27). Measured 2026-09-07: the standing pairs were 45% of all agents spawned and invisible to the gate, so exemption from permission is not exemption from arithmetic. Resuming inside an approved budget needs no re-approval; exceeding it does.
 
 **AO-13 Two caps bind: synthesis, and cost.** What binds is the most agents whose output opus can still synthesize sharply, and the price. Measured 2026-09-07 over 83 agents: floor about 90k billable tokens, median about 320k, and the agent type did not change it. Read every count as its price and say it when raising one.
 
@@ -143,6 +143,7 @@ sonnet gathers, locates, executes and mechanically verifies; opus judges, compos
 - Both are proposals, never edits; adopting is opus's call against the source (AO-5). Feed the target agent any measurement it would otherwise guess.
 - Call it once there is a concrete change to review; give each scope its half and say the other is covered (VF-21); let either answer "주의할 것 없음" (VF-9). Measured on the first run: each scope found something the other could not.
 - Pre-approved and counted (AO-12); skipped when the change has no UI.
+- The pair reviews before the edit; what the edit breaks around it is checked after, by `work-rules-diagnosis` DG-19 (2026-11-27).
 - **On UI work the standing agents are three, not four (2026-09-07).** G-10's 주변 lens and this pair's 주변 ask one question, so run 현장, 대상 and 주변, and say the fourth was merged.
 
 ## 10. Large and unattended runs

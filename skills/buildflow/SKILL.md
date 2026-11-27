@@ -46,6 +46,7 @@ A wrong plan discards spec + build ×N. Highest leverage.
 ### ② Design·spec (HOW = contract) — the build SPOF
 - **opus — SoT-first** (`agent-ops` AO-22): here the shared-interface file is `_인터페이스계약.md`, and per-folder contracts conform to it ("on conflict, SoT wins").
 - **opus:** per-folder spec as a **persistent `.md` contract** — *machine-verifiable* interfaces (type sigs · data schema · error rules), not prose. A spec an agent cannot read whole is a signal to split (DG-5).
+- **Companion features** are derived per core feature and entered into the spec before G2 (`work-rules-diagnosis` DG-4); those agents sit outside the G1 budget but are counted.
 - **sonnet adversarial integrity review** (deepflow, horizontal): undefined contracts · missed edges · internal contradictions · over-spec. opus cuts nitpick/over-spec.
 - **user red-pen** (vertical, intent): reviews the spec `.md` directly.
 - **G2:** red-pen (intent) + adversarial (integrity) pass.
