@@ -1,83 +1,54 @@
 ---
 name: learning-harness
-description: Mounts a subject folder onto a Discord learning bot. One fixed generic app (code) runs against per-subject data folders; each subject keeps its own .env (channel/token). Use for requests like "put this subject on Discord", "start the learning bot", "run v5", "launch the learning framework", "add a new subject".
+description: Runs the learning-harness kit against a subject folder. v6 (current) is a web "linked cycle" trainer - the AI gives one unit with no explanation, the learner runs it in an in-page terminal on a VMware lab VM and explains it, the AI only judges. v5 (legacy, kept) powers the /study concept-and-problem web via its gateway. Use for "start the learning server", "add a subject", "run v6", "학습 서버 켜줘", "과목 추가", or any edit to this kit.
 ---
 
 # learning-harness (global skill)
 
-The learning bot app (generic, subject-agnostic code) is installed here:
+The kit is installed here:
 
 ```
-APP = C:\Users\USER\Desktop\2026-하계\learning-harness
+APP = F:\SUAN\claude\learning-harness
 ```
 
-**Architecture: one fixed app + per-subject data folders.** The app holds ALL code (bot, engine,
-harness) in ONE place and never carries subject content. Each subject is a **data-only folder**
-(`manifest.json`, `decks/`, `config/`, `_state/`) plus its own **`.env`**. You run the app's code
-against a subject folder; the subject folder holds no code.
+## Two generations live in one repo
 
-## ★ Governance — keep the kit subject-agnostic (hard rules)
+| | v6 (current) | v5 (legacy, kept running) |
+|---|---|---|
+| Code | `lh/` (Python), `web/src/cycle`, `web/src/parts/terminal` | `bot/`, `engine/`, `tools/gateway`, other `web/src/*` |
+| Spec | `specs/v6/` (`_인터페이스계약.md` wins on conflict) | `specs/*.md` |
+| Serves | cycle screen `/cycle.html` from `lh.server` | `/study` via `tools/gateway` (subjects in `F:\SUAN\claude\_study-gateway\gateway.json`) |
 
-These prevent the kit from drifting into one subject's shape (which would collide when you switch
-subjects and come back). Follow them on every task:
+The user does not use v5 and plans to move `/study` and `learn-topic.py` to v6 later (see `docs/인계_다음작업_@v2.md`). Until then, never delete or break v5 files: the gateway runs from them.
 
-- **No code clone per subject.** Do not copy `bot/`/`engine/` into a subject folder. There is ONE
-  code copy: the APP. Subjects differ only in data + `.env`.
-- **Zero subject literals in kit code** (`bot/`, `engine/`). No concrete subject name, no subject
-  area labels, no exam names, no task wording like "write a sentence". A guardrail test
-  (`bot/tests/test_subject_agnostic.py`) enforces this and fails on leakage.
-- **All subject flavor is injected via config**, never edited into the kit:
-  - **Areas** (the catalog categories + their labels/icons) → `config/<deck>.json` `"areas"`.
-  - **AI identity** → `capabilities.ai.persona` (auto-injected into every AI preamble).
-  - **AI task wording + UI strings** → `capabilities.ai.tasks.{practice,convo,explain}` (override the
-    generic, subject-neutral defaults in `bot/subject.py`).
-  - **Content** → `decks/<deck>.json`.
-- **While working on ANY subject, do not modify the kit to suit that subject.** Kit edits are for
-  generic framework features only. If you find yourself typing a subject word into `bot/`/`engine/`,
-  it belongs in that subject's config instead.
+## Governance (hard rules)
 
-The same principle applies to the sibling `Discord Agents` project (generic `bridge.py` + `skills/`;
-instance specifics in `.env`/`roster.json`) — see global CLAUDE.md.
+- **One code copy, subjects are data.** A subject folder holds `config/subject.json`, `lab/*.sh`, `.env` (VM key) and `_state/`. No code.
+- **Zero subject literals in kit code.** `lh/tests/test_subject_agnostic.py` (v6) and `bot/tests/test_subject_agnostic.py` (v5) fail on leakage. Subject wording, areas, unit rules, lab topology go in the subject config.
+- **Spec before code.** v6 behaviour rules carry IDs (IF-, CO-, ME-, VM-, SV-, WB-). Change the spec first, then code, then tests named after the rule.
+- **Information overload is the failure this kit exists to prevent, and the AI is a guide.** Before the learner arrives, AI output only points the way (verdict paragraph, hint, term meaning on tap). Full explanation comes only as the destination explanation after the learner arrives, moves on or gives up, folded behind a summary (plan `docs/기획_v6_사이클_@v6.md` section 0, core rules 2, 3, 11 to 18 in `lh/core/prompts/base.txt`). Do not add explanations anywhere else.
 
-## Prerequisites (per subject)
+## Running v6
 
-1. **A Discord bot app + token** in the Developer Portal (separate from discord-bridge). Subjects may
-   share one token or use different tokens; either way the token lives in the subject's `.env`.
-2. **A Discord server (guild) + channel** for that subject. Invite the bot with `bot` +
-   `applications.commands` scopes and message read/write, thread, and file-attachment permissions.
-   **Message Content Intent** must be ON (otherwise stop-word / conversation / explain replies are not read).
-3. **The subject folder's `.env`** (copy `.env.example`): `DISCORD_BOT_TOKEN`, `DISCORD_GUILD_ID`,
-   `DISCORD_CHANNEL_ID`, `DISCORD_ALLOWED_USER_ID`, plus `AI_MODEL` / `AI_MODEL_EXPLAIN`. Each subject's
-   `.env` is how it gets **its own channel** (and optionally its own bot/token).
+1. Once per machine: `python -m venv .venv` then `.venv\Scripts\python.exe -m pip install -r requirements-v6.txt`; in `web/`: `npm install` and `npm run build`.
+2. Lab VM: see `lh/vm/provision/README.md` (`setup-vm.sh` does accounts, keys, sudo, shell integration).
+3. Start **without admin rights** (an elevated vmrun cannot revert or start a VM the VMware window holds: "The file is already in use"):
+   ```
+   set LH_SUBJECTS=<subject folder>[;<another>]
+   set LH_TOKEN=<token1>,<token2>      (one per device)
+   set LH_BIND=<Tailscale IP or 127.0.0.1>
+   .venv\Scripts\python.exe -m lh.server
+   ```
+   The pilot launcher is `F:\SUAN\lh-subjects\start-linux-net.cmd`.
+4. Open `http://<bind>:<port>/cycle.html` and enter a token.
 
-If permissions or scopes are insufficient, threads and slash commands are disabled with a warning, but
-basic operation continues.
+Test without VM or AI: `LH_VM_FAKE=1`, `LH_AI_FAKE=<folder of role.txt files>`.
 
-## Running a subject
+## Adding a v6 subject (no kit edits)
 
-Run **from the subject folder** so its `.env` (channel/token) is the one loaded:
-
-```
-cd "C:\path\to\subject-folder"
-python "C:\Users\USER\Desktop\2026-하계\learning-harness\bot\main.py" "C:\path\to\subject-folder"
-```
-
-- `main.py` runs the APP's code; the path argument is the mount (its `manifest`/`decks`/`config`).
-- `load_dotenv()` reads `.env` from the current directory, so launching from the subject folder selects
-  that subject's channel/token. Each subject folder must have its own `.env`.
-- Progress is saved under that folder's `_state/` (isolated per subject).
-- Stop with Ctrl+C. One running instance per token at a time.
-- Mount priority: argument > `.env MOUNT` > cwd.
-
-## Adding a NEW subject (no kit edits)
-
-1. Make a folder with `manifest.json`, `decks/<deck>.json`, `config/<deck>.json`, and `.env`.
-2. In `config/<deck>.json` set `capabilities.enabled`, `capabilities.ai.persona`, and (if using the
-   catalog level/practice model) `"areas"` and `capabilities.ai.tasks` with that subject's wording.
-3. Run it with the command above. **Do not touch `bot/`/`engine/`.**
+Copy `F:\SUAN\lh-subjects\linux-net` as a template: edit `config/subject.json` (areas, persona, `prompts.*`, `unit_rule`, `final_task`, `vm`), the `lab/*.sh` scripts and `.env`. A second subject needs its own VM (`vm.vmx` and `vm.host` must differ, VM-1).
 
 ## Notes
 
-- Keep tokens only in each subject's `.env`; never expose them.
-- AI features (layer 3) require the `claude` CLI on PATH; absent → only those are disabled.
-- Run `python "C:\Users\USER\Desktop\2026-하계\learning-harness/skills/install.py"` once to register this skill under `~/.claude/skills/`.
+- Run `python "F:\SUAN\claude\learning-harness/skills/install.py"` to regenerate this skill after editing `skills/SKILL.md`.
+- Tokens and VM keys live only in launcher files and subject `.env`, never in the repo.

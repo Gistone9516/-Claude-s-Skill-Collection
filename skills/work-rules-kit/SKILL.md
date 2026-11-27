@@ -14,4 +14,4 @@ Applies to any project built as a reusable kit consumed by several instances or 
 
 **KT-3 While working on one instance, do not push that instance's specifics into the kit.** Doing so changes files every other instance depends on. Kit edits are for generic framework features; an instance-specific change belongs in that instance's config or data.
 
-**KT-4 Guard it with a test that fails when an instance literal leaks into kit code.** `learning-harness` has `bot/tests/test_subject_agnostic.py` for exactly this. A rule enforced by a test cannot be forgotten by the next session — the same reasoning as `work-rules-diagnosis` DG-3, preferring impossible over checked.
+**KT-4 Guard it with a test that fails when an instance literal leaks into kit code.** `learning-harness` has `lh/tests/test_subject_agnostic.py` (v6, also scans `web/src/cycle`) and `bot/tests/test_subject_agnostic.py` (v5) for exactly this. A rule enforced by a test cannot be forgotten by the next session — the same reasoning as `work-rules-diagnosis` DG-3, preferring impossible over checked.
