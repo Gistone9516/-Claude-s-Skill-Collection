@@ -1,6 +1,6 @@
 ---
 name: deepflow
-description: Multi-lens advisory panel for reasoning/idea/decision questions where multiple angles actually change the conclusion — attach divergent-lens sonnet agents in parallel, collect independent opinions, and opus synthesizes & decides. Triggers "자문단", "여러 관점에서", "다각도로 봐줘", "패널 붙여줘", "council", "/deepflow"; opus may self-activate when a question needs multi-angle judgment even without an explicit request. Not for fact lookup, arithmetic, or single-answer questions. **deepflow-auto** mode (see §7) extends this into a critique→opus-synthesize→improve→re-critique convergence loop over any improvable artifact (documents·code·design); triggers "deepflow-auto", "검사 및 개선 사이클", "비판-개선 반복", "수렴까지 돌려".
+description: Multi-lens advisory panel for reasoning/idea/decision questions where multiple angles actually change the conclusion — attach divergent-lens sonnet agents in parallel, collect independent opinions, and opus synthesizes & decides. Triggers "자문단", "여러 관점에서", "다각도로 봐줘", "패널 붙여줘", "council", "/deepflow"; opus may self-activate a small panel (3 agents or fewer) when a question needs multi-angle judgment even without an explicit request. Not for fact lookup, arithmetic, or single-answer questions. **deepflow-auto** mode (see §7) extends this into a critique→opus-synthesize→improve→re-critique convergence loop over any improvable artifact (documents·code·design); triggers "deepflow-auto", "검사 및 개선 사이클", "비판-개선 반복", "수렴까지 돌려".
 ---
 
 # deepflow — multi-lens advisory panel
@@ -15,7 +15,7 @@ For reasoning-heavy and judgment-heavy questions, instead of asking the same que
 
 ## §0 Activation
 Only when **reasoning/judgment matters and multiple angles genuinely change the conclusion.**
-- Explicit (`/deepflow`, "자문단", "다각도로") → activate. Implicit but fitting → **opus self-activates**: one line ("looks like a multi-angle call — running a panel; a few questions first") then go **straight to §1** (don't wait; §1 is itself the cost gate).
+- Explicit (`/deepflow`, "자문단", "다각도로") → activate. Implicit but fitting → **opus may self-activate a small panel**: at most 3 agents in total (lenses plus the §2 check), one round, through the `Agent` tool, announced in one line and counted in the report. This is the one panel exemption from G-22 pre-approval (user choice 2026-11-27). Anything larger, a round 2 or a `Workflow` is proposed with its agent count and waits for an OK.
 - **Skip** for fact lookup / arithmetic / search / single-answer technical decisions — answer directly and say "no panel needed."
 - **Component mode (external call):** when a parent (e.g. buildflow) calls it with the **decision statement / criteria / constraints already supplied**, skip §0–§1 and **enter at §2** — the caller's gate (e.g. buildflow G1/G2) replaces them; the 6-field return feeds that gate.
 
@@ -34,7 +34,7 @@ Don't pick from a fixed pool. **opus composes lenses fit to this task's domain**
 - **Orthogonality & coverage check (sonnet, work tier):** hand the draft lens set to one sonnet agent — (㉠) are the lenses actually distinct angles (no dupes / same-axis poles)? (㉡) is a conclusion-changing axis missing? opus folds the feedback and finalizes.
 
 ## §3 Parallel lens agents (sonnet, lens tier)
-One sonnet per lens, all independent, at the session's default effort (`agent-ops` AO-4). Raising reasoning further is a stated decision (AO-15): the `effort` option inside a `Workflow`, the prompt with the `Agent` tool.
+One sonnet per lens, all independent, at `effort: 'high'` (`agent-ops` AO-4).
 - **Output = the agent-ops Report envelope, lens-tier payload** — fixed 6 fields: `stance · reasons · killer_point · risks · flip_condition · confidence`. Each reason tagged `[fact-cited|inference|assumption|base-rate]`; preserve quotes/numbers/causal-chains verbatim (needed to judge flip_condition).
 - Prompt essentials: "evaluate through [lens] only; don't retreat to neutral — your value is being sharp one way, balance is another lens's job; you can't see other panels; tag evidence vs guess." Fixed field order makes the panel comparable (stance-vs-stance, killer-vs-killer).
 
@@ -62,7 +62,7 @@ Weight by criteria, converge to one recommendation. Format: **decision statement
 > Execution mechanics (Agent versus Workflow, model and effort per stage, the fire-signal-resume idle model, opt-in) are **canonical in `agent-ops`** — follow it. Below is only the deepflow-specific stage mapping.
 - **sonnet:** orthogonality check (§2), lens opinions (§3), round 2 (§4). **opus:** activation (§0), twenty-questions (§1), lens compose and finalize (§2), synthesis (§5), decision (§6).
 - **Stage to substrate:** §0-§1 and §5-§6 are load-bearing and run as opus direct. §3-§4 run as a **background `Workflow`** on the idle model: §3 is `parallel` with a `schema`, §4 is loop-until-dry, and opus reactivates per round on the completion signal. As a buildflow component this runs inside buildflow's script rather than nested.
-- **Model and effort:** lens tier is explicit sonnet at the session's default effort (`agent-ops` AO-4). Lenses are a reasoning stage, so do not drop them to the cheap tier — the panel's output is the input to opus's decision.
+- **Model and effort:** lens tier is explicit sonnet at `effort: 'high'` (`agent-ops` AO-4).
 
 ## Checklist
 | # | check |

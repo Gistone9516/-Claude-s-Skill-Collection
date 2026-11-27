@@ -9,7 +9,7 @@ Rules: BF-1..BF-7 (7), tagged on the load-bearing points only; the stage and cyc
 Execution mechanics and delegation policy are canonical in `agent-ops`; change discipline in `work-rules-diagnosis`. "opus" / "Operator Opus" is a role name for the session's model (CLAUDE.md G-03).
 
 ## Definition & principles
-**Operator Opus** owns planning, design, spec, integration, judgment and gates. **Implementer sonnet** runs adversarial lenses, parallel implementation and verification. Four principles:
+**Operator Opus** owns planning, design, spec, integration, judgment and gates, and does the review and the fixes itself. **Sonnet agents** investigate (scout, read, gather) and implement assigned partitions; they do not review (user directive 2026-11-27). Four principles:
 1. **BF-1 Correct beats predict** — do not interrogate to perfection. Show cheap concretes (a spec, a slice) fast and correct from the reaction.
 2. **BF-2 Three alignment checks** — user intent (vertical), adversarial-agent integrity (horizontal), and a thin-slice reality check. Only a spec that passes all three goes to parallel build.
 3. **BF-3 Anti-infinite** — no unbounded twenty-questions or review. Close with gates and dry convergence.
@@ -22,7 +22,7 @@ Execution mechanics and delegation policy are canonical in `agent-ops`; change d
 ║   A: planning always user-reviewed (default)                        ║
 ║   B: opus plan ⇄ sonnet×3 adversarial ⟲ until 2-dry → design        ║
 ║      └ new intent / prior-plan change / non-convergence → user      ║
-║ ① plan  intent + partition map (folder split / spec files ≤~400ln·5k) ─G1→ ║
+║ ① plan  intent + partition map (folder split / spec files) + agent budget ─G1→ ║
 ║ ② spec  per-folder contract (type sigs·schema·error rules)          ║
 ║         + adversarial integrity review + user red-pen ──────────G2→  ║
 ║ ③ build folder = git worktree = sonnet 1                            ║
@@ -38,13 +38,14 @@ Execution mechanics and delegation policy are canonical in `agent-ops`; change d
 ## Stages
 ### ① Plan (WHAT/WHY + skeleton) — the most upstream SPOF
 A wrong plan discards spec + build ×N. Highest leverage.
-- **opus:** finite twenty-questions for intent (stop once a contract draft is writable) + **partition design** (folder split + spec-file inventory, each ≤ ~400 lines/5k tokens — sized so an agent can reference the whole spec at once, not arbitrary).
+- **opus:** finite twenty-questions for intent (stop once a contract draft is writable) + **partition design** (folder split + spec-file inventory, each sized so an agent can read the whole spec at once; size is a signal, not a rule, `work-rules-diagnosis` DG-5).
+- **Agent budget:** G1 also carries the total agent count for the cycle with its per-stage breakdown (G-22, `agent-ops` AO-12). Once approved, stages run without further asks; exceeding it needs re-approval (user directive 2026-11-27).
 - **sonnet adversarial lens** (deepflow): output is not a verdict but **"questions for the user · hidden assumptions · missed alternatives"** → compresses the twenty-questions.
 - **G1:** intent + partition map ratified by the user (A-mode) or via the B-mode loop.
 
 ### ② Design·spec (HOW = contract) — the build SPOF
 - **opus — SoT-first (shared interface BEFORE per-folder contracts).** When contracts share cross-cutting interfaces (shared types · field names · enums · error codes · **serialization schema** · **runtime wiring**: global names / boot entry / config format), opus authors ONE shared-interface SoT (`_인터페이스계약.md`) **first**, then per-folder contracts are drafted/conformed **against it** ("on conflict, SoT wins"). Reconciling independent drafts afterwards is N-round churn (`agent-ops` AO-22).
-- **opus:** per-folder spec as a **persistent `.md` contract** — *machine-verifiable* interfaces (type sigs · data schema · error rules), not prose. Over ~400ln/5k = a signal to split.
+- **opus:** per-folder spec as a **persistent `.md` contract** — *machine-verifiable* interfaces (type sigs · data schema · error rules), not prose. A spec an agent cannot read whole is a signal to split (DG-5).
 - **sonnet adversarial integrity review** (deepflow, horizontal): undefined contracts · missed edges · internal contradictions · over-spec. opus cuts nitpick/over-spec.
 - **user red-pen** (vertical, intent): reviews the spec `.md` directly.
 - **G2:** red-pen (intent) + adversarial (integrity) pass.
@@ -70,9 +71,9 @@ A wrong plan discards spec + build ×N. Highest leverage.
 opus first-pass
  ├ [major] → user (required): intent/scope change · cross-folder public-contract change ·
  │           irreversible/external (data·schema·auth·payment·API·deploy) · genuine ambiguity
- └ [minor] (additive·internal·bug·contract-fulfillment) → sonnet×3 adversarial check (㉠contract·propagation ㉡regression ㉢intent·scope)
-       ├ 0 flag → auto-proceed
-       └ flag → opus review/reclassify → clear false-positive → auto + FYI · genuine/uncertain → user (required)
+ └ [minor] (additive·internal·bug·contract-fulfillment) → opus checks ㉠contract·propagation ㉡regression ㉢intent·scope itself
+       ├ clean → auto-proceed
+       └ doubt → genuine/uncertain → user (required)
 ```
 Asymmetric risk: a missed major ≫ an unneeded check → when unsure, lean to the user.
 
@@ -80,7 +81,7 @@ Asymmetric risk: a missed major ≫ an unneeded check → when unsure, lean to t
 - **A (default):** planning always user-reviewed.
 - **B (explicitly granted):** opus plan → sonnet×3 adversarial → opus re-judge ⟲ **until 2 consecutive dry (0 new meaningful)** → design. Adversaries: "only NEW weaknesses each round, rebut the plan." Hard round cap (default 5) — at the cap with real issues still surfacing = non-convergence → user.
   - **B autonomy ceiling = derivable improvements** (bugs · completion · hardening · tech-debt · backlog). *New intent/direction* or *prior-plan change* → user. Autonomous planning/convergence = FYI log (guards self-grading bias).
-  - **B = continuous autonomy across the whole cycle**, not just planning: unless a triage-major hits (intent/scope · irreversible/external · non-convergence · hard-floor failure), run ②→③→④→next cycle autonomously. Don't stop at stage gates for routine approval. (May vary by user — check user memory.)
+  - **B = continuous autonomy across the whole cycle**, not just planning: unless a triage-major hits (intent/scope · irreversible/external · non-convergence · hard-floor failure), run ②→③→④→next cycle autonomously. Don't stop at stage gates for routine approval, inside the agent budget approved at G1.
   - **Execution = Workflow offload** (agent-ops, opt-in): run the adversarial convergence loop, ③ worktree fan-out, and ④ verify as `Workflow` scripts → short opus turns. opus keeps ② contract finalization, integration/merge, risky-writes, triage.
   - **Unattended (away):** if the user wants, `CronCreate`/`ScheduleWakeup` to wake → run the next Workflow phase → escalate only major / hard-floor. Not a cost saving (cache-cold); for unattended continuation only.
   - **BF-6 Non-blocking autonomy for full-delegation runs** is `agent-ops` AO-23's park-and-continue, with two additions. Resolve an uncertainty by evidence first: web-grounded sonnet verification (G-09), then FYI-log it. Park what genuinely needs the user in a running log (e.g. `_사용자판단대기.md`) with context, options and a recommendation per item, and never auto-execute an irreversible or external action while parked.
@@ -93,7 +94,7 @@ Asymmetric risk: a missed major ≫ an unneeded check → when unsure, lean to t
 - **Debug index:** error → opus localizes to a partition via its spec → re-spawn that worktree's sonnet. (Strong on *in-partition* bugs; *boundary* bugs work only if the contract spells out the boundary → hence ②'s contract must be machine-verifiable.)
 
 ## Composition (component skills)
-- **Adversarial council** = `deepflow`, **called in component mode:** buildflow supplies the decision/criteria/constraints, so deepflow skips §0–§1 (enters at §2; G1/G2 replace them) and the return feeds the gate. Uses: ① plan-questioning, ② spec integrity review, B-mode adversarial loop, triage's sonnet×3.
+- **Adversarial council** = `deepflow`, **called in component mode:** buildflow supplies the decision/criteria/constraints, so deepflow skips §0–§1 (enters at §2; G1/G2 replace them) and the return feeds the gate. Uses: ① plan-questioning, ② spec integrity review, B-mode adversarial loop.
 - **Delegation/model discipline** = `agent-ops` (model and effort per stage, **Report envelope**, whole-read, folder=git worktree, integration=opus). Adversarial/lens = **lens tier**.
 - **Autonomy engine** = `Workflow` tool (idle model, opt-in, model per tier: `agent-ops` §3-§4). B-mode / multi-cycle cost lever: loop-until-dry (convergence) · pipeline (③ build · ④ verify) as deterministic scripts. Unattended via `CronCreate`.
 - Agent outputs follow the **agent-ops Report envelope**.
@@ -101,7 +102,7 @@ Asymmetric risk: a missed major ≫ an unneeded check → when unsure, lean to t
 ## Checklist
 | # | check |
 |---|---|
-| ① | mode (A/B) → intent + partition map (folders / spec ≤5k) → G1 |
+| ① | mode (A/B) → intent + partition map + agent budget → G1 |
 | ② | per-folder machine-verifiable contract → adversarial integrity + red-pen → G2 |
 | ③ | folder=git worktree=sonnet, whole-read/coverage → slice first → opus integrate (Workflow if opted-in, `model:'sonnet'`) |
 | ④ | close: regression+new verify + spec↔code resync (git gate) |

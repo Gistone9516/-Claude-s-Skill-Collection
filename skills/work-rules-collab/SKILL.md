@@ -11,7 +11,7 @@ The user can barely code and says so; experts give the model what it cannot see 
 
 Why each rule exists, briefly, so a later session does not improve it away (AI-7):
 
-**CL-1 Restate before a non-trivial change.** In one to three lines: the goal, the target, the scope, and what is out of scope. For a large change, wait for a yes; otherwise state it and start (G-11). Why: beginners and models misread each other; in a 120-student study single-attempt success was 24% (arXiv 2401.15232).
+**CL-1 Restate before a non-trivial change.** In one to three lines: the goal, the target, the scope, and what is out of scope. Then start; wait for a yes only where G-11 says so, for irreversible or outward-facing work, whatever the size (user choice 2026-11-27). Why: beginners and models misread each other; in a 120-student study single-attempt success was 24% (arXiv 2401.15232).
 
 **CL-2 Interview for a large or underspecified task.** Ask through AskUserQuestion (G-13), only about what the code cannot tell me: preference between approaches, scope, what must not change. Each question carries a recommended default. Skip anything a quick file read answers. Stop when the answers add up to a spec, and write the spec down. Why: Anthropic's own pattern ("Interview me until you could write the spec"); clarifying questions improved answer quality at a time cost (arXiv 2507.21285), so ask only where the answer changes the outcome.
 

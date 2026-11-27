@@ -76,7 +76,7 @@ $hwp.Clear(1); $hwp.Quit()
 
 **DC-18 A human-read document carries its version in its file name, and superseded versions live in a sibling archive folder (user directive 2026-10-22, global: "앞으로 문서 같은 과거 파일은 '파일명_archive' 폴더를 만들고 그 안에 파일명_@v 을 만들어. 정본 파일도 파일명_@v 를 지킬 것").**
 
-- **Scope:** docx, hwpx, pptx, xlsx, pdf, and md written for a person to read (자소서, 보고서, notes). Not code, config, or a README or other file whose history git already holds.
+- **Scope:** docx, hwpx, pptx, xlsx, pdf, and md written for a person to read (자소서, 보고서, notes). Not code, config, or a README or other file whose history git already holds, and not md written for an AI to read (rules, skills, specs, plans): those are revised in place under git (`verify-fanout` VF-16; split by document kind, user choice 2026-11-27).
 - **Shape:** the canonical file is `<name>_@v<N>.<ext>`, N an integer from 1. Its superseded versions are `<name>_archive/<name>_@v<k>.<ext>` beside it. Exactly one `<name>_@v*` file sits outside the archive.
 - **Saving a revision:** move the current file into the archive unchanged, then write the new one as `_@v<N+1>`. Never write a revision over the current file, and never edit or delete an archived version.
 - **A file without the suffix** adopts it at its next revision: it becomes the archive's `_@v1` and the revision `_@v2`. Renaming a file the user keeps in a date-named folder or has open (G-28) is asked first.

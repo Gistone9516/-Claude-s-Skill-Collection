@@ -53,7 +53,7 @@ Running the wrong mode returns nothing and costs the budget anyway.
 - Fire a single-item gate only when the item is destructive or irreversible, blocks everything after it, or a wrong answer changes what is done next. Name which, in one clause.
 - A parked gate is not a skipped gate. Write it where it will be seen at the boundary and report what was batched (AI-8).
 
-## 3. brief mode — runs first, always
+## 3. brief mode — runs first, inside its size gate
 
 **VF-7 Standing exception (user directive 2026-07-29).** The brief pair is exempt from fan-out pre-approval, from any "spawn agents only when asked" restriction, and from ordering behind the rest of the preamble. Do not ask for it. **Do count it** in the reported total (`agent-ops` AO-12): what it is exempt from is permission, not arithmetic.
 
@@ -97,7 +97,7 @@ Give the pair the relation index and the target path. Each returns **3-5 decisio
 - **VF-13 The header states ID ranges and counts** (`규칙: B-1~B-16 (16건)`). A gate greps and compares, so a rule added without updating the header fails the count.
 - **VF-14 Normative and narrative sections are separated**, so a reader can skip narrative without losing a rule.
 - **VF-15 Correct a wrong document; do not annotate it (user directive 2026-07-29).** Write what is true now: no "개정 사유", no "원래는 X였으나", no dated correction notes. Git holds history. A *rule's* rationale stays, because it stops a future session from reverting the rule; a *document's* change history goes.
-- **VF-16 Do not create a new document for repeated work — revise in place.** Two documents stating the same rule is the document-layer form of two counters. A protocol lives in one file; others reference it.
+- **VF-16 Do not create a new document for repeated work — revise in place.** Two documents stating the same rule is the document-layer form of two counters. A protocol lives in one file; others reference it. This covers AI-read documents; a human-read deliverable keeps its versions per `work-rules-docs` DC-18 (user choice 2026-11-27).
 
 - **VF-24 A document set whose proper nouns keep drifting gets a symbol registry: one table, no enforcement script (user directive 2026-09-23).** Reach for it when the symptoms appear: one entity spelled several ways, one term counting two things, a dropped setting quietly returning, load-bearing nouns defined nowhere. Measured on a 16-document worldbuilding set: one faction had three spellings and "회차" counted two different things.
   - **Shape:** one markdown table as the single source (VF-16). Per row: ID, canonical spelling, English, known variants, status (canonical / retired / conflicted / undefined), where defined. Definition sites get an anchor comment; **prose keeps the plain word**, because inline IDs make a design document stop being read. IDs go only where a machine already reads (data contracts, tables, asset fields).

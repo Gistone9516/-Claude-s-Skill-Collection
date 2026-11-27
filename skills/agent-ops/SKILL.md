@@ -11,7 +11,7 @@ The card is 11 lines, the decisions taken at every spawn. Report-envelope field 
 
 1. AO-1: tool descriptions own mechanics; this skill owns policy. Never restate a tool fact.
 2. AO-2, AO-5: sonnet reads, explores and drafts; opus plans, synthesizes, decides, writes prose and judges anything visual. Load-bearing judgement is never an `agent()`.
-3. AO-4: mechanical stages get `model: 'sonnet'` and low effort; lens and critique get sonnet at default effort; judging inside a loop inherits the session model.
+3. AO-4: mechanical, lens and critique stages get `model: 'sonnet'` at `effort: 'high'`, always; judging inside a loop inherits the session model.
 4. AO-6, AO-8: `Agent` for one or two independent lookups, `Workflow` for loops, pipelines and fan-out, and a Workflow only on the user's explicit opt-in.
 5. AO-12, AO-13: report the agent count with a per-stage breakdown before fanning out; standing pairs are counted. The cost is reading, so name the files an agent may open.
 6. AO-14: writes are serial; parallel is for reading or for disjoint ownership. `workflows/fanout-verified.js` enforces count, ownership and the report schema in code.

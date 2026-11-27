@@ -32,8 +32,10 @@ Do not restate a tool fact here; tool contracts change faster than skills, and a
 
 | Stage | model | effort | Why |
 |---|---|---|---|
-| Mechanical and bulk: scout, gather, locate, enumerate, mechanical verification, repetitive edits | `'sonnet'`, explicit | `'low'` | Volume work with a checkable answer |
-| Lens and critique | `'sonnet'`, explicit | session default | The panel's value is framing separation, not raw capability (AI-4) |
+| Mechanical and bulk: scout, gather, locate, enumerate, mechanical verification, repetitive edits | `'sonnet'`, explicit | `'high'` | Volume work with a checkable answer |
+| Lens and critique | `'sonnet'`, explicit | `'high'` | The panel's value is framing separation, not raw capability (AI-4) |
+
+Every sonnet agent runs at `effort: 'high'`, fixed, in `Agent` and `Workflow` alike (user directive 2026-11-27, replacing the 2026-09-07 low floor). The saving comes from the model tier, not from effort.
 | Judgement-adjacent inside a loop: adversarial verify, adopt/reject screening | omit `model` | omit or raise | A wrong cheap answer here costs more than the model difference |
 | Load-bearing judgement | **not an `agent()` at all** | — | AO-5 |
 
@@ -59,7 +61,7 @@ The `Workflow` description recommends omitting `model`; that is right for correc
 
 ## 5. Fan-out
 
-**AO-12 Report the count with its breakdown before fanning out (G-22).** For a prebuilt workflow, estimate its multiplying stages first; measured, deep-research expanded to 66 agents through per-claim votes. Pre-approved but still counted in the reported total: one or two one-shot lookups, the `verify-fanout` brief pair (both agents), and the AO-24 design pair. Measured 2026-09-07: the standing pairs were 45% of all agents spawned and invisible to the gate, so exemption from permission is not exemption from arithmetic. Resuming inside an approved budget needs no re-approval; exceeding it does.
+**AO-12 Report the count with its breakdown before fanning out (G-22).** For a prebuilt workflow, estimate its multiplying stages first; measured, deep-research expanded to 66 agents through per-claim votes. Pre-approved but still counted in the reported total: one or two one-shot lookups, the `verify-fanout` brief pair (both agents), the AO-24 design pair, and a self-activated `deepflow` panel of 3 or fewer (2026-11-27). Measured 2026-09-07: the standing pairs were 45% of all agents spawned and invisible to the gate, so exemption from permission is not exemption from arithmetic. Resuming inside an approved budget needs no re-approval; exceeding it does.
 
 **AO-13 Two caps bind: synthesis, and cost.** What binds is the most agents whose output opus can still synthesize sharply, and the price. Measured 2026-09-07 over 83 agents: floor about 90k billable tokens, median about 320k, and the agent type did not change it. Read every count as its price and say it when raising one.
 
@@ -71,7 +73,7 @@ The `Workflow` description recommends omitting `model`; that is right for correc
 
 **AO-15 Defaults for a spawned agent:** sonnet for mechanical work (AO-4); compressed output (caveman-ultra) for enumeration and data, with judgement, caveats and verbatim blocks never compressed; the Report envelope as the return shape.
 
-- **Effort floors low (user directive 2026-09-07: "어차피 정확한 내용을 원하는게 아니니까").** In a `Workflow`, pass `effort: 'low'` and raise it only for a stage that judges. Where there is no effort parameter, the prompt is the lever: omit `think hard` / `ultrathink` by default. Raising is a stated decision, not a default; `deepflow` and `buildflow` follow this.
+- Effort is set only by AO-4; `deepflow` and `buildflow` follow it.
 - **Fix the return size at delegation time (user directive 2026-09-07).** Every agent bills twice, once to run and once for opus to read. A standing pair returns 3-5 decision lines (`verify-fanout` VF-10). Measured 2026-08-22: brief-pair forensics flowed into a student's internship diary and had to be rewritten.
 
 **AO-16 Evidence-grounding is mandatory for factual, research and feasibility tasks.** `[fact-cited]` means a real source: URL, file or run output. A claim without one is `[assumption]` with lowered confidence (AI-2). Skip search for pure logic and mechanical tasks.
