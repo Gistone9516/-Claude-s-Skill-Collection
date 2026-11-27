@@ -103,9 +103,7 @@ Give the pair the relation index and the target path. Each returns **3-5 decisio
   - **Shape:** one markdown table as the single source (VF-16). Per row: ID, canonical spelling, English, known variants, status (canonical / retired / conflicted / undefined), where defined. Definition sites get an anchor comment; **prose keeps the plain word**, because inline IDs make a design document stop being read. IDs go only where a machine already reads (data contracts, tables, asset fields).
   - **No checker by default:** a linter over a solo creative project is a gate that fires on prose. For a set several people write to, enforce only one rule: a retired symbol reappearing.
 
-- **VF-22 A decision gets a note at `_shadow/<same relative path>.md` (user directive 2026-07-30).** Specs and commits are addressed by slice; nothing tells a session which decisions govern **the file it is about to edit**. Mirror the repo tree under `_shadow/`, written as part of the work by the main model, not an agent, holding only what the source cannot.
-  - Per decision: **what breaks if a later session does the obvious thing instead** (the load-bearing field, AI-7) · a grade on every claim (VF-1) · a number only beside a repo-committed command that reproduces it · lists pointed at, never copied · when the note goes stale.
-  - And what no commit holds, **what that session knew**: read whole / not read / **did a brief run, and did it change the plan** / knowingly deferred. If it cannot be recovered, say so; inventing it is AI-6. Measured 2026-07-30 over three cold reads: the brief sub-field is what separated reconstructible decisions from thin ones.
+- VF-22 (a mandatory `_shadow/` decision note per edited file) was retired on 2026-11-27 at the user's choice, as an always-on procedure. A `_shadow/` note that already exists is still read before editing its file (§6).
 
 ## 5. Write so it can be searched — code
 
@@ -127,7 +125,7 @@ Give the pair the relation index and the target path. Each returns **3-5 decisio
 | What does this package expose? | barrel `index.ts` |
 | Where does responsibility X live? | package README structure map (`readme-writing` RD-6) |
 | What rules govern this area? | spec's ID table (the header count says whether it is current) |
-| **What decisions govern this exact file, and what did they cost?** | its `_shadow/` note (VF-22) |
+| **What decisions govern this exact file, and what did they cost?** | its `_shadow/` note, where one exists |
 | Was this promised somewhere? | doc markers (`[개정]`, `[신규]`, `[v1 원문]`) |
 | Does this exist at all? | not answerable by search — see VF-19, VF-20 |
 
