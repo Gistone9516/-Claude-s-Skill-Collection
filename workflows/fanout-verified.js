@@ -81,7 +81,7 @@ const results = await pipeline(
     if (!u.check || !rep) return { unit: u.id, report: rep, check: null }
     const c = await agent(
       `Run exactly this command and nothing else, then report its exit code and the last 40 lines of output verbatim. Do not fix anything.\n${u.check}`,
-      { phase: 'Check', label: `check:${u.id}`, schema: CHECK, effort: 'low', model: 'sonnet' },
+      { phase: 'Check', label: `check:${u.id}`, schema: CHECK, effort: 'high', model: 'sonnet' },
     )
     return { unit: u.id, report: rep, check: c }
   },
